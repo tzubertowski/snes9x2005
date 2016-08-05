@@ -1490,51 +1490,6 @@ void InitROM(bool Interleaved)
                                          Settings.ForceInterleaved2 = false;
 }
 
-bool LoadSRAM(const char* filename)
-{
-   int size = Memory.SRAMSize ?
-              (1 << (Memory.SRAMSize + 3)) * 128 : 0;
-
-   memset(Memory.SRAM, SNESGameFixes.SRAMInitialValue, 0x20000);
-
-   if (size > 0x20000)
-      size = 0x20000;
-
-   if (size)
-   {
-      FILE* file;
-      if ((file = fopen(filename, "rb")))
-      {
-         int len = fread((unsigned char*) Memory.SRAM, 1, 0x20000, file);
-         fclose(file);
-         if (len - size == 512)
-         {
-            // S-RAM file has a header - remove it
-            // memmove required: Overlapping addresses [Neb]
-            memmove(Memory.SRAM, Memory.SRAM + 512, size);
-         }
-         if (len == size + SRTC_SRAM_PAD)
-         {
-            S9xSRTCPostLoadState();
-            S9xResetSRTC();
-            rtc.index = -1;
-            rtc.mode = MODE_READ;
-         }
-         else
-            S9xHardResetSRTC();
-
-         if (Settings.SPC7110RTC)
-            S9xLoadSPC7110RTC(&rtc_f9);
-
-         return (true);
-      }
-      S9xHardResetSRTC();
-      return (false);
-   }
-
-   return (true);
-}
-
 void FixROMSpeed()
 {
    int c;

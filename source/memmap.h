@@ -144,7 +144,6 @@ bool LoadROM(const char*);
 uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize);
 #endif
 void  InitROM(bool);
-bool LoadSRAM(const char*);
 bool S9xInitMemory();
 void  S9xDeinitMemory();
 void  FreeSDD1Data();
