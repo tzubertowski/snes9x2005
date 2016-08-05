@@ -717,11 +717,7 @@ void S9xEndScreenRefresh()
 #endif
 
    if (CPU.SRAMModified)
-   {
-      S9xAutoSaveSRAM();
       CPU.SRAMModified = false;
-   }
-
 }
 
 void S9xSetInfoString(const char* string)

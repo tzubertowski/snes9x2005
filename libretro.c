@@ -312,11 +312,6 @@ void init_sfc_setting(void)
 
 }
 
-void S9xAutoSaveSRAM()
-{
-   SaveSRAM(S9xGetFilename("srm"));
-}
-
 #ifdef USE_BLARGG_APU
 static void S9xAudioCallback()
 {
@@ -373,10 +368,6 @@ void retro_deinit(void)
 
    if (Settings.SPC7110)
       (*CleanUp7110)();
-   if(retro_save_directory[0] == '\0')
-      SaveSRAM(S9xGetFilename("srm"));
-   else
-      SaveSRAM(retro_save_directory);
 
    S9xDeinitGFX();
    S9xDeinitDisplay();
@@ -936,21 +927,6 @@ bool retro_load_game(const struct retro_game_info* game)
    Settings.FrameTime = (Settings.PAL ? Settings.FrameTimePAL :
                          Settings.FrameTimeNTSC);
 
-
-   const char *dir = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &dir) && dir)
-   {
-      GetBaseName("");
-      snprintf(retro_save_directory,sizeof(retro_save_directory),"%s%c%s.srm",dir,slash,retro_base_name);
-      log_cb(RETRO_LOG_INFO,
-             "SAVE LOCATION: %s\n", retro_save_directory);
-   }
-
-   if(retro_save_directory[0] != '\0')
-      LoadSRAM(retro_save_directory);
-   else
-      LoadSRAM(S9xGetFilename("srm"));
-
    struct retro_system_av_info av_info;
    retro_get_system_av_info(&av_info);
 
@@ -973,12 +949,64 @@ void retro_unload_game(void)
 
 }
 
-void* retro_get_memory_data(unsigned id)
+void* retro_get_memory_data(unsigned type)
 {
-   return NULL;
+   uint8_t* data;
+
+   switch(type)
+   {
+      case RETRO_MEMORY_SAVE_RAM:
+         data = Memory.SRAM;
+         break;
+      case RETRO_MEMORY_RTC:
+#if 0
+         data = RTCData.reg;
+#endif
+         break;
+      case RETRO_MEMORY_SYSTEM_RAM:
+         data = Memory.RAM;
+         break;
+      case RETRO_MEMORY_VIDEO_RAM:
+         data = Memory.VRAM;
+         break;
+      //case RETRO_MEMORY_ROM:
+      //   data = Memory.ROM;
+      //   break;
+      default:
+         data = NULL;
+         break;
+   }
+
+   return data;
 }
 
-size_t retro_get_memory_size(unsigned id)
+size_t retro_get_memory_size(unsigned type)
 {
-   return 0;
+   unsigned size;
+
+   switch(type)
+   {
+      case RETRO_MEMORY_SAVE_RAM:
+         size = (unsigned) (Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0);
+         if (size > 0x20000)
+            size = 0x20000;
+         break;
+      case RETRO_MEMORY_RTC:
+         size = (Settings.SRTC || Settings.SPC7110RTC)?20:0;
+         break;
+      case RETRO_MEMORY_SYSTEM_RAM:
+         size = 128 * 1024;
+         break;
+      case RETRO_MEMORY_VIDEO_RAM:
+         size = 64 * 1024;
+         break;
+      //case RETRO_MEMORY_ROM:
+      //   data = Memory.CalculatedSize;
+      //   break;
+      default:
+         size = 0;
+         break;
+   }
+
+   return size;
 }

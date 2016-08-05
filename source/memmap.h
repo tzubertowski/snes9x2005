@@ -145,7 +145,6 @@ uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize);
 #endif
 void  InitROM(bool);
 bool LoadSRAM(const char*);
-bool SaveSRAM(const char*);
 bool S9xInitMemory();
 void  S9xDeinitMemory();
 void  FreeSDD1Data();
@@ -257,8 +256,6 @@ bool LoadZip(const char* zipname,
               int32_t* headers,
               uint8_t* buffer);
 
-
-void S9xAutoSaveSRAM();
 
 #ifdef NO_INLINE_SET_GET
 uint8_t S9xGetByte(uint32_t Address);

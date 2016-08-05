@@ -1535,41 +1535,6 @@ bool LoadSRAM(const char* filename)
    return (true);
 }
 
-bool SaveSRAM(const char* filename)
-{
-   if (Settings.SuperFX && Memory.ROMType < 0x15)
-      return true;
-   if (Settings.SA1 && Memory.ROMType == 0x34)
-      return true;
-
-   int size = Memory.SRAMSize ?
-              (1 << (Memory.SRAMSize + 3)) * 128 : 0;
-   if (Settings.SRTC)
-   {
-      size += SRTC_SRAM_PAD;
-      S9xSRTCPreSaveState();
-   }
-
-   if (size > 0x20000)
-      size = 0x20000;
-
-   if (size && *Memory.ROMFilename)
-   {
-
-      FILE* file = fopen(filename, "w");
-      if (file)
-      {
-         fwrite((unsigned char*) Memory.SRAM, size, 1, file);
-         fclose(file);
-         if (Settings.SPC7110RTC)
-            S9xSaveSPC7110RTC(&rtc_f9);
-
-         return (true);
-      }
-   }
-   return (false);
-}
-
 void FixROMSpeed()
 {
    int c;
