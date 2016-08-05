@@ -35,9 +35,9 @@ else ifneq ($(findstring MINGW,$(shell uname -a)),)
 endif
 
 ifeq ($(USE_BLARGG_APU), 1)
-TARGET_NAME := catsfc_plus
+TARGET_NAME := snes9x2005_plus
 else
-TARGET_NAME := catsfc
+TARGET_NAME := snes9x2005
 endif
 
 DEFS        :=
