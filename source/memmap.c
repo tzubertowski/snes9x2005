@@ -4037,9 +4037,10 @@ static long ReadInt(FILE* f, unsigned nbytes)
    return (v);
 }
 
+#ifdef LOAD_FROM_MEMORY_TEST
 #define IPS_EOF 0x00454F46l
 
-void CheckForIPSPatch(const char* rom_filename, bool header,
+static void CheckForIPSPatch(const char* rom_filename, bool header,
                       int32_t* rom_size)
 {
    char  dir [_MAX_DIR + 1];
@@ -4138,6 +4139,7 @@ err_eof:
    if (patch_file)
       fclose(patch_file);
 }
+#endif
 
 int is_bsx(unsigned char* p)
 {

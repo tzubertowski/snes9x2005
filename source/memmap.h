@@ -177,8 +177,6 @@ int  ScoreLoROM(bool skip_header, int32_t offset);
 void SufamiTurboAltROMMap();
 #endif
 void ApplyROMFixes();
-void CheckForIPSPatch(const char* rom_filename, bool header,
-                      int32_t* rom_size);
 
 const char* TVStandard();
 const char* Speed();
