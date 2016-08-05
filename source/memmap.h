@@ -250,11 +250,6 @@ void ResetSpeedMap();
 
 extern CMemory Memory;
 void S9xDeinterleaveMode2();
-bool LoadZip(const char* zipname,
-              int32_t* TotalFileSize,
-              int32_t* headers,
-              uint8_t* buffer);
-
 
 #ifdef NO_INLINE_SET_GET
 uint8_t S9xGetByte(uint32_t Address);
