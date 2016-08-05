@@ -621,9 +621,9 @@ void retro_get_system_info(struct retro_system_info* info)
    info->valid_extensions = "smc|fig|sfc|gd3|gd7|dx2|bsx|swc";
    info->library_version  = "v1.36";
 #ifdef USE_BLARGG_APU
-   info->library_name     = "Snes9X 2005 Plus";
+   info->library_name     = "Snes9x 2005 Plus";
 #else
-   info->library_name     = "Snes9X 2005";
+   info->library_name     = "Snes9x 2005";
 #endif
    info->block_extract    = false;
 }
