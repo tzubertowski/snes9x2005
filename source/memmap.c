@@ -574,6 +574,21 @@ void FreeSDD1Data()
 }
 
 #ifndef LOAD_FROM_MEMORY_TEST
+
+/* Read variable size MSB int from a file */
+static long ReadInt(FILE* f, unsigned nbytes)
+{
+   long v = 0;
+   while (nbytes--)
+   {
+      int c = fgetc(f);
+      if (c == EOF)
+         return -1;
+      v = (v << 8) | (c & 0xFF);
+   }
+   return (v);
+}
+
 #define IPS_EOF 0x00454F46l
 
 static void CheckForIPSPatch(const char* rom_filename, bool header,
@@ -4127,19 +4142,6 @@ void ApplyROMFixes()
    //BNE
 }
 
-// Read variable size MSB int from a file
-static long ReadInt(FILE* f, unsigned nbytes)
-{
-   long v = 0;
-   while (nbytes--)
-   {
-      int c = fgetc(f);
-      if (c == EOF)
-         return -1;
-      v = (v << 8) | (c & 0xFF);
-   }
-   return (v);
-}
 
 
 int is_bsx(unsigned char* p)
