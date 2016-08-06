@@ -573,6 +573,110 @@ void FreeSDD1Data()
    }
 }
 
+#ifndef LOAD_FROM_MEMORY_TEST
+#define IPS_EOF 0x00454F46l
+
+static void CheckForIPSPatch(const char* rom_filename, bool header,
+                      int32_t* rom_size)
+{
+   char  dir [_MAX_DIR + 1];
+   char  drive [_MAX_DRIVE + 1];
+   char  name [_MAX_FNAME + 1];
+   char  ext [_MAX_EXT + 1];
+   char  fname [_MAX_PATH + 1];
+   FILE*  patch_file  = NULL;
+   long  offset = header ? 512 : 0;
+
+   _splitpath(rom_filename, drive, dir, name, ext);
+   _makepath(fname, drive, dir, name, "ips");
+
+   if (!(patch_file = fopen(fname, "rb")))
+   {
+      if (!(patch_file = fopen(S9xGetFilename("ips"), "rb")))
+         return;
+   }
+
+   if (fread((unsigned char*)fname, 1, 5, patch_file) != 5 ||
+         strncmp(fname, "PATCH", 5) != 0)
+   {
+      fclose(patch_file);
+      return;
+   }
+
+   int32_t ofs;
+
+   for (;;)
+   {
+      long len;
+      long rlen;
+      int  rchar;
+
+      ofs = ReadInt(patch_file, 3);
+      if (ofs == -1)
+         goto err_eof;
+
+      if (ofs == IPS_EOF)
+         break;
+
+      ofs -= offset;
+
+      len = ReadInt(patch_file, 2);
+      if (len == -1)
+         goto err_eof;
+
+      /* Apply patch block */
+      if (len)
+      {
+         if (ofs + len > MAX_ROM_SIZE)
+            goto err_eof;
+
+         while (len--)
+         {
+            rchar = fgetc(patch_file);
+            if (rchar == EOF)
+               goto err_eof;
+            Memory.ROM [ofs++] = (uint8_t) rchar;
+         }
+         if (ofs > *rom_size)
+            *rom_size = ofs;
+      }
+      else
+      {
+         rlen = ReadInt(patch_file, 2);
+         if (rlen == -1)
+            goto err_eof;
+
+         rchar = fgetc(patch_file);
+         if (rchar == EOF)
+            goto err_eof;
+
+         if (ofs + rlen > MAX_ROM_SIZE)
+            goto err_eof;
+
+         while (rlen--)
+            Memory.ROM [ofs++] = (uint8_t) rchar;
+
+         if (ofs > *rom_size)
+            *rom_size = ofs;
+      }
+   }
+
+   // Check if ROM image needs to be truncated
+   ofs = ReadInt(patch_file, 3);
+   if (ofs != -1 && ofs - offset < *rom_size)
+   {
+      // Need to truncate ROM image
+      *rom_size = ofs - offset;
+   }
+   fclose(patch_file);
+   return;
+
+err_eof:
+   if (patch_file)
+      fclose(patch_file);
+}
+#endif
+
 /**********************************************************************************************/
 /* LoadROM()                                                                                  */
 /* This function loads a Snes-Backup image                                                    */
@@ -4037,109 +4141,6 @@ static long ReadInt(FILE* f, unsigned nbytes)
    return (v);
 }
 
-#ifndef LOAD_FROM_MEMORY_TEST
-#define IPS_EOF 0x00454F46l
-
-static void CheckForIPSPatch(const char* rom_filename, bool header,
-                      int32_t* rom_size)
-{
-   char  dir [_MAX_DIR + 1];
-   char  drive [_MAX_DRIVE + 1];
-   char  name [_MAX_FNAME + 1];
-   char  ext [_MAX_EXT + 1];
-   char  fname [_MAX_PATH + 1];
-   FILE*  patch_file  = NULL;
-   long  offset = header ? 512 : 0;
-
-   _splitpath(rom_filename, drive, dir, name, ext);
-   _makepath(fname, drive, dir, name, "ips");
-
-   if (!(patch_file = fopen(fname, "rb")))
-   {
-      if (!(patch_file = fopen(S9xGetFilename("ips"), "rb")))
-         return;
-   }
-
-   if (fread((unsigned char*)fname, 1, 5, patch_file) != 5 ||
-         strncmp(fname, "PATCH", 5) != 0)
-   {
-      fclose(patch_file);
-      return;
-   }
-
-   int32_t ofs;
-
-   for (;;)
-   {
-      long len;
-      long rlen;
-      int  rchar;
-
-      ofs = ReadInt(patch_file, 3);
-      if (ofs == -1)
-         goto err_eof;
-
-      if (ofs == IPS_EOF)
-         break;
-
-      ofs -= offset;
-
-      len = ReadInt(patch_file, 2);
-      if (len == -1)
-         goto err_eof;
-
-      /* Apply patch block */
-      if (len)
-      {
-         if (ofs + len > MAX_ROM_SIZE)
-            goto err_eof;
-
-         while (len--)
-         {
-            rchar = fgetc(patch_file);
-            if (rchar == EOF)
-               goto err_eof;
-            Memory.ROM [ofs++] = (uint8_t) rchar;
-         }
-         if (ofs > *rom_size)
-            *rom_size = ofs;
-      }
-      else
-      {
-         rlen = ReadInt(patch_file, 2);
-         if (rlen == -1)
-            goto err_eof;
-
-         rchar = fgetc(patch_file);
-         if (rchar == EOF)
-            goto err_eof;
-
-         if (ofs + rlen > MAX_ROM_SIZE)
-            goto err_eof;
-
-         while (rlen--)
-            Memory.ROM [ofs++] = (uint8_t) rchar;
-
-         if (ofs > *rom_size)
-            *rom_size = ofs;
-      }
-   }
-
-   // Check if ROM image needs to be truncated
-   ofs = ReadInt(patch_file, 3);
-   if (ofs != -1 && ofs - offset < *rom_size)
-   {
-      // Need to truncate ROM image
-      *rom_size = ofs - offset;
-   }
-   fclose(patch_file);
-   return;
-
-err_eof:
-   if (patch_file)
-      fclose(patch_file);
-}
-#endif
 
 int is_bsx(unsigned char* p)
 {
