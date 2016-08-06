@@ -690,16 +690,6 @@ err_eof:
    if (patch_file)
       fclose(patch_file);
 }
-#endif
-
-/**********************************************************************************************/
-/* LoadROM()                                                                                  */
-/* This function loads a Snes-Backup image                                                    */
-/**********************************************************************************************/
-
-#ifdef LOAD_FROM_MEMORY_TEST
-bool LoadROM(const struct retro_game_info* game)
-#else
 
 static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize)
 {
@@ -817,9 +807,20 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 
    return TotalFileSize;
 }
-
-bool LoadROM(const char* filename)
 #endif
+
+/**********************************************************************************************/
+/* LoadROM()                                                                                  */
+/* This function loads a Snes-Backup image                                                    */
+/**********************************************************************************************/
+
+bool LoadROM(
+#ifdef LOAD_FROM_MEMORY_TEST
+      const struct retro_game_info* game
+#else
+      const char* filename
+#endif
+      )
 {
    int32_t TotalFileSize = 0;
    bool Interleaved = false;
