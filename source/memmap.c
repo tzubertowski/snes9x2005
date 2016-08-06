@@ -700,6 +700,124 @@ err_eof:
 #ifdef LOAD_FROM_MEMORY_TEST
 bool LoadROM(const struct retro_game_info* game)
 #else
+
+static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize)
+{
+   FILE* ROMFile;
+   int32_t TotalFileSize = 0;
+   int len = 0;
+
+   char dir [_MAX_DIR + 1];
+   char drive [_MAX_DRIVE + 1];
+   char name [_MAX_FNAME + 1];
+   char ext [_MAX_EXT + 1];
+   char fname [_MAX_PATH + 1];
+
+   unsigned long FileSize = 0;
+
+   _splitpath(filename, drive, dir, name, ext);
+   _makepath(fname, drive, dir, name, ext);
+
+#ifdef __WIN32__
+   // memmove required: Overlapping addresses [Neb]
+   memmove(&ext [0], &ext[1], 4);
+#endif
+
+   if ((ROMFile = fopen(fname, "rb")) == NULL)
+      return (0);
+
+   strcpy(Memory.ROMFilename, fname);
+
+   Memory.HeaderCount = 0;
+   uint8_t* ptr = buffer;
+   bool more = false;
+
+   do
+   {
+      FileSize = fread(ptr, 1, maxsize + 0x200 - (ptr - Memory.ROM), ROMFile);
+      fclose(ROMFile);
+
+      int calc_size = FileSize & ~0x1FFF; // round to the lower 0x2000
+
+      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) ||
+            Settings.ForceHeader)
+      {
+         // memmove required: Overlapping addresses [Neb]
+         // DS2 DMA notes: Can be split into 512-byte DMA blocks [Neb]
+#ifdef DS2_DMA
+         __dcache_writeback_all();
+         {
+            unsigned int i;
+            for (i = 0; i < calc_size; i += 512)
+            {
+               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, ptr + i, ptr + i + 512, 512);
+               ds2_DMA_wait(2);
+               ds2_DMA_stop(2);
+            }
+         }
+#else
+         memmove(ptr, ptr + 512, calc_size);
+#endif
+         Memory.HeaderCount++;
+         FileSize -= 512;
+      }
+
+      ptr += FileSize;
+      TotalFileSize += FileSize;
+
+
+      // check for multi file roms
+
+      if ((ptr - Memory.ROM) < (maxsize + 0x200) &&
+            (isdigit(ext [0]) && ext [1] == 0 && ext [0] < '9'))
+      {
+         more = true;
+         ext [0]++;
+#ifdef __WIN32__
+         // memmove required: Overlapping addresses [Neb]
+         memmove(&ext [1], &ext [0], 4);
+         ext [0] = '.';
+#endif
+         _makepath(fname, drive, dir, name, ext);
+      }
+      else if (ptr - Memory.ROM < maxsize + 0x200 &&
+               (((len = strlen(name)) == 7 || len == 8) &&
+                strncasecmp(name, "sf", 2) == 0 &&
+                isdigit(name [2]) && isdigit(name [3]) && isdigit(name [4]) &&
+                isdigit(name [5]) && isalpha(name [len - 1])))
+      {
+         more = true;
+         name [len - 1]++;
+#ifdef __WIN32__
+         // memmove required: Overlapping addresses [Neb]
+         memmove(&ext [1], &ext [0], 4);
+         ext [0] = '.';
+#endif
+         _makepath(fname, drive, dir, name, ext);
+      }
+      else
+         more = false;
+
+   }
+   while (more && (ROMFile = fopen(fname, "rb")) != NULL);
+
+
+
+   if (Memory.HeaderCount == 0)
+      S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
+   else
+   {
+      if (Memory.HeaderCount == 1)
+         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
+                    "Found ROM file header (and ignored it).");
+      else
+         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
+                    "Found multiple ROM file headers (and ignored them).");
+   }
+
+   return TotalFileSize;
+}
+
 bool LoadROM(const char* filename)
 #endif
 {
@@ -1040,130 +1158,8 @@ again:
    return (true);
 }
 
-#ifndef LOAD_FROM_MEMORY_TEST
-uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize)
-{
-
-
-   FILE* ROMFile;
-   int32_t TotalFileSize = 0;
-   int len = 0;
-
-   char dir [_MAX_DIR + 1];
-   char drive [_MAX_DRIVE + 1];
-   char name [_MAX_FNAME + 1];
-   char ext [_MAX_EXT + 1];
-   char fname [_MAX_PATH + 1];
-
-   unsigned long FileSize = 0;
-
-   _splitpath(filename, drive, dir, name, ext);
-   _makepath(fname, drive, dir, name, ext);
-
-#ifdef __WIN32__
-   // memmove required: Overlapping addresses [Neb]
-   memmove(&ext [0], &ext[1], 4);
-#endif
-
-   if ((ROMFile = fopen(fname, "rb")) == NULL)
-      return (0);
-
-   strcpy(Memory.ROMFilename, fname);
-
-   Memory.HeaderCount = 0;
-   uint8_t* ptr = buffer;
-   bool more = false;
-
-   do
-   {
-      FileSize = fread(ptr, 1, maxsize + 0x200 - (ptr - Memory.ROM), ROMFile);
-      fclose(ROMFile);
-
-      int calc_size = FileSize & ~0x1FFF; // round to the lower 0x2000
-
-      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) ||
-            Settings.ForceHeader)
-      {
-         // memmove required: Overlapping addresses [Neb]
-         // DS2 DMA notes: Can be split into 512-byte DMA blocks [Neb]
-#ifdef DS2_DMA
-         __dcache_writeback_all();
-         {
-            unsigned int i;
-            for (i = 0; i < calc_size; i += 512)
-            {
-               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, ptr + i, ptr + i + 512, 512);
-               ds2_DMA_wait(2);
-               ds2_DMA_stop(2);
-            }
-         }
-#else
-         memmove(ptr, ptr + 512, calc_size);
-#endif
-         Memory.HeaderCount++;
-         FileSize -= 512;
-      }
-
-      ptr += FileSize;
-      TotalFileSize += FileSize;
-
-
-      // check for multi file roms
-
-      if ((ptr - Memory.ROM) < (maxsize + 0x200) &&
-            (isdigit(ext [0]) && ext [1] == 0 && ext [0] < '9'))
-      {
-         more = true;
-         ext [0]++;
-#ifdef __WIN32__
-         // memmove required: Overlapping addresses [Neb]
-         memmove(&ext [1], &ext [0], 4);
-         ext [0] = '.';
-#endif
-         _makepath(fname, drive, dir, name, ext);
-      }
-      else if (ptr - Memory.ROM < maxsize + 0x200 &&
-               (((len = strlen(name)) == 7 || len == 8) &&
-                strncasecmp(name, "sf", 2) == 0 &&
-                isdigit(name [2]) && isdigit(name [3]) && isdigit(name [4]) &&
-                isdigit(name [5]) && isalpha(name [len - 1])))
-      {
-         more = true;
-         name [len - 1]++;
-#ifdef __WIN32__
-         // memmove required: Overlapping addresses [Neb]
-         memmove(&ext [1], &ext [0], 4);
-         ext [0] = '.';
-#endif
-         _makepath(fname, drive, dir, name, ext);
-      }
-      else
-         more = false;
-
-   }
-   while (more && (ROMFile = fopen(fname, "rb")) != NULL);
-
-
-
-   if (Memory.HeaderCount == 0)
-      S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
-   else
-   {
-      if (Memory.HeaderCount == 1)
-         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
-                    "Found ROM file header (and ignored it).");
-      else
-         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
-                    "Found multiple ROM file headers (and ignored them).");
-   }
-
-   return TotalFileSize;
-
-}
-#endif
-
-//compatibility wrapper
-void S9xDeinterleaveMode2()
+/* compatibility wrapper */
+void S9xDeinterleaveMode2(void)
 {
    S9xDeinterleaveType2(true);
 }

@@ -141,7 +141,6 @@
 bool LoadROM(const struct retro_game_info* game);
 #else
 bool LoadROM(const char*);
-uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize);
 #endif
 void  InitROM(bool);
 bool S9xInitMemory();
