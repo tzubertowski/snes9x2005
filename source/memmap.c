@@ -4037,7 +4037,7 @@ static long ReadInt(FILE* f, unsigned nbytes)
    return (v);
 }
 
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifndef LOAD_FROM_MEMORY_TEST
 #define IPS_EOF 0x00454F46l
 
 static void CheckForIPSPatch(const char* rom_filename, bool header,
