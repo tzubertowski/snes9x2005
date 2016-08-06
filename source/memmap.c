@@ -142,7 +142,16 @@ static int retry_count = 0;
 static uint8_t bytes0x2000 [0x2000];
 int is_bsx(unsigned char*);
 int bs_name(unsigned char*);
-int check_char(unsigned);
+
+static int check_char(unsigned c)
+{
+   if ((c & 0x80) == 0)
+      return 0;
+   if ((c - 0x20) & 0x40)
+      return 1;
+   return 0;
+}
+
 void S9xDeinterleaveType2(bool reset);
 uint32_t caCRC32(uint8_t* array, uint32_t size, register uint32_t crc32);
 
@@ -273,7 +282,7 @@ void S9xDeinterleaveGD24(int TotalFileSize, uint8_t* base)
    }
 }
 
-bool AllASCII(uint8_t* b, int size)
+static bool AllASCII(uint8_t* b, int size)
 {
    int i;
    for (i = 0; i < size; i++)
@@ -284,7 +293,7 @@ bool AllASCII(uint8_t* b, int size)
    return (true);
 }
 
-int ScoreHiROM(bool skip_header, int32_t romoff)
+static int ScoreHiROM(bool skip_header, int32_t romoff)
 {
    int score = 0;
    int o = skip_header ? 0xff00 + 0x200 : 0xff00;
@@ -329,7 +338,7 @@ int ScoreHiROM(bool skip_header, int32_t romoff)
    return (score);
 }
 
-int ScoreLoROM(bool skip_header, int32_t romoff)
+static int ScoreLoROM(bool skip_header, int32_t romoff)
 {
    int score = 0;
    int o = skip_header ? 0x7f00 + 0x200 : 0x7f00;
@@ -371,7 +380,7 @@ int ScoreLoROM(bool skip_header, int32_t romoff)
    return (score);
 }
 
-char* Safe(const char* s)
+static char* Safe(const char* s)
 {
    static char* safe;
    static int safe_len = 0;
@@ -4218,15 +4227,6 @@ int bs_name(unsigned char* p)
       return 0;
 notBsName:
    return -1;
-}
-int check_char(unsigned c)
-{
-   if ((c & 0x80) == 0)
-      return 0;
-   if ((c - 0x20) & 0x40)
-      return 1;
-   else
-      return 0;
 }
 
 void ParseSNESHeader(uint8_t* RomHeader)

@@ -151,7 +151,6 @@ void WriteProtectROM();
 void FixROMSpeed();
 void MapRAM();
 void MapExtraRAM();
-char* Safe(const char*);
 
 void BSLoROMMap();
 void JumboLoROMMap(bool);
@@ -169,12 +168,6 @@ void BSHiROMMap();
 void SPC7110HiROMMap();
 void SPC7110Sram(uint8_t);
 void SetaDSPMap();
-bool AllASCII(uint8_t* b, int size);
-int  ScoreHiROM(bool skip_header, int32_t offset);
-int  ScoreLoROM(bool skip_header, int32_t offset);
-#if 0
-void SufamiTurboAltROMMap();
-#endif
 void ApplyROMFixes();
 
 const char* TVStandard();
