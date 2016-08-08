@@ -97,7 +97,6 @@ bool S9xReadSuperScopePosition(int* x, int* y, uint32_t* buttons);
 
 void S9xInitDisplay(void);
 void S9xDeinitDisplay();
-void S9xPutImage(int width, int height);
 void S9xToggleSoundChannel(int channel);
 void S9xSetInfoString(const char* string);
 void S9xNextController();
