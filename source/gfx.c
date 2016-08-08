@@ -1059,7 +1059,6 @@ static void DrawOBJS(bool OnMain, uint8_t D)
    if (Settings.BGLayering) fprintf(stderr, "Entering DrawOBJS() for %d-%d\n",
                                        GFX.StartY, GFX.EndY);
 #endif
-   CHECK_SOUND();
 
    BG.BitShift = 4;
    BG.TileShift = 5;
@@ -1296,8 +1295,6 @@ static void DrawOBJS(bool OnMain, uint8_t D)
 
 static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 {
-   CHECK_SOUND();
-
    uint32_t Tile;
    uint16_t* SC0;
    uint16_t* SC1;
@@ -1527,8 +1524,6 @@ static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
 static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 {
-   CHECK_SOUND();
-
    uint32_t Tile;
    uint16_t* SC0;
    uint16_t* SC1;
@@ -1864,8 +1859,6 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
 static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
 {
-   CHECK_SOUND();
-
    if (IPPU.Interlace)
    {
       GFX.Pitch = GFX.RealPitch;
@@ -2235,7 +2228,6 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
       //    }
       break;
    }
-   CHECK_SOUND();
 
    uint32_t Tile;
    uint16_t* SC0;
@@ -2562,7 +2554,6 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 #define RENDER_BACKGROUND_MODE7(TYPE,FUNC) \
     uint16_t *ScreenColors = IPPU.ScreenColors; \
     (void)ScreenColors; \
-    CHECK_SOUND(); \
 \
     uint8_t *VRAM1 = Memory.VRAM + 1; \
     if (GFX.r2130 & 1) \
@@ -2753,8 +2744,6 @@ static void DrawBGMode7Background16Sub1_2(uint8_t* Screen, int bg)
 
 #define RENDER_BACKGROUND_MODE7_i(TYPE,FUNC,COLORFUNC) \
     uint16_t *ScreenColors; \
-    CHECK_SOUND(); \
-\
     uint8_t *VRAM1 = Memory.VRAM + 1; \
     if (GFX.r2130 & 1) \
     { \

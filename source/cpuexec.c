@@ -155,8 +155,6 @@ void S9xMainLoop_SA1_SFX(void)
             }
          }
 
-         CHECK_SOUND();
-
          if (CPU.Flags & IRQ_PENDING_FLAG)
          {
             if (CPU.IRQCycleCount == 0)
@@ -241,8 +239,6 @@ void S9xMainLoop_SA1_NoSFX(void)
             }
          }
 
-         CHECK_SOUND();
-
          if (CPU.Flags & IRQ_PENDING_FLAG)
          {
             if (CPU.IRQCycleCount == 0)
@@ -317,8 +313,6 @@ void S9xMainLoop_NoSA1_SFX(void)
                S9xOpcode_NMI();
             }
          }
-
-         CHECK_SOUND();
 
          if (CPU.Flags & IRQ_PENDING_FLAG)
          {
@@ -401,8 +395,6 @@ void S9xMainLoop_NoSA1_NoSFX(void)
                S9xOpcode_NMI();
             }
          }
-
-         CHECK_SOUND();
 
          if (CPU.Flags & IRQ_PENDING_FLAG)
          {
@@ -500,10 +492,8 @@ void S9xDoHBlankProcessing_SFX()
       S9xSuperFXExec();
 
 #ifndef USE_BLARGG_APU
-#ifndef STORM
       if (Settings.SoundSync)
          S9xGenerateSound();
-#endif
 
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)
@@ -683,10 +673,8 @@ void S9xDoHBlankProcessing_NoSFX()
    case HBLANK_END_EVENT:
 
 #ifndef USE_BLARGG_APU
-#ifndef STORM
       if (Settings.SoundSync)
          S9xGenerateSound();
-#endif
 
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)

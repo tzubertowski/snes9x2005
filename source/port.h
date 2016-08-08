@@ -92,13 +92,7 @@
 
 #include <limits.h>
 
-#ifndef STORM
-//#include <memory.h>
 #include <string.h>
-#else
-#include <strings.h>
-#include <clib/powerpc_protos.h>
-#endif
 
 #ifndef ACCEPT_SIZE_T
 #ifdef __WIN32__
@@ -129,7 +123,6 @@
 #define CPU_SHUTDOWN
 #define SPC700_SHUTDOWN
 #define PIXEL_FORMAT RGB555
-#define CHECK_SOUND()
 #define M_PI 3.14159265359
 #undef  _MAX_PATH
 
@@ -166,15 +159,6 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 
 void S9xGenerateSound();
 
-#ifdef STORM
-int soundsignal;
-void MixSound(void);
-/* Yes, CHECK_SOUND is getting defined correctly! */
-#define CHECK_SOUND if (Settings.APUEnabled) if(SetSignalPPC(0L, soundsignal) & soundsignal) MixSound
-#else
-#define CHECK_SOUND()
-#endif
-
 #ifdef __DJGPP
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
@@ -182,13 +166,6 @@ void MixSound(void);
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
 #endif
-
-/* Taken care of in signal.h on Linux.
- * #ifdef __linux
- * typedef void (*SignalHandler)(int);
- * #define SIG_PF SignalHandler
- * #endif
- */
 
 /* If including signal.h, do it before snes9.h and port.h to avoid clashes. */
 #ifndef SIG_PF
@@ -207,24 +184,7 @@ void MixSound(void);
 //#define FAST_LSB_WORD_ACCESS
 #endif
 
-#ifdef __sun
-#define TITLE "Snes9X: Solaris"
-#endif
-
-#ifdef __linux
-#define TITLE "Snes9X: Linux"
-#endif
-
-#ifndef TITLE
-#define TITLE "Snes9x"
-#endif
-
-#ifdef STORM
-#define STATIC
-#define strncasecmp strnicmp
-#else
 #define STATIC static
-#endif
 
 #include <libretro.h>
 
