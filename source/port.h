@@ -93,15 +93,6 @@
 #include <limits.h>
 
 #include <string.h>
-
-#ifndef ACCEPT_SIZE_T
-#ifdef __WIN32__
-#define ACCEPT_SIZE_T int
-#else
-#define ACCEPT_SIZE_T unsigned int
-#endif
-#endif
-
 #include <sys/types.h>
 
 /* #define PIXEL_FORMAT RGB565 */
