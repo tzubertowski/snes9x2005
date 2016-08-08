@@ -215,9 +215,6 @@ typedef struct
    bool  TriedInterleavedMode2;
    uint32_t NMICycleCount;
    uint32_t IRQCycleCount;
-#ifdef DEBUG_MAXCOUNT
-   unsigned long GlobalLoopCount;
-#endif
 } SCPUState;
 
 #define HBLANK_START_EVENT 0
@@ -352,9 +349,6 @@ typedef struct
    int    AIDOShmId;
    bool  NoPatch;
    bool  ForceInterleaveGD24;
-#ifdef DEBUG_MAXCOUNT
-   unsigned int MaxCount;
-#endif
 } SSettings;
 
 typedef struct
