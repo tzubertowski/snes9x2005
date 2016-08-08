@@ -157,7 +157,7 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 #define strncasecmp strnicmp
 #endif
 
-void S9xGenerateSound();
+void S9xGenerateSound(void);
 
 #ifdef __DJGPP
 #define SLASH_STR "/"
@@ -165,11 +165,6 @@ void S9xGenerateSound();
 #else
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
-#endif
-
-/* If including signal.h, do it before snes9.h and port.h to avoid clashes. */
-#ifndef SIG_PF
-#define SIG_PF void(*)(int)
 #endif
 
 #if defined(__i386__) || defined(__i486__) || defined(__i586__) || \
@@ -183,8 +178,6 @@ void S9xGenerateSound();
 //#define MSB_FIRST
 //#define FAST_LSB_WORD_ACCESS
 #endif
-
-#define STATIC static
 
 #include <libretro.h>
 

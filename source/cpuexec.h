@@ -145,7 +145,7 @@ extern SOpcodes S9xOpcodesM0X0 [256];
 
 extern SICPU ICPU;
 
-STATIC inline void S9xUnpackStatus()
+static inline void S9xUnpackStatus()
 {
    ICPU._Zero = (ICPU.Registers.PL & Zero) == 0;
    ICPU._Negative = (ICPU.Registers.PL & Negative);
@@ -153,21 +153,21 @@ STATIC inline void S9xUnpackStatus()
    ICPU._Overflow = (ICPU.Registers.PL & Overflow) >> 6;
 }
 
-STATIC inline void S9xPackStatus()
+static inline void S9xPackStatus()
 {
    ICPU.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
    ICPU.Registers.PL |= ICPU._Carry | ((ICPU._Zero == 0) << 1) |
                         (ICPU._Negative & 0x80) | (ICPU._Overflow << 6);
 }
 
-STATIC inline void CLEAR_IRQ_SOURCE(uint32_t M)
+static inline void CLEAR_IRQ_SOURCE(uint32_t M)
 {
    CPU.IRQActive &= ~M;
    if (!CPU.IRQActive)
       CPU.Flags &= ~IRQ_PENDING_FLAG;
 }
 
-STATIC inline void S9xFixCycles()
+static inline void S9xFixCycles()
 {
    if (CheckEmulation())
       ICPU.S9xOpcodes = S9xOpcodesE1;
@@ -187,7 +187,7 @@ STATIC inline void S9xFixCycles()
    }
 }
 
-STATIC inline void S9xReschedule()
+static inline void S9xReschedule()
 {
    uint8_t which;
    long max;

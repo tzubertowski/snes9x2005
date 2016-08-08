@@ -134,14 +134,14 @@ typedef struct
 SAPU APU;
 SIAPU IAPU;
 
-STATIC inline void S9xAPUUnpackStatus()
+static inline void S9xAPUUnpackStatus(void)
 {
    IAPU._Zero = ((IAPU.Registers.P & Zero) == 0) | (IAPU.Registers.P & Negative);
    IAPU._Carry = (IAPU.Registers.P & Carry);
    IAPU._Overflow = (IAPU.Registers.P & Overflow) >> 6;
 }
 
-STATIC inline void S9xAPUPackStatus()
+static inline void S9xAPUPackStatus(void)
 {
    IAPU.Registers.P &= ~(Zero | Negative | Carry | Overflow);
    IAPU.Registers.P |= IAPU._Carry | ((IAPU._Zero == 0) << 1) |

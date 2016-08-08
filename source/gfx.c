@@ -3114,7 +3114,7 @@ static void DrawBGMode7Background16Sub1_2(uint8_t* Screen, int bg)
         } \
     }
 
-STATIC uint32_t Q_INTERPOLATE(uint32_t A, uint32_t B, uint32_t C, uint32_t D)
+static uint32_t Q_INTERPOLATE(uint32_t A, uint32_t B, uint32_t C, uint32_t D)
 {
    register uint32_t x = ((A >> 2) & HIGH_BITS_SHIFTED_TWO_MASK) +
                        ((B >> 2) & HIGH_BITS_SHIFTED_TWO_MASK) +

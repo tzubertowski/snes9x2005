@@ -181,7 +181,7 @@ void S9xSetEightBitConsoleSound(bool Enabled)
    }
 }
 
-STATIC inline uint8_t* S9xGetSampleAddress(int sample_number)
+static inline uint8_t* S9xGetSampleAddress(int sample_number)
 {
    uint32_t addr = (((APU.DSP[APU_DIR] << 8) + (sample_number << 2)) & 0xffff);
    return (IAPU.RAM + addr);
