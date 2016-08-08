@@ -113,27 +113,6 @@
 // The above is used to disable the 16-bit graphics mode checks sprinkled
 // throughout the code, if the pixel format is always 16-bit.
 
-#if defined(TARGET_OS_MAC) && TARGET_OS_MAC
-
-#include "zlib.h"
-#define ZLIB
-#define EXECUTE_SUPERFX_PER_LINE
-#define SOUND
-#define VAR_CYCLES
-#define CPU_SHUTDOWN
-#define SPC700_SHUTDOWN
-#define PIXEL_FORMAT RGB555
-#define M_PI 3.14159265359
-#undef  _MAX_PATH
-
-#undef DEBUGGER /* Apple Universal Headers sometimes #define DEBUGGER */
-
-int    strncasecmp(const char* s1, const char* s2, unsigned n);
-int    strcasecmp(const char* s1, const char* s2);
-
-#endif /* TARGET_OS_MAC */
-
-
 #include "pixform.h"
 
 #ifndef __WIN32__
