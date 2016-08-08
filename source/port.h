@@ -138,13 +138,8 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 
 void S9xGenerateSound(void);
 
-#ifdef __DJGPP
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
-#else
-#define SLASH_STR "/"
-#define SLASH_CHAR '/'
-#endif
 
 #if defined(__i386__) || defined(__i486__) || defined(__i586__) || \
     defined(__WIN32__) || defined(__alpha__)

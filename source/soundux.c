@@ -88,11 +88,6 @@
 *******************************************************************************/
 #ifndef USE_BLARGG_APU
 
-#ifdef __DJGPP__
-#include <allegro.h>
-#undef true
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -196,17 +191,11 @@ void S9xAPUSetEndOfSample(int i, Channel* ch)
    APU.DSP [APU_KOFF] &= ~(1 << i);
    APU.KeyedChannels &= ~(1 << i);
 }
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xAPUSetEndOfSample)
-#endif
 
 void S9xAPUSetEndX(int ch)
 {
    APU.DSP [APU_ENDX] |= 1 << ch;
 }
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xAPUSetEndX)
-#endif
 
 void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target)
 {
@@ -244,9 +233,6 @@ void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target)
    }
 }
 
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xSetEnvRate);
-#endif
 
 void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction,
                         int target)
@@ -254,9 +240,6 @@ void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction,
    S9xSetEnvRate(&SoundData.channels [channel], rate, direction, target);
 }
 
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xSetEnvelopeRate);
-#endif
 
 void S9xSetSoundVolume(int channel, int16_t volume_left, int16_t volume_right)
 {
@@ -1074,22 +1057,11 @@ stereo_exit:
    }
 }
 
-#ifdef __DJGPP
-END_OF_FUNCTION(MixStereo);
-#endif
-
-#ifdef __sun
-extern uint8_t int2ulaw(int);
-#endif
-
 // For backwards compatibility with older port specific code
 void S9xMixSamplesO(uint8_t* buffer, int sample_count, int byte_offset)
 {
    S9xMixSamples(buffer + byte_offset, sample_count);
 }
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xMixSamplesO);
-#endif
 
 void S9xMixSamples(uint8_t* buffer, int sample_count)
 {
@@ -1183,10 +1155,6 @@ void S9xMixSamples(uint8_t* buffer, int sample_count)
    }
 
 }
-
-#ifdef __DJGPP
-END_OF_FUNCTION(S9xMixSamples);
-#endif
 
 void S9xResetSound(bool full)
 {

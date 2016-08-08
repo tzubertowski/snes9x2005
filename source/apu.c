@@ -89,11 +89,6 @@
 
 #ifndef USE_BLARGG_APU
 
-#ifdef __DJGPP
-#include <allegro.h>
-#undef true
-#endif
-
 #include "snes9x.h"
 #include "spc700.h"
 #include "apu.h"
