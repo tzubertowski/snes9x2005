@@ -175,15 +175,6 @@ void S9xInitDisplay(void)
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
 }
 
-const char* S9xBasename(const char* f)
-{
-   const char* p;
-   if ((p = strrchr(f, '/')) != NULL || (p = strrchr(f, '\\')) != NULL)
-      return (p + 1);
-
-   return (f);
-}
-
 bool S9xInitUpdate()
 {
    //   IPPU.RenderThisFrame = 0;

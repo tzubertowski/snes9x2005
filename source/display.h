@@ -91,33 +91,18 @@
 #define _DISPLAY_H_
 
 // Routines the port specific code has to implement
-void S9xTextMode();
-void S9xGraphicsMode();
-char* S9xParseArgs(char** argv, int argc);
 uint32_t S9xReadJoypad(int port);
 bool S9xReadMousePosition(int which1_0_to_1, int* x, int* y, uint32_t* buttons);
 bool S9xReadSuperScopePosition(int* x, int* y, uint32_t* buttons);
 
-void S9xUsage();
 void S9xInitDisplay(void);
 void S9xDeinitDisplay();
-void S9xSetTitle(const char* title);
 void S9xPutImage(int width, int height);
 void S9xToggleSoundChannel(int channel);
 void S9xSetInfoString(const char* string);
-int S9xMinCommandLineArgs();
 void S9xNextController();
 bool S9xLoadROMImage(const char* string);
-const char* S9xSelectFilename(const char* def, const char* dir,
-                              const char* ext, const char* title);
 
-const char* S9xChooseFilename(bool read_only);
-
-const char* S9xBasename(const char* filename);
-
-int S9xFStrcmp(FILE*, const char*);
-const char* S9xGetHomeDirectory();
-const char* S9xGetSRAMFilename();
 const char* S9xGetFilename(const char* extension);
 
 #endif
