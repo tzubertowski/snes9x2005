@@ -153,7 +153,7 @@ static int check_char(unsigned c)
 }
 
 void S9xDeinterleaveType2(bool reset);
-uint32_t caCRC32(uint8_t* array, uint32_t size, register uint32_t crc32);
+uint32_t caCRC32(uint8_t* array, uint32_t size, uint32_t crc32);
 
 extern char* rom_filename;
 
@@ -1265,9 +1265,9 @@ void S9xDeinterleaveType2(bool reset)
 }
 
 //CRC32 for char arrays
-uint32_t caCRC32(uint8_t* array, uint32_t size, register uint32_t crc32)
+uint32_t caCRC32(uint8_t* array, uint32_t size, uint32_t crc32)
 {
-   register uint32_t i;
+   uint32_t i;
    for (i = 0; i < size; i++)
       crc32 = ((crc32 >> 8) & 0x00FFFFFF) ^ crc32Table[(crc32 ^ array[i]) & 0xFF];
    return ~crc32;

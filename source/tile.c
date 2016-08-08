@@ -99,7 +99,7 @@ extern uint32_t TailMask [5];
 
 static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
 {
-   register uint8_t* tp = &Memory.VRAM[TileAddr];
+   uint8_t* tp = &Memory.VRAM[TileAddr];
    uint32_t* p = (uint32_t*) pCache;
    uint32_t non_zero = 0;
    uint8_t line;
@@ -111,7 +111,7 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
       {
          uint32_t p1 = 0;
          uint32_t p2 = 0;
-         register uint8_t pix;
+         uint8_t pix;
 
          if ((pix = *(tp + 0)))
          {
@@ -164,7 +164,7 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
       {
          uint32_t p1 = 0;
          uint32_t p2 = 0;
-         register uint8_t pix;
+         uint8_t pix;
          if ((pix = *(tp + 0)))
          {
             p1 |= odd_high[0][pix >> 4];
@@ -196,7 +196,7 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
       {
          uint32_t p1 = 0;
          uint32_t p2 = 0;
-         register uint8_t pix;
+         uint8_t pix;
          if ((pix = *(tp + 0)))
          {
             p1 |= odd_high[0][pix >> 4];
@@ -360,7 +360,7 @@ void DrawTile16(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                 uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4)
 }
@@ -370,7 +370,7 @@ void DrawClippedTile16(uint32_t Tile, int32_t Offset,
                        uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4)
@@ -380,7 +380,7 @@ void DrawTile16HalfWidth(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                          uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_HALFWIDTH, WRITE_4PIXELS16_FLIPPED_HALFWIDTH, 2)
 }
@@ -390,7 +390,7 @@ void DrawClippedTile16HalfWidth(uint32_t Tile, int32_t Offset,
                                 uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_HALFWIDTH,
@@ -401,7 +401,7 @@ void DrawTile16x2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                   uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8)
 }
@@ -411,7 +411,7 @@ void DrawClippedTile16x2(uint32_t Tile, int32_t Offset,
                          uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8)
@@ -421,7 +421,7 @@ void DrawTile16x2x2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                     uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8)
 }
@@ -431,7 +431,7 @@ void DrawClippedTile16x2x2(uint32_t Tile, int32_t Offset,
                            uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8)
@@ -443,7 +443,7 @@ void DrawLargePixel16(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.DB + Offset;
    uint16_t pixel;
 
@@ -456,7 +456,7 @@ void DrawLargePixel16HalfWidth(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.DB + Offset;
    uint16_t pixel;
 
@@ -706,7 +706,7 @@ void DrawTile16Add(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                    uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
    uint8_t  Pixel;
    uint16_t* Screen = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.ZBuffer + Offset;
@@ -832,7 +832,7 @@ void DrawClippedTile16Add(uint32_t Tile, int32_t Offset,
                           uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADD, WRITE_4PIXELS16_FLIPPED_ADD, 4)
@@ -842,7 +842,7 @@ void DrawTile16Add1_2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                       uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_ADD1_2, WRITE_4PIXELS16_FLIPPED_ADD1_2, 4)
 }
@@ -852,7 +852,7 @@ void DrawClippedTile16Add1_2(uint32_t Tile, int32_t Offset,
                              uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADD1_2, WRITE_4PIXELS16_FLIPPED_ADD1_2, 4)
@@ -862,7 +862,7 @@ void DrawTile16Sub(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                    uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_SUB, WRITE_4PIXELS16_FLIPPED_SUB, 4)
 }
@@ -872,7 +872,7 @@ void DrawClippedTile16Sub(uint32_t Tile, int32_t Offset,
                           uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUB, WRITE_4PIXELS16_FLIPPED_SUB, 4)
@@ -882,7 +882,7 @@ void DrawTile16Sub1_2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                       uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_SUB1_2, WRITE_4PIXELS16_FLIPPED_SUB1_2, 4)
 }
@@ -892,7 +892,7 @@ void DrawClippedTile16Sub1_2(uint32_t Tile, int32_t Offset,
                              uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUB1_2, WRITE_4PIXELS16_FLIPPED_SUB1_2, 4)
@@ -982,7 +982,7 @@ void DrawTile16FixedAdd1_2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                            uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_ADDF1_2, WRITE_4PIXELS16_FLIPPED_ADDF1_2, 4)
 }
@@ -992,7 +992,7 @@ void DrawClippedTile16FixedAdd1_2(uint32_t Tile, int32_t Offset,
                                   uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_ADDF1_2,
@@ -1003,7 +1003,7 @@ void DrawTile16FixedSub1_2(uint32_t Tile, int32_t Offset, uint32_t StartLine,
                            uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    RENDER_TILE(WRITE_4PIXELS16_SUBF1_2, WRITE_4PIXELS16_FLIPPED_SUBF1_2, 4)
 }
@@ -1013,7 +1013,7 @@ void DrawClippedTile16FixedSub1_2(uint32_t Tile, int32_t Offset,
                                   uint32_t StartLine, uint32_t LineCount)
 {
    TILE_PREAMBLE
-   register uint8_t* bp;
+   uint8_t* bp;
 
    TILE_CLIP_PREAMBLE
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_SUBF1_2,
@@ -1026,7 +1026,7 @@ void DrawLargePixel16Add(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.ZBuffer + Offset;
    uint16_t pixel;
 
@@ -1045,7 +1045,7 @@ void DrawLargePixel16Add1_2(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.ZBuffer + Offset;
    uint16_t pixel;
 
@@ -1064,7 +1064,7 @@ void DrawLargePixel16Sub(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.ZBuffer + Offset;
    uint16_t pixel;
 
@@ -1083,7 +1083,7 @@ void DrawLargePixel16Sub1_2(uint32_t Tile, int32_t Offset,
 {
    TILE_PREAMBLE
 
-   register uint16_t* sp = (uint16_t*) GFX.S + Offset;
+   uint16_t* sp = (uint16_t*) GFX.S + Offset;
    uint8_t*  Depth = GFX.ZBuffer + Offset;
    uint16_t pixel;
 
