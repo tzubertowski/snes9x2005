@@ -258,7 +258,6 @@ const char* S9xGetFilename(const char* ex)
 
 void GetBaseName(const char* ex)
 {
-   static char filename [PATH_MAX + 1];
    char drive [_MAX_DRIVE + 1];
    char dir [_MAX_DIR + 1];
    char fname [_MAX_FNAME + 1];
@@ -942,7 +941,7 @@ void retro_unload_game(void)
 
 void* retro_get_memory_data(unsigned type)
 {
-   uint8_t* data;
+   uint8_t* data = NULL;
 
    switch(type)
    {
@@ -964,7 +963,6 @@ void* retro_get_memory_data(unsigned type)
       //   data = Memory.ROM;
       //   break;
       default:
-         data = NULL;
          break;
    }
 

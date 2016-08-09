@@ -102,8 +102,6 @@
 
 void output_png();
 void ComputeClipWindows();
-static void S9xDisplayFrameRate();
-static void S9xDisplayString(const char* string);
 
 extern uint8_t BitShifts[8][4];
 extern uint8_t TileShifts[8][4];
@@ -3407,51 +3405,7 @@ void DisplayChar(uint8_t* Screen, uint8_t c)
    }
 }
 
-static void S9xDisplayFrameRate()
-{
-   uint8_t* Screen = GFX.Screen + 2 +
-                   (IPPU.RenderedScreenHeight - font_height - 1) * GFX.Pitch2;
-   char string [10];
-   int len = 5;
-
-   sprintf(string, "%02d/%02d", IPPU.DisplayedRenderedFrameCount,
-           (int) Memory.ROMFramesPerSecond);
-
-   int i;
-   for (i = 0; i < len; i++)
-   {
-      DisplayChar(Screen, string [i]);
-      Screen += (font_width - 1) * sizeof(uint16_t);
-   }
-}
-
-static void S9xDisplayString(const char* string)
-{
-   uint8_t* Screen = GFX.Screen + 2 +
-                   (IPPU.RenderedScreenHeight - font_height * 5) * GFX.Pitch2;
-   int len = strlen(string);
-   int max_chars = IPPU.RenderedScreenWidth / (font_width - 1);
-   int char_count = 0;
-   int i;
-
-   for (i = 0; i < len; i++, char_count++)
-   {
-      if (char_count >= max_chars || string [i] < 32)
-      {
-         Screen -= (font_width - 1) * max_chars * sizeof(uint16_t);
-         Screen += font_height * GFX.Pitch;
-         if (Screen >= GFX.Screen + GFX.Pitch * IPPU.RenderedScreenHeight)
-            break;
-         char_count -= max_chars;
-      }
-      if (string [i] < 32)
-         continue;
-      DisplayChar(Screen, string [i]);
-      Screen += (font_width - 1) * sizeof(uint16_t);
-   }
-}
-
-void S9xUpdateScreen()
+void S9xUpdateScreen(void)
 {
    int32_t x2 = 1;
 
