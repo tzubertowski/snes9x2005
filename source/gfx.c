@@ -100,7 +100,6 @@
 #define M7 19
 #define M8 19
 
-void output_png();
 void ComputeClipWindows();
 
 extern uint8_t BitShifts[8][4];
