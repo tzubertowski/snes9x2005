@@ -49,17 +49,13 @@ ifeq ($(platform), unix)
    SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 
    CFLAGS += -fno-builtin \
-            -fno-exceptions -ffunction-sections \
-             -fomit-frame-pointer -fgcse-sm -fgcse-las -fgcse-after-reload \
-             -fweb -fpeel-loops
+            -fno-exceptions -ffunction-sections
 else ifeq ($(platform), linux-portable)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC -nostdlib
    SHARED := -shared -Wl,--version-script=link.T
    CFLAGS += -fno-builtin \
-            -fno-exceptions -ffunction-sections \
-             -fomit-frame-pointer -fgcse-sm -fgcse-las -fgcse-after-reload \
-             -fweb -fpeel-loops
+            -fno-exceptions -ffunction-sections
 	LIBM   :=
 else ifeq ($(platform), osx)
    TARGET := $(TARGET_NAME)_libretro.dylib
@@ -149,9 +145,7 @@ else ifeq ($(platform), psp1)
 	LOAD_FROM_MEMORY_TEST = 0
 	FLAGS += -G0 
    CFLAGS += -march=allegrex -mno-abicalls -fno-pic -fno-builtin \
-		-fno-exceptions -ffunction-sections -mno-long-calls \
-		-fomit-frame-pointer -fgcse-sm -fgcse-las -fgcse-after-reload \
-		-fweb -fpeel-loops
+				 -fno-exceptions -ffunction-sections
 	DEFS   +=  -DPSP -D_PSP_FW_VERSION=371
    STATIC_LINKING := 1
 
