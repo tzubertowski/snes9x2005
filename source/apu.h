@@ -160,7 +160,7 @@ void S9xSetAPUControl(uint8_t byte);
 void S9xSetAPUDSP(uint8_t byte);
 uint8_t S9xGetAPUDSP();
 void S9xSetAPUTimer(uint16_t Address, uint8_t byte);
-bool S9xInitSound(int quality, bool stereo, int buffer_size);
+bool S9xInitSound();
 void S9xOpenCloseSoundTracingFile(bool);
 void S9xPrintAPUState();
 extern uint16_t S9xAPUCycles [256];   // Scaled cycle lengths

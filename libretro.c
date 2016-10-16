@@ -443,9 +443,7 @@ void retro_init(void)
    
    S9xSetSamplesAvailableCallback(S9xAudioCallback);
 #else
-   S9xInitSound(Settings.SoundPlaybackRate,
-                true,
-                Settings.SoundBufferSize);
+   S9xInitSound();
 #endif
    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
 

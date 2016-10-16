@@ -1238,7 +1238,7 @@ void S9xSetPlaybackRate(uint32_t playback_rate)
       S9xSetSoundFrequency(i, SoundData.channels [i].hertz);
 }
 
-bool S9xInitSound(int mode, bool stereo, int buffer_size)
+bool S9xInitSound()
 {
    so.sound_fd = -1;
    so.sound_switch = 255;
@@ -1246,9 +1246,6 @@ bool S9xInitSound(int mode, bool stereo, int buffer_size)
    so.playback_rate = 0;
    so.buffer_size = 0;
    so.encoded = false;
-
-   if (!(mode & 7))
-      return (1);
 
    return (1);
 }
