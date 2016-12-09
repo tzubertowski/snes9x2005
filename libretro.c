@@ -696,7 +696,10 @@ void retro_get_system_info(struct retro_system_info* info)
    info->need_fullpath    = true;
 #endif
    info->valid_extensions = "smc|fig|sfc|gd3|gd7|dx2|bsx|swc";
-   info->library_version  = "v1.36";
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+   info->library_version  = "v1.36" GIT_VERSION;
 #ifdef USE_BLARGG_APU
    info->library_name     = "Snes9x 2005 Plus";
 #else
