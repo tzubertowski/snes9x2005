@@ -39,6 +39,10 @@ TARGET_NAME := snes9x2005_plus
 else
 TARGET_NAME := snes9x2005
 endif
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
 
 DEFS        :=
 LIBM        := -lm
