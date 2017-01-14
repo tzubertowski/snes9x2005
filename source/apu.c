@@ -274,7 +274,7 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_P_LOW + 0x60:
    case APU_P_LOW + 0x70:
       S9xSetSoundHertz(reg >> 4,
-                       ((byte + (APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) * 8);
+                       (((byte + (APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) * 32000) >> 12);
       break;
 
    case APU_P_HIGH + 0x00:
@@ -297,8 +297,6 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_SRCN + 0x50:
    case APU_SRCN + 0x60:
    case APU_SRCN + 0x70:
-      if (byte != APU.DSP [reg])
-         S9xSetSoundSample(reg >> 4, byte);
       break;
 
    case APU_ADSR1 + 0x00:
@@ -621,7 +619,7 @@ uint8_t S9xGetAPUDSP()
    case APU_ENVX + 0x50:
    case APU_ENVX + 0x60:
    case APU_ENVX + 0x70:
-      return ((uint8_t) S9xGetEnvelopeHeight(reg >> 4));
+      return 0;
 
    case APU_ENDX:
       break;
