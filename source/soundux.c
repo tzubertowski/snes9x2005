@@ -74,7 +74,6 @@ void DecodeBlockAsm2(int8_t*, int16_t*, int32_t*, int32_t*);
 // F is channel's current frequency and M is the 16-bit modulation waveform
 // from the previous channel multiplied by the current envelope volume level.
 #define PITCH_MOD(F,M) ((F) * ((((uint32_t) (M)) + 0x800000) >> 16) >> 7)
-//#define PITCH_MOD(F,M) ((F) * ((((M) & 0x7fffff) >> 14) + 1) >> 8)
 
 #define LAST_SAMPLE 0xffffff
 #define JUST_PLAYED_LAST_SAMPLE(c) ((c)->sample_pointer >= LAST_SAMPLE)
@@ -417,7 +416,6 @@ void DecodeBlock(Channel* ch)
       uint8_t interim_byte = 0;
 
       compressed++;
-      int16_t* raw = ch->block = ch->decoded;
 
       // Seperate out the header parts used for decoding
 
@@ -988,8 +986,6 @@ void S9xMixSamples(uint8_t* buffer, int sample_count)
    MixStereo(sample_count);
 
    /* Mix and convert waveforms */
-   int byte_count = sample_count << 1;
-
    if (SoundData.echo_enable && SoundData.echo_buffer_size)
    {
       // 16-bit stereo sound with echo enabled ...

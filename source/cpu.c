@@ -21,7 +21,7 @@ extern struct FxInit_s SuperFX;
 
 void S9xResetSuperFX()
 {
-   SuperFX.vFlags = 0; //FX_FLAG_ROM_BUFFER;// | FX_FLAG_ADDRESS_CHECKING;
+   SuperFX.vFlags = 0;
    FxReset(&SuperFX);
 }
 
@@ -62,9 +62,7 @@ void S9xResetCPU()
    CPU.FastROMSpeed = SLOW_ONE_CYCLE;
    CPU.AutoSaveTimer = 0;
    CPU.SRAMModified = false;
-   // CPU.NMITriggerPoint = 4; // Set when ROM image loaded
    CPU.BRKTriggered = false;
-   //CPU.TriedInterleavedMode2 = false; // Reset when ROM image loaded
    CPU.NMICycleCount = 0;
    CPU.IRQCycleCount = 0;
    S9xSetPCBase(ICPU.Registers.PC);
@@ -113,7 +111,6 @@ void S9xSoftReset(void)
 
    memset(Memory.FillRAM, 0, 0x8000);
    memset(Memory.VRAM, 0x00, 0x10000);
-   //   memset (Memory.RAM, 0x55, 0x20000);
 
    if (Settings.SPC7110)
       S9xSpc7110Reset();

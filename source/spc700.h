@@ -73,11 +73,9 @@ typedef struct
 } SAPURegisters;
 
 // Needed by ILLUSION OF GAIA
-//#define ONE_APU_CYCLE 14
 #define ONE_APU_CYCLE 21
 
 // Needed by all games written by the software company called Human
-//#define ONE_APU_CYCLE_HUMAN 17
 #define ONE_APU_CYCLE_HUMAN 21
 
 // 1.953us := 1.024065.54MHz

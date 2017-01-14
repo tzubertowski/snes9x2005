@@ -13,7 +13,6 @@ typedef enum
 } AccessMode;
 
 // The type for a function that can run after the addressing mode is resolved:
-// void NAME (long Addr) {...}
 typedef void (*InternalOp)(long);
 
 static void Immediate8(AccessMode a, InternalOp op)
@@ -136,7 +135,6 @@ static void Direct(AccessMode a, InternalOp op)
 {
    if (a & READ) OpenBus = *CPU.PC;
    long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-   //    if (ICPU.Registers.DL != 0) CPU.Cycles += ONE_CYCLE;
    (*op)(Addr);
 }
 
@@ -149,7 +147,6 @@ static void DirectIndirectIndexed(AccessMode a, InternalOp op)
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
    Addr += ICPU.ShiftedDB + ICPU.Registers.Y.W;
 
-   //    if (ICPU.Registers.DL != 0) CPU.Cycles += ONE_CYCLE;
    // XXX: always add one if STA
    // XXX: else Add one cycle if crosses page boundary
    (*op)(Addr);
@@ -165,7 +162,6 @@ static void DirectIndirectIndexedLong(AccessMode a, InternalOp op)
              ICPU.Registers.Y.W;
    else
       Addr = S9xGetWord(Addr) + (S9xGetByte(Addr + 2) << 16) + ICPU.Registers.Y.W;
-   //    if (ICPU.Registers.DL != 0) CPU.Cycles += ONE_CYCLE;
    (*op)(Addr);
 }
 
@@ -257,8 +253,6 @@ static void DirectIndirect(AccessMode a, InternalOp op)
    Addr = S9xGetWord(Addr);
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
    Addr += ICPU.ShiftedDB;
-
-   //    if (ICPU.Registers.DL != 0) CPU.Cycles += ONE_CYCLE;
    (*op)(Addr);
 }
 
@@ -270,7 +264,6 @@ static void DirectIndirectLong(AccessMode a, InternalOp op)
       Addr = S9xGetWord(Addr) + ((OpenBus = S9xGetByte(Addr + 2)) << 16);
    else
       Addr = S9xGetWord(Addr) + (S9xGetByte(Addr + 2) << 16);
-   //    if (ICPU.Registers.DL != 0) CPU.Cycles += ONE_CYCLE;
    (*op)(Addr);
 }
 

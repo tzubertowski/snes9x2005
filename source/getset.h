@@ -50,7 +50,6 @@ INLINE uint8_t S9xGetByte(uint32_t Address)
       //unbound & SRAMMask = Sram offset
       return (*(Memory.SRAM + ((((Address & 0xFF0000) >> 1) |
                                 (Address & 0x7FFF)) &Memory.SRAMMask)));
-   //    return (*(Memory.SRAM + ((Address & Memory.SRAMMask))));
 
    case MAP_RONLY_SRAM:
    case MAP_HIROM_SRAM:
@@ -152,9 +151,6 @@ INLINE uint16_t S9xGetWord(uint32_t Address)
                            &Memory.SRAMMask))) |
          ((*(Memory.SRAM + (((((Address + 1) & 0xFF0000) >> 1) | ((
                                 Address + 1) & 0x7FFF)) &Memory.SRAMMask))) << 8);
-
-   //return (*(uint16_t*)(Memory.SRAM + ((((Address&0xFF0000)>>1)|(Address&0x7FFF)) & Memory.SRAMMask));// |
-   //    (*(Memory.SRAM + ((Address + 1) & Memory.SRAMMask)) << 8));
 
    case MAP_RONLY_SRAM:
    case MAP_HIROM_SRAM:
@@ -261,7 +257,6 @@ INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
       {
          *(Memory.SRAM + ((((Address & 0xFF0000) >> 1) | (Address & 0x7FFF))&
                           Memory.SRAMMask)) = Byte;
-         //       *(Memory.SRAM + (Address & Memory.SRAMMask)) = Byte;
          CPU.SRAMModified = true;
       }
       return;
@@ -395,8 +390,6 @@ INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
          *(Memory.SRAM + (((((Address + 1) & 0xFF0000) >> 1) | ((
                               Address + 1) & 0x7FFF))& Memory.SRAMMask)) = Word >> 8;
 
-         //       *(Memory.SRAM + (Address & Memory.SRAMMask)) = (uint8_t) Word;
-         //       *(Memory.SRAM + ((Address + 1) & Memory.SRAMMask)) = Word >> 8;
          CPU.SRAMModified = true;
       }
       return;
@@ -488,11 +481,9 @@ INLINE uint8_t* GetBasePointer(uint32_t Address)
    case MAP_PPU:
       //just a guess, but it looks like this should match the CPU as a source.
       return (Memory.FillRAM);
-   //    return (Memory.FillRAM - 0x2000);
    case MAP_CPU:
       //fixes Ogre Battle's green lines
       return (Memory.FillRAM);
-   //    return (Memory.FillRAM - 0x4000);
    case MAP_DSP:
       return (Memory.FillRAM - 0x6000);
    case MAP_SA1RAM:

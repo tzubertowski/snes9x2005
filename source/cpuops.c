@@ -58,10 +58,6 @@ static void Op75M1(void)
    DirectIndexedX(READ, ADC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -70,10 +66,6 @@ static void Op75M0(void)
    DirectIndexedX(READ, ADC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -316,10 +308,6 @@ static void Op35M1(void)
    DirectIndexedX(READ, AND8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -328,10 +316,6 @@ static void Op35M0(void)
    DirectIndexedX(READ, AND16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -647,10 +631,6 @@ static void Op34M1(void)
    DirectIndexedX(READ, BIT8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -659,10 +639,6 @@ static void Op34M0(void)
    DirectIndexedX(READ, BIT16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -748,10 +724,6 @@ static void OpD5M1(void)
    DirectIndexedX(READ, CMP8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -760,10 +732,6 @@ static void OpD5M0(void)
    DirectIndexedX(READ, CMP16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1117,10 +1085,6 @@ static void OpD6M1(void)
    DirectIndexedX(MODIFY, DEC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1129,10 +1093,6 @@ static void OpD6M0(void)
    DirectIndexedX(MODIFY, DEC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1215,10 +1175,6 @@ static void Op55M1(void)
    DirectIndexedX(READ, EOR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1227,10 +1183,6 @@ static void Op55M0(void)
    DirectIndexedX(READ, EOR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1460,10 +1412,6 @@ static void OpF6M1(void)
    DirectIndexedX(MODIFY, INC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1472,10 +1420,6 @@ static void OpF6M0(void)
    DirectIndexedX(MODIFY, INC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1558,10 +1502,6 @@ static void OpB5M1(void)
    DirectIndexedX(READ, LDA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1570,10 +1510,6 @@ static void OpB5M0(void)
    DirectIndexedX(READ, LDA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1816,10 +1752,6 @@ static void OpB6X1(void)
    DirectIndexedY(READ, LDX8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1828,10 +1760,6 @@ static void OpB6X0(void)
    DirectIndexedY(READ, LDX16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1914,10 +1842,6 @@ static void OpB4X1(void)
    DirectIndexedX(READ, LDY8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1926,10 +1850,6 @@ static void OpB4X0(void)
    DirectIndexedX(READ, LDY16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1998,10 +1918,6 @@ static void Op56M1(void)
    DirectIndexedX(MODIFY, LSR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2010,10 +1926,6 @@ static void Op56M0(void)
    DirectIndexedX(MODIFY, LSR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2096,10 +2008,6 @@ static void Op15M1(void)
    DirectIndexedX(READ, ORA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2108,10 +2016,6 @@ static void Op15M0(void)
    DirectIndexedX(READ, ORA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2341,10 +2245,6 @@ static void Op36M1(void)
    DirectIndexedX(MODIFY, ROL8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2353,10 +2253,6 @@ static void Op36M0(void)
    DirectIndexedX(MODIFY, ROL16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2425,10 +2321,6 @@ static void Op76M1(void)
    DirectIndexedX(MODIFY, ROR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2437,10 +2329,6 @@ static void Op76M0(void)
    DirectIndexedX(MODIFY, ROR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2509,10 +2397,6 @@ static void OpF5M1(void)
    DirectIndexedX(READ, SBC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2521,10 +2405,6 @@ static void OpF5M0(void)
    DirectIndexedX(READ, SBC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2743,10 +2623,6 @@ static void Op95M1(void)
    DirectIndexedX(WRITE, STA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2755,10 +2631,6 @@ static void Op95M0(void)
    DirectIndexedX(WRITE, STA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2985,10 +2857,6 @@ static void Op96X1(void)
    DirectIndexedY(WRITE, STX8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2997,10 +2865,6 @@ static void Op96X0(void)
    DirectIndexedY(WRITE, STX16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3043,10 +2907,6 @@ static void Op94X1(void)
    DirectIndexedX(WRITE, STY8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3055,10 +2915,6 @@ static void Op94X0(void)
    DirectIndexedX(WRITE, STY16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3101,10 +2957,6 @@ static void Op74M1(void)
    DirectIndexedX(WRITE, STZ8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3113,10 +2965,6 @@ static void Op74M0(void)
    DirectIndexedX(WRITE, STZ16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3294,8 +3142,6 @@ static inline void CPUShutdown()
             !(CPU.Flags & (IRQ_PENDING_FLAG | NMI_FLAG)))
       {
          CPU.WaitAddress = NULL;
-         if (Settings.SA1)
-            S9xSA1ExecuteDuringSleep();
 #ifndef USE_BLARGG_APU
          CPU.Cycles = CPU.NextEvent;
          if (IAPU.APUExecuting)
@@ -3341,8 +3187,6 @@ static inline void ForceShutdown()
 #ifdef CPU_SHUTDOWN
 #ifndef SA1_OPCODES
    CPU.WaitAddress = NULL;
-   if (Settings.SA1)
-      S9xSA1ExecuteDuringSleep ();
    CPU.Cycles = CPU.NextEvent;
    if (IAPU.APUExecuting)
    {
@@ -3683,10 +3527,7 @@ static void OpEA(void)
 /**********************************************************************************************/
 
 /* PUSH Instructions ************************************************************************* */
-/* #define PushW(w) \
- *    S9xSetWord (w, ICPU.Registers.S.W - 1);\
- *    ICPU.Registers.S.W -= 2;
- */
+
 #define PushB(b)\
     S9xSetByte (b, ICPU.Registers.S.W--);
 
@@ -3919,10 +3760,6 @@ static void Op5AX0(void)
    w = S9xGetByte (++ICPU.Registers.S.W); \
    w |= (S9xGetByte (++ICPU.Registers.S.W)<<8);
 
-/* w = S9xGetWord (ICPU.Registers.S.W + 1); \
-   ICPU.Registers.S.W += 2;
-*/
-
 #define PullB(b)\
    b = S9xGetByte (++ICPU.Registers.S.W);
 
@@ -4027,7 +3864,6 @@ static void Op28E1(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*     CHECK_FOR_IRQ();*/
 }
 
 static void Op28(void)
@@ -4044,7 +3880,6 @@ static void Op28(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*     CHECK_FOR_IRQ();*/
 }
 
 //PLX
@@ -4802,7 +4637,6 @@ static void OpC2(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*    CHECK_FOR_IRQ(); */
 }
 
 static void OpE2(void)
@@ -4871,7 +4705,6 @@ static void Op40(void)
    CPU.Cycles += TWO_CYCLES;
 #endif
    S9xFixCycles();
-   /*    CHECK_FOR_IRQ(); */
 }
 
 /**********************************************************************************************/
@@ -4880,39 +4713,10 @@ static void Op40(void)
 // WAI
 static void OpCB(void)
 {
-
-   // Ok, let's just C-ify the ASM versions separately.
 #ifdef SA1_OPCODES
    SA1.WaitingForInterrupt = true;
    SA1.PC--;
-#if 0
-   // XXX: FIXME
-   if (Settings.Shutdown)
-   {
-      SA1.Cycles = SA1.NextEvent;
-      if (IAPU.APUExecuting)
-      {
-         SA1.Executing = false;
-         do
-         {
-            APU_EXECUTE1(,
-         }
-         while (APU.Cycles < SA1.NextEvent,         SA1.Executing = true;
-      }
-}
-#endif
 #else // SA1_OPCODES
-#if 0
-
-
-   if (CPU.IRQActive)
-   {
-#ifndef SA1_OPCODES
-      CPU.Cycles += TWO_CYCLES;
-#endif
-   }
-   else
-#endif
    {
       CPU.WaitingForInterrupt = true;
       CPU.PC--;

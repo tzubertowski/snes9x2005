@@ -100,7 +100,6 @@ typedef struct
    // Just incase they are needed in the future, for snapshot compatibility.
    uint32_t dummy [3];
    Channel channels [NUM_CHANNELS];
-   // bool no_filter;
    int16_t master_volume [2]; /* range is -128 .. 127 */
    int16_t echo_volume [2]; /* range is -128 .. 127 */
    int noise_hertz;

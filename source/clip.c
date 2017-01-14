@@ -99,7 +99,6 @@ void ComputeClipWindows()
             }
          }
 
-         //       if (!Settings.DisableGraphicWindows)
          {
             if (w == 5 || pClip->Count [5] ||
                   (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))

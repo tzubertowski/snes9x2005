@@ -12,9 +12,6 @@
 
 void S9xInitC4()
 {
-   // Stupid zsnes code, we can't do the logical thing without breaking
-   // savestates
-   //    Memory.C4RAM = &Memory.FillRAM [0x6000];
    memset(Memory.C4RAM, 0, 0x2000);
 }
 
@@ -190,10 +187,6 @@ static void C4DoScaleRotate(int row_padding)
    uint8_t w = Memory.C4RAM[0x1f89] & ~7;
    uint8_t h = Memory.C4RAM[0x1f8c] & ~7;
 
-   //    printf("%dx%d XScale=%04x YScale=%04x angle=%03x\n", w, h, XScale, YScale, READ_WORD(Memory.C4RAM+0x1f80)&0x1ff);
-   //    printf("Matrix: [%10g %10g]  [%04x %04x]\n", A/4096.0, B/4096.0, A&0xffff, B&0xffff);
-   //    printf("        [%10g %10g]  [%04x %04x]\n", C/4096.0, D/4096.0, C&0xffff, D&0xffff);
-
    // Clear the output RAM
    memset(Memory.C4RAM, 0, (w + row_padding / 4)*h / 2);
 
@@ -292,9 +285,8 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
       //.loop
       if (X1 > 0xff && Y1 > 0xff && X1 < 0x6000 && Y1 < 0x6000)
       {
-         uint16_t addr = ((X1 & ~0x7ff) + (Y1 & ~0x7ff) * 12 + (Y1 & 0x700)) >> 7;
-         addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((
-                   X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
+         uint16_t addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((
+                            X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
          uint8_t bit = 0x80 >> ((X1 >> 8) & 7);
          Memory.C4RAM[addr + 0x300] &= ~bit;
          Memory.C4RAM[addr + 0x301] &= ~bit;
@@ -699,9 +691,7 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
          case 0x54: // Square
          {
             int64_t a = SAR64((int64_t)READ_3WORD(Memory.C4RAM + 0x1f80) << 40, 40);
-            // printf("%08X%08X\n", (uint32_t)(a>>32), (uint32_t)(a&0xFFFFFFFF));
             a *= a;
-            // printf("%08X%08X\n", (uint32_t)(a>>32), (uint32_t)(a&0xFFFFFFFF));
             WRITE_3WORD(Memory.C4RAM + 0x1f83, a);
             WRITE_3WORD(Memory.C4RAM + 0x1f86, (a >> 24));
          }

@@ -70,7 +70,6 @@ void JumboLoROMMap(bool);
 void LoROMMap();
 void LoROM24MBSMap();
 void SRAM512KLoROMMap();
-//    void SRAM1024KLoROMMap ();
 void SufamiTurboLoROMMap();
 void HiROMMap();
 void SuperFXROMMap();
@@ -144,9 +143,6 @@ typedef struct
    uint32_t ROMCRC32;
    uint8_t ExtendedFormat;
    uint8_t* BSRAM;
-#if 0
-   bool LoadMulti(const char*, const char*, const char*);
-#endif
 } CMemory;
 
 void ResetSpeedMap();
@@ -173,4 +169,3 @@ extern uint8_t OpenBus;
 #endif // NO_INLINE_SET_GET
 
 #endif // _memmap_h_
-

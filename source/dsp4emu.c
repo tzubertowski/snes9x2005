@@ -45,10 +45,6 @@ void DSP4_Op06(bool size, bool msb)
    }
 }
 
-#if OP==0x0001
-#define PRINT
-#endif
-
 void DSP4_Op01()
 {
    uint16_t command;
@@ -70,7 +66,6 @@ void DSP4_Op01()
    // process initial inputs
 
    // sort inputs
-   // 0x00 = DSP4_READ_WORD(0x00);
    project_focaly = DSP4_READ_WORD(0x02);
    raster = DSP4_READ_WORD(0x04);
    viewport_top = DSP4_READ_WORD(0x06);
@@ -80,13 +75,11 @@ void DSP4_Op01()
    project_focalx = DSP4_READ_WORD(0x0e);
    project_centerx = DSP4_READ_WORD(0x10);
    project_ptr = DSP4_READ_WORD(0x12);
-   // (envelope?) 0xc0 = DSP4_READ_WORD(0x14);
    project_pitchylow = DSP4_READ_WORD(0x16);
    project_pitchy = DSP4_READ_WORD(0x18);
    project_pitchxlow = DSP4_READ_WORD(0x1a);
    project_pitchx = DSP4_READ_WORD(0x1c);
    far_plane = DSP4_READ_WORD(0x1e);
-   // ? = DSP4_READ_WORD(0x20);
    project_y1low = DSP4_READ_WORD(0x22);
 
    // pre-compute
@@ -138,7 +131,6 @@ DSP4_WAIT(1) resume1:
 
 resume2:
       plane = DSP4_READ_WORD(0);
-      py_dy = 0;
       px_dx = 0;
 
       // ignore invalid data
@@ -186,10 +178,6 @@ resume2:
 
       // debug
       ++block;
-#ifdef PRINT
-      printf("(line %d) Op01 check %02X, plane %04X, focal_y %04X, y2 %04X\n", c,
-             (uint16_t)segments, (uint16_t)(plane), (uint16_t)project_focaly, (uint16_t)project_y2);
-#endif
 
       // prepare output
       DSP4.out_count = 8 + 2 + 6 * segments;
@@ -201,14 +189,6 @@ resume2:
       DSP4_WRITE_WORD(6, project_y2);
       DSP4_WRITE_WORD(8, segments);
 
-#if 0
-      DSP4_WRITE_WORD(0, -1);
-      DSP4_WRITE_WORD(2, -1);
-      DSP4_WRITE_WORD(4, -1);
-      DSP4_WRITE_WORD(6, -1);
-      DSP4_WRITE_WORD(8, -1);
-#endif
-
       index = 10;
 
       // iterate through each point
@@ -217,12 +197,6 @@ resume2:
          // step through the projected line
          y_out = project_y + ((py_dy * lcv) >> 8);
          x_out = project_x + ((px_dx * lcv) >> 8);
-
-#if 0
-         project_ptr = -1;
-         y_out = -1;
-         x_out = -1;
-#endif
 
          // data
          DSP4_WRITE_WORD(index + 0, project_ptr);
@@ -263,12 +237,6 @@ resume2:
    DSP4.waiting4command = true;
    DSP4.out_count = 0;
 }
-
-#undef PRINT
-
-#if OP==0x0007
-#define PRINT
-#endif
 
 void DSP4_Op07()
 {
@@ -316,10 +284,6 @@ void DSP4_Op07()
    // debug
    block = 0;
 
-#ifdef PRINT
-   printf("(line %d) Op07 data %04X\n", c, (uint16_t)project_y1);
-#endif
-
    ////////////////////////////////////////////////////
    // command check
 
@@ -351,7 +315,6 @@ DSP4_WAIT(1) resume1:
       int16_t py_dy, px_dx;
 
 resume2:
-      py_dy = 0;
       px_dx = 0;
 
       // debug
@@ -394,11 +357,6 @@ resume2:
          px_dx = ((project_x2 - project_x1) << 8) / segments;
       }
 
-#ifdef PRINT
-      printf("(line %d) Op07 block %d, loc %04X, out %02X, project_x2 %04X\n", c,
-             block, plane, segments, (uint16_t)project_x2);
-#endif
-
       // prepare pre-output
       DSP4.out_count = 4 + 2 + 6 * segments;
 
@@ -406,24 +364,12 @@ resume2:
       DSP4_WRITE_WORD(2, project_y2);
       DSP4_WRITE_WORD(4, segments);
 
-#if 0
-      DSP4_WRITE_WORD(0, -1);
-      DSP4_WRITE_WORD(2, -1);
-      DSP4_WRITE_WORD(4, -1);
-#endif
-
       index = 6;
       for (lcv = 0; lcv < segments; lcv++)
       {
          // pre-compute
          y_out = project_y + ((py_dy * lcv) >> 8);
          x_out = project_x + ((px_dx * lcv) >> 8);
-
-#if 0
-         project_ptr = -1;
-         //y_out = -1;
-         x_out = -1;
-#endif
 
          // data
          DSP4_WRITE_WORD(index + 0, project_ptr);
@@ -454,12 +400,6 @@ resume2:
    DSP4.waiting4command = true;
    DSP4.out_count = 0;
 }
-
-#undef PRINT
-
-#if OP==0x0008
-#define PRINT
-#endif
 
 void DSP4_Op08()
 {
@@ -599,11 +539,6 @@ DSP4_WAIT(2) resume2:
          if (pos2 < path_clipLeft[1]) pos2 = path_clipLeft[1];
          if (pos2 > path_clipRight[1]) pos2 = path_clipRight[1];
 
-#if 0
-         pos1 = -1;
-         //pos2=-1;
-#endif
-
          path_plane[0] = plane;
          path_plane[1] = plane;
 
@@ -611,10 +546,6 @@ DSP4_WAIT(2) resume2:
          DSP4.out_count = 2;
          DSP4.output[0] = pos1 & 0xFF;
          DSP4.output[1] = pos2 & 0xFF;
-
-#ifdef PRINT
-         printf("(line %d) Op08 x_left %04X\n", c, (uint16_t)x_left);
-#endif
       }
       // proceed with projection
       else
@@ -661,11 +592,6 @@ DSP4_WAIT(2) resume2:
             path_plane[0] = plane;
          }
 
-#ifdef PRINT
-         printf("(line %d) Op08 block %d, out %02X, raster %02X\n", c, block, segments,
-                (uint16_t)y_left);
-#endif
-
          // zone 1
          DSP4.out_count = (2 + 4 * segments);
          DSP4_WRITE_WORD(index, segments);
@@ -684,14 +610,6 @@ DSP4_WAIT(2) resume2:
             if (pos1 > path_clipRight[0]) pos1 = path_clipRight[0];
             if (pos2 < path_clipLeft[1]) pos2 = path_clipLeft[1];
             if (pos2 > path_clipRight[1]) pos2 = path_clipRight[1];
-
-#if 0
-            if (pos1 == 0x00ff) pos1 = 0;
-            if (pos2 == 0x00ff) pos2 = 0;
-            path_ptr[0] = -1;
-            pos1 = -1;
-            pos2 = -1;
-#endif
 
             // data
             DSP4_WRITE_WORD(index, path_ptr[0]);
@@ -776,14 +694,6 @@ DSP4_WAIT(2) resume2:
             if (pos2 < path_clipLeft[3]) pos2 = path_clipLeft[3];
             if (pos2 > path_clipRight[3]) pos2 = path_clipRight[3];
 
-#if 0
-            if (pos1 == 0x00ff) pos1 = 0;
-            if (pos2 == 0x00ff) pos2 = 0;
-            path_ptr[2] = -1;
-            //pos1 = -1;
-            pos2 = -1;
-#endif
-
             // data
             DSP4_WRITE_WORD(index, path_ptr[2]);
             index += 2;
@@ -817,12 +727,6 @@ DSP4_WAIT(2) resume2:
    DSP4_WRITE_WORD(0, 0);
 }
 
-#undef PRINT
-
-#if OP==0x000D
-#define PRINT
-#endif
-
 void DSP4_Op0D()
 {
    uint16_t command;
@@ -844,7 +748,6 @@ void DSP4_Op0D()
    // process initial inputs
 
    // sort inputs
-   // 0x00 = DSP4_READ_WORD(0x00);
    project_focaly = DSP4_READ_WORD(0x02);
    raster = DSP4_READ_WORD(0x04);
    viewport_top = DSP4_READ_WORD(0x06);
@@ -855,13 +758,11 @@ void DSP4_Op0D()
    project_focalx = DSP4_READ_WORD(0x0e);
    project_centerx = DSP4_READ_WORD(0x10);
    project_ptr = DSP4_READ_WORD(0x12);
-   // 0xc0 = DSP4_READ_WORD(0x14);
    project_pitchylow = DSP4_READ_WORD(0x16);
    project_pitchy = DSP4_READ_WORD(0x18);
    project_pitchxlow = DSP4_READ_WORD(0x1a);
    project_pitchx = DSP4_READ_WORD(0x1c);
    far_plane = DSP4_READ_WORD(0x1e);
-   // ? = DSP4_READ_WORD(0x20);
 
    // multi-op storage
    multi_index1++;
@@ -932,7 +833,6 @@ DSP4_WAIT(1) resume1:
 resume2:
 
       plane = DSP4_READ_WORD(0);
-      py_dy = 0;
       px_dx = 0;
 
 
@@ -982,11 +882,6 @@ resume2:
       // debug
       ++block;
 
-#ifdef PRINT
-      printf("(line %d) Op0D check %02X, plane %04X\n", c, (uint16_t)segments,
-             (uint16_t)(plane));
-#endif
-
       // prepare output
       DSP4.out_count = 8 + 2 + 6 * segments;
 
@@ -995,13 +890,6 @@ resume2:
       DSP4_WRITE_WORD(4, project_focaly);
       DSP4_WRITE_WORD(6, project_y2);
       DSP4_WRITE_WORD(8, segments);
-#if 0
-      DSP4_WRITE_WORD(0, -1);
-      DSP4_WRITE_WORD(2, -1);
-      DSP4_WRITE_WORD(4, -1);
-      DSP4_WRITE_WORD(6, -1);
-      DSP4_WRITE_WORD(8, -1);
-#endif
 
       index = 10;
 
@@ -1011,12 +899,6 @@ resume2:
          // step through the projected line
          y_out = project_y + ((py_dy * lcv) >> 8);
          x_out = project_x + ((px_dx * lcv) >> 8);
-
-#if 0
-         project_ptr = -1;
-         //y_out=-1;
-         x_out = -1;
-#endif
 
          // data
          DSP4_WRITE_WORD(index + 0, project_ptr);
@@ -1054,16 +936,6 @@ resume2:
    DSP4.waiting4command = true;
    DSP4.out_count = 0;
 }
-
-#undef PRINT
-
-#if OP==0x0009
-#define PRINT
-#endif
-
-#if OP==0x0006
-#define PRINT
-#endif
 
 void DSP4_Op09()
 {
@@ -1107,16 +979,10 @@ void DSP4_Op09()
    view_plane = PLANE_START;
    center_x = DSP4_READ_WORD(0x00);
    center_y = DSP4_READ_WORD(0x02);
-   // 0x00 = DSP4_READ_WORD(0x04);
    viewport_left = DSP4_READ_WORD(0x06);
    viewport_right = DSP4_READ_WORD(0x08);
    viewport_top = DSP4_READ_WORD(0x0a);
    viewport_bottom = DSP4_READ_WORD(0x0c);
-
-#ifdef PRINT2
-   printf("Window: (%04X,%04X) (%04X,%04X)\n",
-          viewport_left, viewport_right, viewport_top, viewport_bottom);
-#endif
 
    // expand viewport dimensions
    viewport_left -= 8;
@@ -1125,12 +991,10 @@ void DSP4_Op09()
    multi_index1++;
    multi_index1 %= 4;
 
-#if 1
    // convert track line to the window region
    project_y2 = center_y + multi_raster[multi_index1] *
                 (viewport_bottom - center_y) / (0x33 - 0);
    if (op09_mode == 0) project_y2 -= 2;
-#endif
 
    goto no_sprite;
 
@@ -1189,9 +1053,7 @@ sprite_found:
       {
          int16_t plane;
          int16_t car_left, car_right;
-         // int16_t car_left_a;
          int16_t focal_back;
-//         int16_t focal_front;
 
          // we already have 4 bytes we want
          DSP4.in_count = 6 + 12;
@@ -1202,8 +1064,6 @@ DSP4_WAIT(3) resume3:
          // filter inputs
          project_y1 = DSP4_READ_WORD(0x00);
          focal_back = DSP4_READ_WORD(0x06);
-         // focal_front = DSP4_READ_WORD(0x08);
-         // car_left_a = DSP4_READ_WORD(0x0a);
          car_left = DSP4_READ_WORD(0x0c);
          plane = DSP4_READ_WORD(0x0e);
          car_right = DSP4_READ_WORD(0x10);
@@ -1259,7 +1119,6 @@ DSP4_WAIT(5) resume5:
          project_y1 = DSP4_READ_WORD(0x00);
          plane = DSP4_READ_WORD(0x02);
          project_centerx = DSP4_READ_WORD(0x04);
-         //project_y1 = DSP4_READ_WORD(0x06);
          project_focalx = DSP4_READ_WORD(0x08);
          project_focaly = DSP4_READ_WORD(0x0a);
          sprite_offset = DSP4_READ_WORD(0x0c);
@@ -1298,9 +1157,6 @@ DSP4_WAIT(6) resume6:
          if (command == 0x0000)
          {
             sprite_size = !sprite_size;
-#ifdef PRINT
-            printf("TOGGLE=%02X\n", (uint8_t)sprite_size);
-#endif
             continue;
          }
 
@@ -1342,12 +1198,6 @@ resume7:
          if (far_plane <= multi_farplane[multi_index1] &&
                sp_y >= project_y2) clip = true;
 
-#ifdef PRINT2
-         printf("(line %d) %04X, %04X, %04X / %04X %04X\n", line,
-                (uint16_t)sp_x, (uint16_t)sp_y, (uint16_t)far_plane,
-                (uint16_t)multi_farplane[multi_index1], (uint16_t)project_y2);
-#endif
-
          // don't draw offscreen coordinates
          DSP4.out_count = 0;
          if (!clip)
@@ -1358,12 +1208,6 @@ resume7:
             // update sprite nametable/attribute information
             sp_oam = sprite_offset + offset;
             sp_msb = (sp_x < 0 || sp_x > 255);
-
-#ifdef PRINT
-            printf("(line %d) %04X, %04X, %04X, %04X, %04X\n", line,
-                   (uint16_t)sp_oam, (uint16_t)sprite_offset, (uint16_t)offset,
-                   (uint16_t)sp_x, (uint16_t)sp_y);
-#endif
 
             // emit transparency information
             if (
@@ -1404,16 +1248,6 @@ resume7:
 
             // OAM: size,msb data
             DSP4_Op06(sprite_size, (char) sp_msb);
-
-#if 0
-            DSP4_WRITE_WORD(0, -1);
-            DSP4_WRITE_WORD(2, -1);
-            DSP4_WRITE_WORD(4, -1);
-            DSP4_WRITE_WORD(6, -1);
-            DSP4_WRITE_WORD(8, -1);
-            DSP4_WRITE_WORD(10, -1);
-            DSP4_WRITE_WORD(12, -1);
-#endif
          }
 
          // no sprite information
@@ -1461,6 +1295,3 @@ terminate:
    DSP4.waiting4command = true;
    DSP4.out_count = 0;
 }
-
-#undef PRINT
-

@@ -37,7 +37,5 @@ uint8_t S9xGetDSP(uint16_t Address);
 void S9xSetDSP(uint8_t Byte, uint16_t Address);
 extern SDSP1 DSP1;
 
-//extern struct SDSP1 DSP1;
-
 #endif
 

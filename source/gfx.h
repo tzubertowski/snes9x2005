@@ -21,11 +21,7 @@ extern struct SGFX GFX;
 bool S9xInitGFX();
 void S9xDeinitGFX();
 bool S9xInitUpdate(void);
-#if 0
-void S9xSyncSpeed();
-#else
 #define S9xSyncSpeed()
-#endif
 
 
 struct SGFX

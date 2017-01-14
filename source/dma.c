@@ -28,8 +28,6 @@ extern int HDMA_ModeByteCounts [8];
 extern uint8_t* HDMAMemPointers [8];
 extern uint8_t* HDMABasePointers [8];
 
-// #define SETA010_HDMA_FROM_CART
-
 #ifdef SETA010_HDMA_FROM_CART
 uint32_t HDMARawPointers[8]; // Cart address space pointer
 #endif
@@ -110,18 +108,17 @@ void S9xDoDMA(uint8_t Channel)
 #endif   
    if (Settings.SPC7110 && (d->AAddress == 0x4800 || d->ABank == 0x50))
    {
-      uint32_t i, j;
+      uint32_t i;
       i = (s7r.reg4805 | (s7r.reg4806 << 8));
       i *= s7r.AlignBy;
       i += s7r.bank50Internal;
       i %= DECOMP_BUFFER_SIZE;
-      j = 0;
       if ((i + d->TransferBytes) < DECOMP_BUFFER_SIZE)
          spc7110_dma = &s7r.bank50[i];
       else
       {
          spc7110_dma = (uint8_t*)malloc(d->TransferBytes);
-         j = DECOMP_BUFFER_SIZE - i;
+         uint32_t j = DECOMP_BUFFER_SIZE - i;
          memcpy(spc7110_dma, &s7r.bank50[i], j);
          memcpy(&spc7110_dma[j], s7r.bank50, d->TransferBytes - j);
          s7_wrap = true;
@@ -155,10 +152,6 @@ void S9xDoDMA(uint8_t Channel)
       uint32_t char_count = inc / bytes_per_char;
 
       in_sa1_dma = true;
-
-      //printf ("%08x,", base); fflush (stdout);
-      //printf ("depth = %d, count = %d, bytes_per_char = %d, bytes_per_line = %d, num_chars = %d, char_line_bytes = %d\n",
-      //depth, count, bytes_per_char, bytes_per_line, num_chars, char_line_bytes);
       int i;
 
       switch (depth)
@@ -419,7 +412,6 @@ void S9xDoDMA(uint8_t Channel)
                {
                   Work = *(base + p);
                   REGISTER_2118_linear(Work);
-                  p += inc;
                }
             }
             else
@@ -439,7 +431,6 @@ void S9xDoDMA(uint8_t Channel)
                {
                   Work = *(base + p);
                   REGISTER_2118_tile(Work);
-                  p += inc;
                }
             }
          }
@@ -461,7 +452,6 @@ void S9xDoDMA(uint8_t Channel)
             {
                Work = *(base + p);
                S9xSetPPU(Work, 0x2100 + d->BAddress);
-               p += inc;
             }
          }
       }
@@ -778,9 +768,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
                byte &= ~mask;
                continue;
             }
-            // Uncommenting the following line breaks Punchout - it starts
-            // H-DMA during the frame.
-            //p->FirstLine = true;
          }
          if (p->Repeat && !p->FirstLine)
          {

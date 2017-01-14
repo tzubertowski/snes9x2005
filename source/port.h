@@ -52,9 +52,6 @@ void S9xGenerateSound(void);
 // On little-endian MIPS, a 16-bit word can be read directly from an address
 // only if it's aligned.
 #define FAST_ALIGNED_LSB_WORD_ACCESS
-#else
-//#define MSB_FIRST
-//#define FAST_LSB_WORD_ACCESS
 #endif
 
 #include <libretro.h>

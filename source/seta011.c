@@ -27,10 +27,6 @@ uint8_t S9xGetST011(uint32_t Address)
    else
       t = Memory.SRAM[address];
 
-   // debug
-   // if(address<0x150)
-   //    printf( "ST011 R: %06X %02X\n", Address, t);
-
    return t;
 }
 
@@ -48,10 +44,6 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
       ST011.waiting4command = true;
       reset = true;
    }
-
-   // debug
-   // if(address<0x150)
-   //    printf( "ST011 W: %06X %02X\n", Address, Byte );
 
    Memory.SRAM[address] = Byte;
 
@@ -124,27 +116,16 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
 
       // unknown
       case 0x04:
-      {
-         // outputs
-         Memory.SRAM[0x12C] = 0x00;
-         //Memory.SRAM[0x12D] = 0x00;
-         Memory.SRAM[0x12E] = 0x00;
-      }
-      break;
-
-      // unknown
       case 0x05:
       {
          // outputs
          Memory.SRAM[0x12C] = 0x00;
-         //Memory.SRAM[0x12D] = 0x00;
          Memory.SRAM[0x12E] = 0x00;
       }
       break;
 
       // unknown
       case 0x06:
-         break;
       case 0x07:
          break;
 

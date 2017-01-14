@@ -109,7 +109,6 @@
 #define TRB16 SA1TRB16
 #define TRB8 SA1TRB8
 
-//#undef CPU_SHUTDOWN
 #undef VAR_CYCLES
 #define SA1_OPCODES
 
@@ -119,18 +118,6 @@ void S9xSA1MainLoop()
 {
    int i;
 
-#if 0
-   if (SA1.Flags & NMI_FLAG)
-   {
-      SA1.Flags &= ~NMI_FLAG;
-      if (SA1.WaitingForInterrupt)
-      {
-         SA1.WaitingForInterrupt = false;
-         SA1.PC++;
-      }
-      S9xSA1Opcode_NMI();
-   }
-#endif
    if (SA1.Flags & IRQ_PENDING_FLAG)
    {
       if (SA1.IRQActive)

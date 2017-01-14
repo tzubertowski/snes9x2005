@@ -35,7 +35,6 @@ typedef struct
    uint8_t   IRQActive;
    bool   WaitingForInterrupt;
    bool   Waiting;
-   //    uint8_t   WhichEvent;
    uint8_t*   PC;
    uint8_t*   PCBase;
    uint8_t*   BWRAM;
@@ -44,9 +43,6 @@ typedef struct
    uint32_t  WaitCounter;
    uint8_t*   WaitByteAddress1;
    uint8_t*   WaitByteAddress2;
-   //    long    Cycles;
-   //    long    NextEvent;
-   //    long    V_Counter;
    uint8_t*   Map [MEMMAP_NUM_BLOCKS];
    uint8_t*   WriteMap [MEMMAP_NUM_BLOCKS];
    int16_t   op1;
@@ -92,7 +88,6 @@ extern SSA1 SA1;
 void S9xSA1MainLoop();
 void S9xSA1Init();
 void S9xFixSA1AfterSnapshotLoad();
-void S9xSA1ExecuteDuringSleep();
 
 #define SNES_IRQ_SOURCE     (1 << 7)
 #define TIMER_IRQ_SOURCE    (1 << 6)

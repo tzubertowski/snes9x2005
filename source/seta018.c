@@ -110,35 +110,6 @@ void S9xSetST018(uint8_t Byte, uint32_t Address)
       {
       // hardware check?
       case 0x0100:
-         ST018.waiting4command = false;
-         ST018.pass++;
-         if (ST018.pass == 1)
-         {
-            ST018.in_count = 1;
-            ST018.out_count = 2;
-
-            // Overload's research
-            ST018.output[0x00] = 0x81;
-            ST018.output[0x01] = 0x81;
-         }
-         else
-         {
-            //ST018.in_count = 1;
-            ST018.out_count = 3;
-
-            // no reason to change this
-            //ST018.output[0x00] = 0x81;
-            //ST018.output[0x01] = 0x81;
-            ST018.output[0x02] = 0x81;
-
-            // done processing requests
-            if (ST018.pass == 3)
-               ST018.waiting4command = true;
-         }
-         break;
-
-      // unknown: feels like a security detection
-      // format identical to 0x0100
       case 0xFF00:
          ST018.waiting4command = false;
          ST018.pass++;
@@ -153,12 +124,7 @@ void S9xSetST018(uint8_t Byte, uint32_t Address)
          }
          else
          {
-            //ST018.in_count = 1;
             ST018.out_count = 3;
-
-            // no reason to change this
-            //ST018.output[0x00] = 0x81;
-            //ST018.output[0x01] = 0x81;
             ST018.output[0x02] = 0x81;
 
             // done processing requests

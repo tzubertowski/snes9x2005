@@ -291,7 +291,6 @@ void ST010_Rotate(int16_t Theta, int16_t X0, int16_t Y0, int16_t* X1, int16_t* Y
 void SETA_Distance(int16_t Y0, int16_t X0, int16_t* Distance)
 {
    if (X0 < 0) X0 = -X0;
-   if (Y0 < 0) Y0 = -Y0;
    *Distance = ((X0 * 0x7af0) + 0x4000) >> 15;
 }
 
@@ -637,17 +636,12 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          ST010_OP01(dy, dx, &a1, &b1, &c1, (int16_t*)&o1);
 
          // check for wrapping
-         //if((o1<0x6000 && rot>0xA000) ||
-         // (rot<0x6000 && o1>0xA000))
-         //if(o1<rot)
          if (abs(o1 - rot) > 0x8000)
          {
             o1 += 0x8000;
             rot += 0x8000;
             wrap = true;
          }
-         //o1=0x0000;
-         //rot=0xFF00;
 
          uint16_t old_speed;
 

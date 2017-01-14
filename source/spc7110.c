@@ -208,7 +208,6 @@ void MovePackData()
          FILE* fp = fopen("sp7err.out", "a");
 #endif
 
-         //       fprintf(fp, "Table Entry %06X:%02X not found\n", table, s7r.reg4804);
          fclose(fp);
          return;
       }
@@ -294,7 +293,6 @@ void ReadPackData()
       if (i == MAX_TABLES)
       {
          FILE* fp = fopen("sp7err.out", "a");
-         //       fprintf(fp, "Table Entry %06X:%02X not found\n", table, s7r.reg4804);
          fclose(fp);
          return;
       }
@@ -319,7 +317,6 @@ void ReadPackData()
 
          splitpath(Memory.ROMFilename, drive, dir, fname, ext);
          strcpy(name, drive);
-         //strcat(filename, "\\");
          strcat(name, dir);
 
          strcat(name, pfold);
@@ -420,7 +417,6 @@ void GetPackData()
       if (i == MAX_TABLES)
       {
          FILE* fp = fopen("sp7err.out", "a");
-         //       fprintf(fp, "Table Entry %06X:%02X not found\n", table, s7r.reg4804);
          fclose(fp);
          return;
       }
@@ -703,7 +699,6 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          i %= s7r.DataRomSize;
          i += s7r.DataRomOffset;
          uint8_t tmp = Memory.ROM[i];
-         i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
          if (0x60 == (s7r.reg4818 & 0x60))
          {
             i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
@@ -935,7 +930,6 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             break;
          }
       }
-      //       s7r.decomp_set=true;
    }
    break;
    //$4810 is probably read only.
@@ -1243,13 +1237,10 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       if (0 == data)
       {
          S9xUpdateRTC();
-         // rtc_f9.init=false;
-         // rtc_f9.index=-1;
       }
       if (data & 0x01)
       {
          s7r.reg4842 = 0x80;
-         //rtc_f9.last_used=time(NULL);//????
          rtc_f9.init = false;
          rtc_f9.index = -1;
       }
@@ -1338,7 +1329,6 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       break;
    //writes to RTC status register aren't expected to be meaningful
    default:
-      Address -= 0x4800;
       break;
       //16 BIT MULTIPLIER: ($FF00) high byte, defval:00
    }
@@ -1577,7 +1567,6 @@ bool Load7110Index(char* filename)
       return false;
 
    int f_len;
-   //do
    while (1)
    {
       i = 0;
@@ -1602,7 +1591,6 @@ bool Load7110Index(char* filename)
       decompack->tableEnts[i].location[index].used_offset = 0;
 
    }
-   //while(!feof(fp));
    fclose(fp);
    return true;
 }
@@ -1984,7 +1972,6 @@ void Do7110Logging()
          fseek(flog, 35, 0);
 
          int f_len;
-         //do
          while (1)
          {
             int i = 0;
@@ -2009,7 +1996,6 @@ void Do7110Logging()
                i++;
             }
          }
-         //while(!feof(flog));
          fclose(flog);
       }
 

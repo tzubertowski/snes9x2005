@@ -60,23 +60,6 @@ static void fx_cache()
       fx_flushCache();
       GSU.vCacheBaseReg = c;
       GSU.bCacheActive = true;
-#if 0
-      if (c < (0x10000 - 512))
-      {
-         uint8_t const* t = &ROM(c);
-         memcpy(GSU.pvCache, t, 512);
-      }
-      else
-      {
-         uint8_t const* t1;
-         uint8_t const* t2;
-         uint32_t i = 0x10000 - c;
-         t1 = &ROM(c);
-         t2 = &ROM(0);
-         memcpy(GSU.pvCache, t1, i);
-         memcpy(&GSU.pvCache[i], t2, 512 - i);
-      }
-#endif
    }
    R15++;
    CLRFLAGS;
@@ -3261,11 +3244,6 @@ static uint32_t fx_run(uint32_t nInstructions)
    READR14;
    while (TF(G) && (GSU.vCounter-- > 0))
       FX_STEP;
-   /*
-   #ifndef FX_ADDRESS_CHECK
-      GSU.vPipeAdr = USEX16(R15-1) | (USEX8(GSU.vPrgBankReg)<<16);
-   #endif
-   */
    return (nInstructions - GSU.vInstCount);
 }
 
@@ -3282,11 +3260,6 @@ static uint32_t fx_run_to_breakpoint(uint32_t nInstructions)
          break;
       }
    }
-   /*
-   #ifndef FX_ADDRESS_CHECK
-   GSU.vPipeAdr = USEX16(R15-1) | (USEX8(GSU.vPrgBankReg)<<16);
-   #endif
-   */
    return vCounter;
 }
 
@@ -3305,11 +3278,6 @@ static uint32_t fx_step_over(uint32_t nInstructions)
       if (USEX16(R15) == GSU.vStepPoint)
          break;
    }
-   /*
-   #ifndef FX_ADDRESS_CHECK
-   GSU.vPipeAdr = USEX16(R15-1) | (USEX8(GSU.vPrgBankReg)<<16);
-   #endif
-   */
    return vCounter;
 }
 
@@ -3555,4 +3523,3 @@ void (*fx_apfOpcodeTable[])() =
    &fx_lm_r0,   &fx_lm_r1,   &fx_lm_r2,    &fx_lm_r3,    &fx_lm_r4,    &fx_lm_r5,    &fx_lm_r6,    &fx_lm_r7,
    &fx_lm_r8,   &fx_lm_r9,   &fx_lm_r10,   &fx_lm_r11,   &fx_lm_r12,   &fx_lm_r13,   &fx_lm_r14,   &fx_lm_r15,
 };
-

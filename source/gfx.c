@@ -266,8 +266,6 @@ bool S9xInitGFX()
    GFX.ZPitch >>= 1;
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
    GFX.DepthDelta = GFX.SubZBuffer - GFX.ZBuffer;
-   //GFX.InfoStringTimeout = 0;
-   //GFX.InfoString = NULL;
 
    PPU.BG_Forced = 0;
    IPPU.OBJChanged = true;
@@ -854,13 +852,11 @@ void S9xSetupOBJ()
 
       /* First, find out which sprites are on which lines */
       uint8_t OBJOnLine[SNES_HEIGHT_EXTENDED][128];
-      // memset(OBJOnLine, 0, sizeof(OBJOnLine));
-      /* Hold on here, that's a lot of bytes to initialise at once!
-       * So we only initialise them per line, as needed. [Neb]
+      /* We only initialise this per line, as needed. [Neb]
        * Bonus: We can quickly avoid looping if a line has no OBJs.
        */
       bool AnyOBJOnLine[SNES_HEIGHT_EXTENDED];
-      memset(AnyOBJOnLine, false, sizeof(AnyOBJOnLine)); // better
+      memset(AnyOBJOnLine, false, sizeof(AnyOBJOnLine));
 
       for (S = 0; S < 128; S++)
       {
@@ -1515,7 +1511,6 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
    for (Y = GFX.StartY; Y <= GFX.EndY; Y++)
    {
       uint32_t VOff = LineData [Y].BG[2].VOffset - 1;
-      //    uint32_t VOff = LineData [Y].BG[2].VOffset;
       uint32_t HOff = LineData [Y].BG[2].HOffset;
 
       int VirtAlign;
@@ -1573,7 +1568,6 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
          uint32_t VOffset;
          uint32_t HOffset;
-         //added:
          uint32_t LineHOffset = LineData [Y].BG[bg].HOffset;
 
          uint32_t Offset;
@@ -1606,8 +1600,6 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                VOffset = LineData [Y].BG[bg].VOffset;
 
                //MKendora; use temp var to reduce memory accesses
-               //HOffset = LineData [Y].BG[bg].HOffset;
-
                HOffset = LineHOffset;
                //End MK
 
@@ -1632,8 +1624,7 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                {
                   VOffset = LineData [Y].BG[bg].VOffset;
 
-                  //MKendora another mem access hack
-                  //HOffset = LineData [Y].BG[bg].HOffset;
+                  //MKendora; use temp var to reduce memory accesses
                   HOffset = LineHOffset;
                   //end MK
 
@@ -1655,17 +1646,9 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
                   //MKendora Strike Gunner fix
                   if ((HCellOffset & OffsetEnableMask))
-                  {
-                     //HOffset= HCellOffset;
-
                      HOffset = (HCellOffset & ~7) | (LineHOffset & 7);
-                     //HOffset |= LineData [Y].BG[bg].HOffset&7;
-                  }
                   else
                      HOffset = LineHOffset;
-                  //HOffset = LineData [Y].BG[bg].HOffset -
-                  //Settings.StrikeGunnerOffsetHack;
-                  //HOffset &= (~7);
                   //end MK
                }
             }
@@ -1715,7 +1698,6 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
             Offset = HPos & 7;
 
-            //Count =1;
             Count = 8 - Offset;
             if (Count > MaxCount)
                Count = MaxCount;
@@ -1816,19 +1798,12 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
 
 
    int Lines;
-//   int VOffsetMask;
    int VOffsetShift;
 
    if (BG.TileSize == 16)
-   {
-//      VOffsetMask = 0x3ff;
       VOffsetShift = 4;
-   }
    else
-   {
-//      VOffsetMask = 0x1ff;
       VOffsetShift = 3;
-   }
    int endy = IPPU.Interlace ? 1 + (GFX.EndY << 1) : GFX.EndY;
 
    int Y;
@@ -2095,7 +2070,6 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
    }
    GFX.Pitch = IPPU.DoubleHeightPixels ? GFX.RealPitch * 2 : GFX.RealPitch;
    GFX.PPL = IPPU.DoubleHeightPixels ? GFX.PPLx2 : (GFX.PPLx2 >> 1);
-
 }
 
 static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
@@ -2129,14 +2103,10 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 
    case 5:
    case 6: // XXX: is also offset per tile.
-      //    if (Settings.SupportHiRes)
-      //    {
       if (!Settings.SupportHiRes)
          SelectTileRenderer(true /* normal */);
       DrawBackgroundMode5(bg, Z1, Z2);
       return;
-      //    }
-      break;
    }
 
    uint32_t Tile;
@@ -3297,20 +3267,7 @@ void DisplayChar(uint8_t* Screen, uint8_t c)
          uint8_t p = font [line][offset + w];
 
          if (p == '#')
-         {
-            /*
-            if(Memory.Hacked)
-               *s= BUILD_PIXEL(31,0,0);
-            else if(Memory.Iffy)
-               *s= BUILD_PIXEL(31,31,0);
-            else if(Memory.Iformat==1)
-               *s= BUILD_PIXEL(0,31,0);
-            else if(Memory.Iformat==2)
-               *s= BUILD_PIXEL(0,31,31);
-            else *s = 0xffff;
-            */
             *s = Settings.DisplayColor;
-         }
          else if (p == '.')
             *s = BLACK;
       }
@@ -3885,5 +3842,3 @@ void S9xUpdateScreen(void)
 
    IPPU.PreviousLine = IPPU.CurrentLine;
 }
-
-

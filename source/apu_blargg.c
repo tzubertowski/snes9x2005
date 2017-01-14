@@ -20,7 +20,6 @@
 #include "apu_blargg.h"
 
 #include "snes9x.h"
-//#include "snapshot.h"
 #include "display.h"
 
 
@@ -1285,7 +1284,6 @@ static INLINE void spc_dsp_write( int data, int time )
          }
          break;
    }
-   /* dprintf( "SPC wrote to DSP register > $7F\n" ); */
 }
 
 
@@ -1327,8 +1325,6 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
       case R_T0OUT:
       case R_T1OUT:
       case R_T2OUT:
-             /* dprintf( "SPC wrote to counter %d\n", (int) addr - R_T0OUT ); */
-
              if ( data < NO_READ_BEFORE_WRITE_DIVIDED_BY_TWO)
              {
                 if ( (time - 1) >= m.timers[addr - R_T0OUT].next_time )
@@ -1345,10 +1341,6 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
              break;
 
       case R_TEST:
-#if 0
-             if ( (uint8_t) data != 0x0A )
-                dprintf( "SPC wrote to test register\n" );
-#endif
              break;
 
       case R_CONTROL:
@@ -1687,7 +1679,6 @@ loop:
                     m.smp_regs[0][i] = (uint8_t) data;
 
                     /* Registers other than $F2 and $F4-$F7 */
-                    /* if ( i != 2 && i != 4 && i != 5 && i != 6 && i != 7 ) */
                     if ( ((~0x2F00 << (bits_in_int - 16)) << i) < 0 ) /* 12% */
                     {
                        if ( i == R_DSPDATA ) /* 99% */
@@ -1816,7 +1807,6 @@ loop:
                  temp = GET_LE16( pc );
                  pc += 2;
                  READ_TIMER( 0, temp, y = nz );
-                 /* y = nz = SPC_CPU_READ( 0, temp ); */
                  goto loop;
               }
 
@@ -2608,10 +2598,6 @@ out_of_time:
 stop:
 
    /* Uncache registers */
-#if 0
-   if ( GET_PC() >= 0x10000 )
-      dprintf( "SPC: PC wrapped around\n" );
-#endif
    m.cpu_regs.pc = (uint16_t) GET_PC();
    m.cpu_regs.sp = ( uint8_t) GET_SP();
    m.cpu_regs.a  = ( uint8_t) a;
@@ -3060,8 +3046,6 @@ static INLINE bool resampler_push(int16_t *src, int num_samples)
 
 static INLINE void resampler_resize (int num_samples)
 {
-   /* int size; */
-   /* size = num_samples << 1; */
    free(rb_buffer);
    rb_buffer_size = rb_size;
    rb_buffer = (unsigned char*)malloc(rb_buffer_size);

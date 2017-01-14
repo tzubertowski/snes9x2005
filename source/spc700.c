@@ -1023,7 +1023,6 @@ void Apu7A()
 
 // XXX: BJ: i think the old HalfCarry behavior was wrong...
 // XXX: Or is it between bits 7 and 8 for ADDW/SUBW?
-// XXX: Used Work32 instead of Int32 before. Fixed? [Neb]
 void Apu9A()
 {
    // SUBW YA,dp
@@ -1036,9 +1035,6 @@ void Apu9A()
       APUSetOverflow();
    else
       APUClearOverflow();
-   if (((IAPU.Registers.YA.W ^ Work16) & 0x0080) &&
-         ((IAPU.Registers.YA.W ^ (uint16_t) Int32) & 0x0080))
-      APUSetHalfCarry();
    APUSetHalfCarry();
    if ((IAPU.Registers.YA.W ^ Work16 ^ (uint16_t) Int32) & 0x10)
       APUClearHalfCarry();

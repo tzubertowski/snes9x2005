@@ -38,7 +38,6 @@ uint8_t APUROM [64];
 
 void S9xResetAPU()
 {
-
    int i, j;
 
    Settings.APUEnabled = Settings.NextAPUEnabled;
@@ -186,7 +185,6 @@ void S9xSetAPUDSP(uint8_t byte)
       break;
 
    case APU_KOFF:
-      //    if (byte)
    {
       int c;
       uint8_t mask = 1;
@@ -200,7 +198,6 @@ void S9xSetAPUDSP(uint8_t byte)
                   KeyOnPrev &= ~mask;
                   APU.KeyedChannels &= ~mask;
                   APU.DSP [APU_KON] &= ~mask;
-                  //APU.DSP [APU_KOFF] |= mask;
                   S9xSetSoundKeyOff(c);
                }
             }
@@ -209,14 +206,12 @@ void S9xSetAPUDSP(uint8_t byte)
          {
             KeyOnPrev &= ~mask;
             APU.KeyedChannels |= mask;
-            //APU.DSP [APU_KON] |= mask;
             APU.DSP [APU_KOFF] &= ~mask;
             APU.DSP [APU_ENDX] &= ~mask;
             S9xPlaySample(c);
          }
       }
    }
-      //KeyOnPrev=0;
    APU.DSP [APU_KOFF] = byte;
    return;
    case APU_KON:
@@ -234,8 +229,6 @@ void S9xSetAPUDSP(uint8_t byte)
                {
                   KeyOnPrev &= ~mask;
                   APU.KeyedChannels |= mask;
-                  //APU.DSP [APU_KON] |= mask;
-                  //APU.DSP [APU_KOFF] &= ~mask;
                   APU.DSP [APU_ENDX] &= ~mask;
                   S9xPlaySample(c);
                }
@@ -253,8 +246,6 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_VOL_LEFT + 0x50:
    case APU_VOL_LEFT + 0x60:
    case APU_VOL_LEFT + 0x70:
-      // At Shin Megami Tensei suggestion 6/11/00
-      // if (byte != APU.DSP [reg])
    {
       S9xSetSoundVolume(reg >> 4, (signed char) byte,
                         (signed char) APU.DSP [reg + 1]);
@@ -268,8 +259,6 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_VOL_RIGHT + 0x50:
    case APU_VOL_RIGHT + 0x60:
    case APU_VOL_RIGHT + 0x70:
-      // At Shin Megami Tensei suggestion 6/11/00
-      // if (byte != APU.DSP [reg])
    {
       S9xSetSoundVolume(reg >> 4, (signed char) APU.DSP [reg - 1],
                         (signed char) byte);
@@ -418,8 +407,6 @@ void S9xSetAPUDSP(uint8_t byte)
       S9xSetFilterCoefficient(reg >> 4, (signed char) byte);
       break;
    default:
-      // XXX
-      //printf ("Write %02x to unknown APU register %02x\n", byte, reg);
       break;
    }
 
@@ -524,8 +511,6 @@ void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
 
 void S9xSetAPUControl(uint8_t byte)
 {
-   //if (byte & 0x40)
-   //printf ("*** Special SPC700 timing enabled\n");
    if ((byte & 1) != 0 && !APU.TimerEnabled [0])
    {
       APU.Timer [0] = 0;
@@ -639,8 +624,6 @@ uint8_t S9xGetAPUDSP()
       return ((uint8_t) S9xGetEnvelopeHeight(reg >> 4));
 
    case APU_ENDX:
-      // To fix speech in Magical Drop 2 6/11/00
-      // APU.DSP [APU_ENDX] = 0;
       break;
    default:
       break;

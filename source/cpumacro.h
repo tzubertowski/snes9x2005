@@ -178,7 +178,6 @@ static void ASL16(long Addr)
    uint16_t Work16 = S9xGetWord(Addr);
    ICPU._Carry = (Work16 & 0x8000) != 0;
    Work16 <<= 1;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
    SetZN16(Work16);
@@ -290,7 +289,6 @@ static void DEC16(long Addr)
 #endif
 
    uint16_t Work16 = S9xGetWord(Addr) - 1;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
    SetZN16(Work16);
@@ -352,7 +350,6 @@ static void INC16(long Addr)
 #endif
 
    uint16_t Work16 = S9xGetWord(Addr) + 1;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
    SetZN16(Work16);
@@ -430,7 +427,6 @@ static void LSR16(long Addr)
    uint16_t Work16 = S9xGetWord(Addr);
    ICPU._Carry = Work16 & 1;
    Work16 >>= 1;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
    SetZN16(Work16);
@@ -487,7 +483,6 @@ static void ROL16(long Addr)
    Work32 <<= 1;
    Work32 |= CheckCarry();
    ICPU._Carry = Work32 >= 0x10000;
-   //S9xSetWord ((uint16_t) Work32, Addr);
    S9xSetByte((Work32 >> 8) & 0xFF, Addr + 1);
    S9xSetByte(Work32 & 0xFF, Addr);
    SetZN16((uint16_t) Work32);
@@ -534,7 +529,6 @@ static void ROR16(long Addr)
    Work32 |= (int) CheckCarry() << 16;
    ICPU._Carry = (uint8_t)(Work32 & 1);
    Work32 >>= 1;
-   //S9xSetWord ((uint16_t) Work32, Addr);
    S9xSetByte((Work32 >> 8) & 0x00FF, Addr + 1);
    S9xSetByte(Work32 & 0x00FF, Addr);
    SetZN16((uint16_t) Work32);
@@ -714,7 +708,6 @@ static void TSB16(long Addr)
    uint16_t Work16 = S9xGetWord(Addr);
    ICPU._Zero = (Work16 & ICPU.Registers.A.W) != 0;
    Work16 |= ICPU.Registers.A.W;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
 }
@@ -732,7 +725,6 @@ static void TRB16(long Addr)
    uint16_t Work16 = S9xGetWord(Addr);
    ICPU._Zero = (Work16 & ICPU.Registers.A.W) != 0;
    Work16 &= ~ICPU.Registers.A.W;
-   //S9xSetWord (Work16, Addr);
    S9xSetByte(Work16 >> 8, Addr + 1);
    S9xSetByte(Work16 & 0xFF, Addr);
 }

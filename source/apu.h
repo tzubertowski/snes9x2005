@@ -129,44 +129,5 @@ extern void (*S9xApuOpcodes [256])(void);
 #define APU_EXECUTE1() do{}while(0)
 #define APU_EXECUTE()  do{}while(0)
 
-//typedef struct
-//{
-//   uint8_t*  PC;
-//   SAPURegisters Registers;
-//   uint8_t*  RAM;
-//   uint8_t*  DirectPage;
-//   bool  APUExecuting;
-//   uint8_t  Bit;
-//   uint32_t Address;
-//   uint8_t*  WaitAddress1;
-//   uint8_t*  WaitAddress2;
-//   uint32_t WaitCounter;
-//   uint8_t  _Carry;
-//   uint8_t  _Zero;
-//   uint8_t  _Overflow;
-//   uint32_t TimerErrorCounter;
-//   uint32_t Scanline;
-//   int32_t  OneCycle;
-//   int32_t  TwoCycles;
-//} SIAPU;
-
-//typedef struct
-//{
-//   int32_t  Cycles;
-//   bool  ShowROM;
-//   uint8_t  Flags;
-//   uint8_t  KeyedChannels;
-//   uint8_t  OutPorts [4];
-//   uint8_t  DSP [0x80];
-//   uint8_t  ExtraRAM [64];
-//   uint16_t Timer [3];
-//   uint16_t TimerTarget [3];
-//   bool  TimerEnabled [3];
-//   bool  TimerValueWritten [3];
-//} SAPU;
-
-//SAPU APU;
-//SIAPU IAPU;
-
 #endif
 

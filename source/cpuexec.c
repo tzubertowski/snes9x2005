@@ -33,13 +33,13 @@ void S9xMainLoop(void)
 {
    if (Settings.SA1)
    {
-      if (Settings.SuperFX)             S9xMainLoop_SA1_SFX();
-      else /* if (!Settings.SuperFX) */ S9xMainLoop_SA1_NoSFX();
+      if (Settings.SuperFX) S9xMainLoop_SA1_SFX();
+      else                  S9xMainLoop_SA1_NoSFX();
    }
-   else /* if (!Settings.SA1) */
+   else
    {
-      if (Settings.SuperFX)             S9xMainLoop_NoSA1_SFX();
-      else /* if (!Settings.SuperFX) */ S9xMainLoop_NoSA1_NoSFX();
+      if (Settings.SuperFX) S9xMainLoop_NoSA1_SFX();
+      else                  S9xMainLoop_NoSA1_NoSFX();
    }
 }
 
@@ -506,10 +506,6 @@ void S9xDoHBlankProcessing_SFX()
       // once every emulated 63.5 microseconds, which coresponds to
       // 15.750KHz, but the SPC700 timers need to be updated at multiples
       // of 8KHz, hence the error correction.
-      // IAPU.TimerErrorCounter++;
-      // if (IAPU.TimerErrorCounter >= )
-      //     IAPU.TimerErrorCounter = 0;
-      // else
       {
          if (APU.TimerEnabled [2])
          {
@@ -686,10 +682,6 @@ void S9xDoHBlankProcessing_NoSFX()
       // once every emulated 63.5 microseconds, which coresponds to
       // 15.750KHz, but the SPC700 timers need to be updated at multiples
       // of 8KHz, hence the error correction.
-      // IAPU.TimerErrorCounter++;
-      // if (IAPU.TimerErrorCounter >= )
-      //     IAPU.TimerErrorCounter = 0;
-      // else
 #ifndef USE_BLARGG_APU
       {
          if (APU.TimerEnabled [2])
