@@ -73,65 +73,45 @@ void S9xResetCPU()
    S9xUnpackStatus();
 }
 
+static void CommonS9xReset(void)
+{
+   if (Settings.SuperFX)
+      S9xResetSuperFX();
+
+   memset(Memory.FillRAM, 0, 0x8000);
+   memset(Memory.VRAM, 0x00, 0x10000);
+
+   if (Settings.SPC7110)
+      S9xSpc7110Reset();
+   S9xResetCPU();
+   S9xResetSRTC();
+   if (Settings.SDD1)
+      S9xResetSDD1();
+
+   S9xResetDMA();
+   S9xResetAPU();
+   S9xResetDSP1();
+   if (Settings.OBC1)
+      ResetOBC1();
+   S9xSA1Init();
+   if (Settings.C4)
+      S9xInitC4();
+
+#ifdef WANT_CHEATS
+   S9xInitCheatData();
+#endif
+}
+
 void S9xReset(void)
 {
-   if (Settings.SuperFX)
-      S9xResetSuperFX();
-
-   memset(Memory.FillRAM, 0, 0x8000);
-   memset(Memory.VRAM, 0x00, 0x10000);
-   memset(Memory.RAM, 0x55, 0x20000);
-
-   if (Settings.SPC7110)
-      S9xSpc7110Reset();
-   S9xResetCPU();
    S9xResetPPU();
-   S9xResetSRTC();
-   if (Settings.SDD1)
-      S9xResetSDD1();
-
-   S9xResetDMA();
-   S9xResetAPU();
-   S9xResetDSP1();
-   S9xSA1Init();
-   if (Settings.C4)
-      S9xInitC4();
-
-#ifdef WANT_CHEATS
-   S9xInitCheatData();
-#endif
-
-   if (Settings.OBC1)
-      ResetOBC1();
+   CommonS9xReset();
+   memset(Memory.RAM, 0x55, 0x20000);
 }
+
 void S9xSoftReset(void)
 {
-   if (Settings.SuperFX)
-      S9xResetSuperFX();
-
-   memset(Memory.FillRAM, 0, 0x8000);
-   memset(Memory.VRAM, 0x00, 0x10000);
-
-   if (Settings.SPC7110)
-      S9xSpc7110Reset();
-   S9xResetCPU();
    S9xSoftResetPPU();
-   S9xResetSRTC();
-   if (Settings.SDD1)
-      S9xResetSDD1();
-
-   S9xResetDMA();
-   S9xResetAPU();
-   S9xResetDSP1();
-   if (Settings.OBC1)
-      ResetOBC1();
-   S9xSA1Init();
-   if (Settings.C4)
-      S9xInitC4();
-
-#ifdef WANT_CHEATS
-   S9xInitCheatData();
-#endif
-
+   CommonS9xReset();
 }
 
