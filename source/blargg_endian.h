@@ -1,3 +1,5 @@
+#include "../copyright"
+
 /* CPU Byte Order Utilities */
 
 /* snes_spc 0.9.0 */
