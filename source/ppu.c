@@ -313,7 +313,6 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
       //share a previous byte value for setting them.
 
       case 0x210D:
-         //TEST9        if(last_written != 0x210d) PPU.BGnxOFSbyte = 0;
          PPU.BG[0].HOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
          break;

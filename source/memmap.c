@@ -884,9 +884,6 @@ again:
       TotalFileSize -= 512;
       S9xMessage(S9X_INFO, S9X_HEADER_WARNING,
                  "Try specifying the -nhd command line option if the game doesn't work\n");
-      //modifying ROM, so we need to rescore
-      hi_score = ScoreHiROM(false, 0);
-      lo_score = ScoreLoROM(false, 0);
    }
 
    Memory.CalculatedSize = TotalFileSize & ~0x1FFF; // round down to lower 0x2000
