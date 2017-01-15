@@ -905,7 +905,7 @@ void S9xSetupOBJ()
       int j, Y;
       for (Y = 0; Y < SNES_HEIGHT_EXTENDED; Y++)
       {
-         GFX.OBJLines[Y].RTOFlags = Y ? 0 : GFX.OBJLines[Y - 1].RTOFlags;
+         GFX.OBJLines[Y].RTOFlags = Y ? GFX.OBJLines[Y - 1].RTOFlags : 0;
 
          GFX.OBJLines[Y].Tiles = 34;
          j = 0;
