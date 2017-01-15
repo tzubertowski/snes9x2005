@@ -3187,6 +3187,7 @@ static inline void ForceShutdown()
 #ifdef CPU_SHUTDOWN
 #ifndef SA1_OPCODES
    CPU.WaitAddress = NULL;
+#ifndef USE_BLARGG_APU
    CPU.Cycles = CPU.NextEvent;
    if (IAPU.APUExecuting)
    {
@@ -3197,6 +3198,7 @@ static inline void ForceShutdown()
       } while (APU.Cycles < CPU.NextEvent);
       ICPU.CPUExecuting = true;
    }
+#endif
 #else
    SA1.Executing = false;
    SA1.CPUExecuting = false;
