@@ -136,29 +136,19 @@ int DSP2Op0DInLen = 0;
 
 void DSP2_Op0D()
 {
-   // Overload's algorithm - use this unless doing hardware testing
-
-   // One note:  the HW can do odd byte scaling but since we divide
-   // by two to get the count of bytes this won't work well for
-   // odd byte scaling (in any of the current algorithm implementations).
-   // So far I haven't seen Dungeon Master use it.
-   // If it does we can adjust the parameters and code to work with it
+   // (Modified) Overload's algorithm - use this unless doing hardware testing
 
    int i;
-   int pixel_offset;
-   uint8_t pixelarray[512];
 
-   for (i = 0; i < DSP2Op0DOutLen * 2; i++)
+   for(i = 0 ; i < DSP2Op0DOutLen ; i++)
    {
-      pixel_offset = (i * DSP2Op0DInLen) / DSP2Op0DOutLen;
-      if ((pixel_offset & 1) == 0)
-         pixelarray[i] = DSP1.parameters[pixel_offset >> 1] >> 4;
-      else
-         pixelarray[i] = DSP1.parameters[pixel_offset >> 1] & 0x0f;
+      int j = i << 1;
+      int pixel_offset_low = ((j * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
+      int pixel_offset_high = (((j + 1) * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
+      uint8_t pixel_low = DSP1.parameters[pixel_offset_low] >> 4;
+      uint8_t pixel_high = DSP1.parameters[pixel_offset_high] & 0x0f;
+      DSP1.output[i] = (pixel_low << 4) | pixel_high;
    }
-
-   for (i = 0; i < DSP2Op0DOutLen; i++)
-      DSP1.output[i] = (pixelarray[i << 1] << 4) | pixelarray[(i << 1) + 1];
 }
 
 #else
