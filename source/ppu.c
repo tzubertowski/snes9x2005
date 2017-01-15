@@ -1,93 +1,4 @@
-/*******************************************************************************
-  Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
-
-  (c) Copyright 1996 - 2002 Gary Henderson (gary.henderson@ntlworld.com) and
-                            Jerremy Koot (jkoot@snes9x.com)
-
-  (c) Copyright 2001 - 2004 John Weidman (jweidman@slip.net)
-
-  (c) Copyright 2002 - 2004 Brad Jorsch (anomie@users.sourceforge.net),
-                            funkyass (funkyass@spam.shaw.ca),
-                            Joel Yliluoma (http://iki.fi/bisqwit/)
-                            Kris Bleakley (codeviolation@hotmail.com),
-                            Matthew Kendora,
-                            Nach (n-a-c-h@users.sourceforge.net),
-                            Peter Bortas (peter@bortas.org) and
-                            zones (kasumitokoduck@yahoo.com)
-
-  C4 x86 assembler and some C emulation code
-  (c) Copyright 2000 - 2003 zsKnight (zsknight@zsnes.com),
-                            _Demo_ (_demo_@zsnes.com), and Nach
-
-  C4 C++ code
-  (c) Copyright 2003 Brad Jorsch
-
-  DSP-1 emulator code
-  (c) Copyright 1998 - 2004 Ivar (ivar@snes9x.com), _Demo_, Gary Henderson,
-                            John Weidman, neviksti (neviksti@hotmail.com),
-                            Kris Bleakley, Andreas Naive
-
-  DSP-2 emulator code
-  (c) Copyright 2003 Kris Bleakley, John Weidman, neviksti, Matthew Kendora, and
-                     Lord Nightmare (lord_nightmare@users.sourceforge.net
-
-  OBC1 emulator code
-  (c) Copyright 2001 - 2004 zsKnight, pagefault (pagefault@zsnes.com) and
-                            Kris Bleakley
-  Ported from x86 assembler to C by sanmaiwashi
-
-  SPC7110 and RTC C++ emulator code
-  (c) Copyright 2002 Matthew Kendora with research by
-                     zsKnight, John Weidman, and Dark Force
-
-  S-DD1 C emulator code
-  (c) Copyright 2003 Brad Jorsch with research by
-                     Andreas Naive and John Weidman
-
-  S-RTC C emulator code
-  (c) Copyright 2001 John Weidman
-
-  ST010 C++ emulator code
-  (c) Copyright 2003 Feather, Kris Bleakley, John Weidman and Matthew Kendora
-
-  Super FX x86 assembler emulator code
-  (c) Copyright 1998 - 2003 zsKnight, _Demo_, and pagefault
-
-  Super FX C emulator code
-  (c) Copyright 1997 - 1999 Ivar, Gary Henderson and John Weidman
-
-
-  SH assembler code partly based on x86 assembler code
-  (c) Copyright 2002 - 2004 Marcus Comstedt (marcus@mc.pp.se)
-
-  (c) Copyright 2014 - 2016 Daniel De Matteis. (UNDER NO CIRCUMSTANCE 
-  WILL COMMERCIAL RIGHTS EVER BE APPROPRIATED TO ANY PARTY)
-
-  Specific ports contains the works of other authors. See headers in
-  individual files.
-
-  Snes9x homepage: http://www.snes9x.com
-
-  Permission to use, copy, modify and distribute Snes9x in both binary and
-  source form, for non-commercial purposes, is hereby granted without fee,
-  providing that this license information and copyright notice appear with
-  all copies and any derived work.
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event shall the authors be held liable for any damages
-  arising from the use of this software.
-
-  Snes9x is freeware for PERSONAL USE only. Commercial users should
-  seek permission of the copyright holders first. Commercial use includes
-  charging money for Snes9x or software derived from Snes9x.
-
-  The copyright holders request that bug fixes and improvements to the code
-  should be forwarded to them so everyone can benefit from the modifications
-  in future versions.
-
-  Super NES and Super Nintendo Entertainment System are trademarks of
-  Nintendo Co., Limited and its subsidiary companies.
-*******************************************************************************/
+#include "../copyright"
 
 #include "snes9x.h"
 #include "memmap.h"
@@ -116,18 +27,10 @@ void S9xLatchCounters(bool force)
 {
    if (!force && !(Memory.FillRAM[0x4213] & 0x80)) return;
 
-#if 0
-# ifdef CPU_SHUTDOWN
-   CPU.WaitAddress = CPU.PCAtOpcodeStart;
-# endif
-#endif
    PPU.HVBeamCounterLatched = 1;
    PPU.VBeamPosLatched = (uint16_t) CPU.V_Counter;
    PPU.HBeamPosLatched = (uint16_t)((CPU.Cycles * SNES_HCOUNTER_MAX) /
                                   Settings.H_Max);
-
-   // Causes screen flicker for Yoshi's Island if uncommented
-   //CLEAR_IRQ_SOURCE (PPU_V_BEAM_IRQ_SOURCE | PPU_H_BEAM_IRQ_SOURCE);
 
    Memory.FillRAM [0x213F] |= 0x40;
 }
@@ -262,7 +165,6 @@ static void S9xSetSuperFX(uint8_t Byte, uint16_t Address)
 /******************************************************************************/
 void S9xSetPPU(uint8_t Byte, uint16_t Address)
 {
-   //    fprintf(stderr, "%03d: %02x to %04x\n", CPU.V_Counter, Byte, Address);
    if (Address <= 0x2183)
    {
       switch (Address)
@@ -411,52 +313,43 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
       //share a previous byte value for setting them.
 
       case 0x210D:
-         //TEST9        if(last_written != 0x210d) PPU.BGnxOFSbyte = 0;
          PPU.BG[0].HOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[0].HOffset = %04x  %d)\n", Byte, Address, PPU.BG[0].HOffset, CPU.V_Counter);
          break;
 
       case 0x210E:
          PPU.BG[0].VOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[0].VOffset = %04x  %d)\n", Byte, Address, PPU.BG[0].VOffset, CPU.V_Counter);
          break;
 
       case 0x210F:
          PPU.BG[1].HOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[1].HOffset = %04x  %d)\n", Byte, Address, PPU.BG[1].HOffset, CPU.V_Counter);
          break;
 
       case 0x2110:
          PPU.BG[1].VOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[1].VOffset = %04x  %d)\n", Byte, Address, PPU.BG[1].VOffset, CPU.V_Counter);
          break;
 
       case 0x2111:
          PPU.BG[2].HOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[2].HOffset = %04x  %d)\n", Byte, Address, PPU.BG[2].HOffset, CPU.V_Counter);
          break;
 
       case 0x2112:
          PPU.BG[2].VOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[2].VOffset = %04x  %d)\n", Byte, Address, PPU.BG[2].VOffset, CPU.V_Counter);
          break;
 
       case 0x2113:
          PPU.BG[3].HOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[3].HOffset = %04x  %d)\n", Byte, Address, PPU.BG[3].HOffset, CPU.V_Counter);
          break;
 
       case 0x2114:
          PPU.BG[3].VOffset = (Byte << 8) | PPU.BGnxOFSbyte;
          PPU.BGnxOFSbyte = Byte;
-         //        fprintf(stderr, "%02x to %04x (PPU.BG[3].VOffset = %04x  %d)\n", Byte, Address, PPU.BG[3].VOffset, CPU.V_Counter);
          break;
 
       //end Theme Park
@@ -481,7 +374,6 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
          {
             static uint16_t IncCount [4] = { 0, 32, 64, 128 };
             static uint16_t Shift [4] = { 0, 5, 6, 7 };
-            //          PPU.VMA.Increment = 1;
             uint8_t i = (Byte & 0x0c) >> 2;
             PPU.VMA.FullGraphicCount = IncCount [i];
             PPU.VMA.Mask1 = IncCount [i] * 8 - 1;
@@ -781,8 +673,6 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
             }
             else PPU.ScreenHeight = SNES_HEIGHT;
 
-            //if((Byte & 1)&&(PPU.BGMode==5||PPU.BGMode==6))
-            //IPPU.Interlace=1;
             if ((Memory.FillRAM [0x2133] ^ Byte) & 3)
             {
                FLUSH_REDRAW();
@@ -791,7 +681,6 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
                if (PPU.BGMode == 5 || PPU.BGMode == 6)
                   IPPU.Interlace = Byte & 1;
                IPPU.InterlaceSprites = 0;
-               //   IPPU.InterlaceSprites = (Byte&2)>>1;
             }
 
          }
@@ -892,7 +781,6 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
 #ifdef SPCTOOL
          _SPCInPB(Address & 3, Byte);
 #else
-         // CPU.Flags |= DEBUG_MODE_FLAG;
          Memory.FillRAM [Address] = Byte;
          IAPU.RAM [(Address & 3) + 0xf4] = Byte;
 #ifdef SPC700_SHUTDOWN
@@ -954,7 +842,7 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
 /******************************************************************************/
 uint8_t S9xGetPPU(uint16_t Address)
 {
-   uint8_t byte = OpenBus;
+   uint8_t byte;
    if (Address < 0x2100) //not a real PPU reg
       return OpenBus; //treat as unmapped memory returning last byte on the bus
    if (Address <= 0x2190)
@@ -1279,16 +1167,12 @@ uint8_t S9xGetPPU(uint16_t Address)
 #ifdef SPCTOOL
          return ((uint8_t) _SPCOutP [Address & 3]);
 #else
-         //   CPU.Flags |= DEBUG_MODE_FLAG;
 #ifdef SPC700_SHUTDOWN
          IAPU.APUExecuting = Settings.APUEnabled;
          IAPU.WaitCounter++;
 #endif
          if (Settings.APUEnabled)
          {
-#ifdef CPU_SHUTDOWN
-            //    CPU.WaitAddress = CPU.PCAtOpcodeStart;
-#endif
             if (SNESGameFixes.APU_OutPorts_ReturnValueFix &&
                   Address >= 0x2140 && Address <= 0x2143 && !CPU.V_Counter)
             {
@@ -1356,13 +1240,10 @@ uint8_t S9xGetPPU(uint16_t Address)
          case 0x21c2:
             if (Model->_5C77 == 2)
                return (0x20);
-
-            // fprintf(stderr, "Read from $21c2!\n");
             return OpenBus;
          case 0x21c3:
             if (Model->_5C77 == 2)
                return (0);
-            // fprintf(stderr, "Read from $21c3!\n");
             return OpenBus;
          case 0x2800:
             // For Dai Kaijyu Monogatari II
@@ -1380,8 +1261,6 @@ uint8_t S9xGetPPU(uint16_t Address)
 
       byte = Memory.FillRAM [Address];
 
-      //if (Address != 0x3030 && Address != 0x3031)
-      //printf ("%04x\n", Address);
 #ifdef CPU_SHUTDOWN
       if (Address == 0x3030)
          CPU.WaitAddress = CPU.PCAtOpcodeStart;
@@ -1394,7 +1273,6 @@ uint8_t S9xGetPPU(uint16_t Address)
          }
       return (byte);
    }
-   //    fprintf(stderr, "%03d: %02x from %04x\n", CPU.V_Counter, byte, Address);
    return (byte);
 }
 
@@ -1405,7 +1283,6 @@ uint8_t S9xGetPPU(uint16_t Address)
 void S9xSetCPU(uint8_t byte, uint16_t Address)
 {
    int d;
-   // fprintf(stderr, "%03d: %02x to %04x\n", CPU.V_Counter, byte, Address);
 
    if (Address < 0x4200)
    {
@@ -1422,7 +1299,7 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
          }
          break;
       case 0x4017:
-         break;
+         return;
       default:
          break;
       }
@@ -1434,7 +1311,6 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
          // NMI, V & H IRQ and joypad reading enable flags
          if (byte & 0x20)
          {
-            //if(!SNESGameFixes.umiharakawaseFix && PPU.IRQVBeamPos==262) fprintf(stderr, "PPU.IRQVBeamPos = %d, CPU.V_Counter = %d\n", PPU.IRQVBeamPos, CPU.V_Counter);
             if (!PPU.VTimerEnabled)
             {
                PPU.VTimerEnabled = true;
@@ -1447,8 +1323,6 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
          else
          {
             PPU.VTimerEnabled = false;
-            //     if (SNESGameFixes.umiharakawaseFix)
-            //    byte &= ~0x20;
          }
 
          if (byte & 0x10)
@@ -1825,11 +1699,7 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
       case 0x435B:
       case 0x436B:
       case 0x437B:
-
          // Unknown, but they seem to be RAM-ish
-#if 0
-         fprintf(stderr, "Write %02x to %04x!\n", byte, Address);
-#endif
          break;
 
       //These registers are used by both the S-DD1 and the SPC7110
@@ -1839,14 +1709,12 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
       case 0x4803:
          if (Settings.SPC7110)
             S9xSetSPC7110(byte, Address);
-         //printf ("%02x->%04x\n", byte, Address);
          break;
 
       case 0x4804:
       case 0x4805:
       case 0x4806:
       case 0x4807:
-         //printf ("%02x->%04x\n", byte, Address);
          if (Settings.SPC7110)
             S9xSetSPC7110(byte, Address);
          else S9xSetSDD1MemoryMap(Address - 0x4804, byte & 7);
@@ -1911,7 +1779,6 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
 uint8_t S9xGetCPU(uint16_t Address)
 {
    uint8_t byte;
-   //    fprintf(stderr, "read from %04x\n", Address);
 
    if (Address < 0x4200)
    {
@@ -1921,22 +1788,12 @@ uint8_t S9xGetCPU(uint16_t Address)
       case 0x4016:
       {
          if (Memory.FillRAM [0x4016] & 1)
-         {
-            if ((!Settings.SwapJoypads &&
-                  IPPU.Controller == SNES_MOUSE_SWAPPED) ||
-                  (Settings.SwapJoypads &&
-                   IPPU.Controller == SNES_MOUSE))
-            {
-               if (++PPU.MouseSpeed [0] > 2)
-                  PPU.MouseSpeed [0] = 0;
-            }
-            return (0);
-         }
+            return 0;
 
-         int ind = Settings.SwapJoypads ? 1 : 0;
-         byte = IPPU.Joypads[ind] >> (PPU.Joypad1ButtonReadPos ^ 15);
-         PPU.Joypad1ButtonReadPos++;
-         return (byte & 1);
+         if (PPU.Joypad1ButtonReadPos >= 16) // Joypad 1 is enabled
+            return 1;
+
+         return (IPPU.Joypads[0] >> (PPU.Joypad1ButtonReadPos++ ^ 15)) & 1;
       }
       case 0x4017:
       {
@@ -1947,26 +1804,18 @@ uint8_t S9xGetCPU(uint16_t Address)
             {
             case SNES_MULTIPLAYER5:
                return (2);
-            case SNES_MOUSE_SWAPPED:
-               if (Settings.SwapJoypads && ++PPU.MouseSpeed [0] > 2)
-                  PPU.MouseSpeed [0] = 0;
-               break;
-
             case SNES_MOUSE:
-               if (!Settings.SwapJoypads && ++PPU.MouseSpeed [0] > 2)
-                  PPU.MouseSpeed [0] = 0;
                break;
             }
-            return (0x00);
-         }
 
-         int ind = Settings.SwapJoypads ? 0 : 1;
+            return 0;
+         }
 
          if (IPPU.Controller == SNES_MULTIPLAYER5)
          {
             if (Memory.FillRAM [0x4201] & 0x80)
             {
-               byte = ((IPPU.Joypads[ind] >> (PPU.Joypad2ButtonReadPos ^ 15)) & 1) |
+               byte = ((IPPU.Joypads[1] >> (PPU.Joypad2ButtonReadPos ^ 15)) & 1) |
                       (((IPPU.Joypads[2] >> (PPU.Joypad2ButtonReadPos ^ 15)) & 1) << 1);
                PPU.Joypad2ButtonReadPos++;
                return (byte);
@@ -1979,8 +1828,7 @@ uint8_t S9xGetCPU(uint16_t Address)
                return (byte);
             }
          }
-         else if (IPPU.Controller == SNES_JUSTIFIER
-                  || IPPU.Controller == SNES_JUSTIFIER_2)
+         else if (IPPU.Controller == SNES_JUSTIFIER || IPPU.Controller == SNES_JUSTIFIER_2)
          {
             uint8_t rv;
             rv = (1 & (justifiers >> in_bit));
@@ -1988,12 +1836,15 @@ uint8_t S9xGetCPU(uint16_t Address)
             in_bit %= 32;
             return rv;
          }
-         return ((IPPU.Joypads[ind] >> (PPU.Joypad2ButtonReadPos++ ^ 15)) & 1);
+
+         if (PPU.Joypad2ButtonReadPos >= 16) // Joypad 2 is enabled
+            return 1;
+
+         return (IPPU.Joypads[1] >> (PPU.Joypad2ButtonReadPos++ ^ 15)) & 1;
       }
       default:
          return OpenBus;
       }
-      //    return (Memory.FillRAM [Address]);
    }
    else
       switch (Address)
@@ -2196,7 +2047,6 @@ uint8_t S9xGetCPU(uint16_t Address)
       case 0x435B:
       case 0x436B:
       case 0x437B:
-
          // Unknown, but they seem to be RAM-ish
          return (Memory.FillRAM[Address]);
 
@@ -2209,7 +2059,6 @@ uint8_t S9xGetCPU(uint16_t Address)
 
          return OpenBus;
       }
-   //    return (Memory.FillRAM[Address]);
 }
 
 static void CommonPPUReset()
@@ -2419,16 +2268,6 @@ void S9xResetPPU()
 void S9xSoftResetPPU()
 {
    CommonPPUReset();
-   // PPU.Joypad1ButtonReadPos = 0;
-   // PPU.Joypad2ButtonReadPos = 0;
-   // PPU.Joypad3ButtonReadPos = 0;
-
-   // IPPU.Joypads[0] = IPPU.Joypads[1] = IPPU.Joypads[2] = 0;
-   // IPPU.Joypads[3] = IPPU.Joypads[4] = 0;
-   // IPPU.SuperScope = 0;
-   // IPPU.Mouse[0] = IPPU.Mouse[1] = 0;
-   // IPPU.PrevMouseX[0] = IPPU.PrevMouseX[1] = 256 / 2;
-   // IPPU.PrevMouseY[0] = IPPU.PrevMouseY[1] = 224 / 2;
 
    int c;
    for (c = 0; c < 0x8000; c += 0x100)
@@ -2448,8 +2287,7 @@ void S9xProcessMouse(int which1)
    int x, y;
    uint32_t buttons;
 
-   if ((IPPU.Controller == SNES_MOUSE || IPPU.Controller == SNES_MOUSE_SWAPPED)
-         && S9xReadMousePosition(which1, &x, &y, &buttons))
+   if (IPPU.Controller == SNES_MOUSE && S9xReadMousePosition(which1, &x, &y, &buttons))
    {
       int delta_x, delta_y;
 #define MOUSE_SIGNATURE 0x1
@@ -2502,10 +2340,7 @@ void S9xProcessMouse(int which1)
       else
          IPPU.Mouse [which1] |= delta_y << 24;
 
-      if (IPPU.Controller == SNES_MOUSE_SWAPPED)
-         IPPU.Joypads [0] = IPPU.Mouse [which1];
-      else
-         IPPU.Joypads [1] = IPPU.Mouse [which1];
+      IPPU.Joypads [1] = IPPU.Mouse [which1];
    }
 }
 
@@ -2554,12 +2389,6 @@ void S9xNextController()
    case SNES_JOYPAD:
       if (Settings.MouseMaster)
       {
-         IPPU.Controller = SNES_MOUSE_SWAPPED;
-         break;
-      }
-   case SNES_MOUSE_SWAPPED:
-      if (Settings.MouseMaster)
-      {
          IPPU.Controller = SNES_MOUSE;
          break;
       }
@@ -2597,18 +2426,12 @@ void S9xUpdateJustifiers()
 {
    static bool last_p1;
    in_bit = 0;
-   // static int p1count;
    justifiers = 0xFFFF00AA;
 
    bool offscreen = JustifierOffscreen();
 
    JustifierButtons(&justifiers);
-   // if(p1count==32)
-   // {
    last_p1 = !last_p1;
-   //    p1count=0;
-   // }
-   // p1count++;
 
    if (!last_p1)
       justifiers |= 0x1000;
@@ -2706,8 +2529,6 @@ void S9xUpdateJoypads()
    for (i = 0; i < 5; i++)
       IPPU.Joypads [i] = S9xReadJoypad(i);
 
-   // S9xMovieUpdate();
-
    for (i = 0; i < 5; i++)
    {
       if ((IPPU.Joypads [i] & (SNES_LEFT_MASK | SNES_RIGHT_MASK)) ==
@@ -2752,16 +2573,15 @@ void S9xUpdateJoypads()
          PPU.Joypad2ButtonReadPos = 0;
          PPU.Joypad3ButtonReadPos = 16;
       }
-      int ind = Settings.SwapJoypads ? 1 : 0;
 
-      Memory.FillRAM [0x4218] = (uint8_t) IPPU.Joypads [ind];
-      Memory.FillRAM [0x4219] = (uint8_t)(IPPU.Joypads [ind] >> 8);
-      Memory.FillRAM [0x421a] = (uint8_t) IPPU.Joypads [ind ^ 1];
-      Memory.FillRAM [0x421b] = (uint8_t)(IPPU.Joypads [ind ^ 1] >> 8);
+      Memory.FillRAM [0x4218] = (uint8_t) IPPU.Joypads [0];
+      Memory.FillRAM [0x4219] = (uint8_t)(IPPU.Joypads [0] >> 8);
+      Memory.FillRAM [0x421a] = (uint8_t) IPPU.Joypads [1];
+      Memory.FillRAM [0x421b] = (uint8_t)(IPPU.Joypads [1] >> 8);
       if (Memory.FillRAM [0x4201] & 0x80)
       {
-         Memory.FillRAM [0x421c] = (uint8_t) IPPU.Joypads [ind];
-         Memory.FillRAM [0x421d] = (uint8_t)(IPPU.Joypads [ind] >> 8);
+         Memory.FillRAM [0x421c] = (uint8_t) IPPU.Joypads [0];
+         Memory.FillRAM [0x421d] = (uint8_t)(IPPU.Joypads [0] >> 8);
          Memory.FillRAM [0x421e] = (uint8_t) IPPU.Joypads [2];
          Memory.FillRAM [0x421f] = (uint8_t)(IPPU.Joypads [2] >> 8);
       }
@@ -2940,7 +2760,6 @@ void REGISTER_2118(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (!PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2118] = Byte;
 }
 
 void REGISTER_2118_tile(uint8_t Byte)
@@ -2956,7 +2775,6 @@ void REGISTER_2118_tile(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (!PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2118] = Byte;
 }
 
 void REGISTER_2118_linear(uint8_t Byte)
@@ -2968,7 +2786,6 @@ void REGISTER_2118_linear(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (!PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2118] = Byte;
 }
 
 void REGISTER_2119(uint8_t Byte)
@@ -2989,7 +2806,6 @@ void REGISTER_2119(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2119] = Byte;
 }
 
 void REGISTER_2119_tile(uint8_t Byte)
@@ -3004,7 +2820,6 @@ void REGISTER_2119_tile(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2119] = Byte;
 }
 
 void REGISTER_2119_linear(uint8_t Byte)
@@ -3016,7 +2831,6 @@ void REGISTER_2119_linear(uint8_t Byte)
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
    if (PPU.VMA.High)
       PPU.VMA.Address += PPU.VMA.Increment;
-   //    Memory.FillRAM [0x2119] = Byte;
 }
 
 void REGISTER_2122(uint8_t Byte)
@@ -3055,7 +2869,6 @@ void REGISTER_2122(uint8_t Byte)
       }
    }
    PPU.CGFLIP ^= 1;
-   //    Memory.FillRAM [0x2122] = Byte;
 }
 
 void REGISTER_2180(uint8_t Byte)

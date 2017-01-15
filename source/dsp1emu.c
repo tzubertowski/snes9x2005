@@ -1,19 +1,4 @@
-//Copyright (C) 1997-2001 ZSNES Team ( zsknight@zsnes.com / _demo_@zsnes.com )
-//
-//This program is free software; you can redistribute it and/or
-//modify it under the terms of the GNU General Public License
-//as published by the Free Software Foundation; either
-//version 2 of the License, or (at your option) any later
-//version.
-//
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with this program; if not, write to the Free Software
-//Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#include "../copyright"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -698,15 +683,12 @@ void DSPOp06()
 
    // rotate around Z
    tanval2 = Angle(-Op02AAS + 32768);
-   //   tanval2 = (-Op02AAS+32768)/(65536/INCR);
    ObjPX1 = (ObjPX * Cos(tanval2) + ObjPY * -Sin(tanval2));
    ObjPY1 = (ObjPX * Sin(tanval2) + ObjPY * Cos(tanval2));
    ObjPZ1 = ObjPZ;
 
    // rotate around X
-   //   tanval2 = (-Op02AZS/(65536/INCR)) & 1023;
    tanval2 = Angle(-Op02AZS);
-   //   tanval2 = (-Op02AZS)/256;
    ObjPX2 = ObjPX1;
    ObjPY2 = (ObjPY1 * Cos(tanval2) + ObjPZ1 * -Sin(tanval2));
    ObjPZ2 = (ObjPY1 * Sin(tanval2) + ObjPZ1 * Cos(tanval2));
@@ -716,8 +698,8 @@ void DSPOp06()
    if (ObjPZ2 < 0)
    {
       double d;
-      Op06H = (int16_t)(-ObjPX2 * Op02LES / -(ObjPZ2)); //-ObjPX2*256/-ObjPZ2;
-      Op06V = (int16_t)(-ObjPY2 * Op02LES / -(ObjPZ2)); //-ObjPY2*256/-ObjPZ2;
+      Op06H = (int16_t)(-ObjPX2 * Op02LES / -(ObjPZ2));
+      Op06V = (int16_t)(-ObjPY2 * Op02LES / -(ObjPZ2));
       d = (double)Op02LES;
       d *= 256.0;
       d /= (-ObjPZ2);
@@ -726,8 +708,6 @@ void DSPOp06()
       else if (d < 0.0)
          d = 0.0;
       Op06S = (uint16_t)d;
-      //Op06S=(uint16_t)(256*(double)Op02LES/-ObjPZ2);
-      //Op06S=(uint16_t)((double)(256.0*((double)Op02LES)/(-ObjPZ2)));
    }
    else
    {
@@ -762,8 +742,8 @@ void DSPOp06()
 
    if (ObjPZ2 < 0)
    {
-      Op06H = (int16_t)(-ObjPX2 * Op02LES / -(ObjPZ2)); //-ObjPX2*256/-ObjPZ2;
-      Op06V = (int16_t)(-ObjPY2 * Op02LES / -(ObjPZ2)); //-ObjPY2*256/-ObjPZ2;
+      Op06H = (int16_t)(-ObjPX2 * Op02LES / -(ObjPZ2));
+      Op06V = (int16_t)(-ObjPY2 * Op02LES / -(ObjPZ2));
       double d = (double)Op02LES;
       d *= 256.0;
       d /= (-ObjPZ2);
@@ -772,7 +752,6 @@ void DSPOp06()
       else if (d < 0.0)
          d = 0.0;
       Op06S = (uint16_t)d;
-      //   Op06S=(uint16_t)(256*(double)Op02LES/-ObjPZ2);
    }
    else
    {

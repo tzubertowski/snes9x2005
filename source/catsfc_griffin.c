@@ -1,3 +1,5 @@
+#include "../copyright"
+
 #include "apu.c"
 #include "c4.c"
 #include "c4emu.c"

@@ -1,93 +1,4 @@
-/*******************************************************************************
-  Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
-
-  (c) Copyright 1996 - 2002 Gary Henderson (gary.henderson@ntlworld.com) and
-                            Jerremy Koot (jkoot@snes9x.com)
-
-  (c) Copyright 2001 - 2004 John Weidman (jweidman@slip.net)
-
-  (c) Copyright 2002 - 2004 Brad Jorsch (anomie@users.sourceforge.net),
-                            funkyass (funkyass@spam.shaw.ca),
-                            Joel Yliluoma (http://iki.fi/bisqwit/)
-                            Kris Bleakley (codeviolation@hotmail.com),
-                            Matthew Kendora,
-                            Nach (n-a-c-h@users.sourceforge.net),
-                            Peter Bortas (peter@bortas.org) and
-                            zones (kasumitokoduck@yahoo.com)
-
-  C4 x86 assembler and some C emulation code
-  (c) Copyright 2000 - 2003 zsKnight (zsknight@zsnes.com),
-                            _Demo_ (_demo_@zsnes.com), and Nach
-
-  C4 C++ code
-  (c) Copyright 2003 Brad Jorsch
-
-  DSP-1 emulator code
-  (c) Copyright 1998 - 2004 Ivar (ivar@snes9x.com), _Demo_, Gary Henderson,
-                            John Weidman, neviksti (neviksti@hotmail.com),
-                            Kris Bleakley, Andreas Naive
-
-  DSP-2 emulator code
-  (c) Copyright 2003 Kris Bleakley, John Weidman, neviksti, Matthew Kendora, and
-                     Lord Nightmare (lord_nightmare@users.sourceforge.net
-
-  OBC1 emulator code
-  (c) Copyright 2001 - 2004 zsKnight, pagefault (pagefault@zsnes.com) and
-                            Kris Bleakley
-  Ported from x86 assembler to C by sanmaiwashi
-
-  SPC7110 and RTC C++ emulator code
-  (c) Copyright 2002 Matthew Kendora with research by
-                     zsKnight, John Weidman, and Dark Force
-
-  S-DD1 C emulator code
-  (c) Copyright 2003 Brad Jorsch with research by
-                     Andreas Naive and John Weidman
-
-  S-RTC C emulator code
-  (c) Copyright 2001 John Weidman
-
-  ST010 C++ emulator code
-  (c) Copyright 2003 Feather, Kris Bleakley, John Weidman and Matthew Kendora
-
-  Super FX x86 assembler emulator code
-  (c) Copyright 1998 - 2003 zsKnight, _Demo_, and pagefault
-
-  Super FX C emulator code
-  (c) Copyright 1997 - 1999 Ivar, Gary Henderson and John Weidman
-
-
-  SH assembler code partly based on x86 assembler code
-  (c) Copyright 2002 - 2004 Marcus Comstedt (marcus@mc.pp.se)
-
-  (c) Copyright 2014 - 2016 Daniel De Matteis. (UNDER NO CIRCUMSTANCE 
-  WILL COMMERCIAL RIGHTS EVER BE APPROPRIATED TO ANY PARTY)
-
-  Specific ports contains the works of other authors. See headers in
-  individual files.
-
-  Snes9x homepage: http://www.snes9x.com
-
-  Permission to use, copy, modify and distribute Snes9x in both binary and
-  source form, for non-commercial purposes, is hereby granted without fee,
-  providing that this license information and copyright notice appear with
-  all copies and any derived work.
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event shall the authors be held liable for any damages
-  arising from the use of this software.
-
-  Snes9x is freeware for PERSONAL USE only. Commercial users should
-  seek permission of the copyright holders first. Commercial use includes
-  charging money for Snes9x or software derived from Snes9x.
-
-  The copyright holders request that bug fixes and improvements to the code
-  should be forwarded to them so everyone can benefit from the modifications
-  in future versions.
-
-  Super NES and Super Nintendo Entertainment System are trademarks of
-  Nintendo Co., Limited and its subsidiary companies.
-*******************************************************************************/
+#include "../copyright"
 
 /*****************************************************************************/
 /* CPU-S9xOpcodes.CPP                                                                            */
@@ -147,10 +58,6 @@ static void Op75M1(void)
    DirectIndexedX(READ, ADC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -159,10 +66,6 @@ static void Op75M0(void)
    DirectIndexedX(READ, ADC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -405,10 +308,6 @@ static void Op35M1(void)
    DirectIndexedX(READ, AND8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -417,10 +316,6 @@ static void Op35M0(void)
    DirectIndexedX(READ, AND16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -736,10 +631,6 @@ static void Op34M1(void)
    DirectIndexedX(READ, BIT8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -748,10 +639,6 @@ static void Op34M0(void)
    DirectIndexedX(READ, BIT16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -837,10 +724,6 @@ static void OpD5M1(void)
    DirectIndexedX(READ, CMP8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -849,10 +732,6 @@ static void OpD5M0(void)
    DirectIndexedX(READ, CMP16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1206,10 +1085,6 @@ static void OpD6M1(void)
    DirectIndexedX(MODIFY, DEC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1218,10 +1093,6 @@ static void OpD6M0(void)
    DirectIndexedX(MODIFY, DEC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1304,10 +1175,6 @@ static void Op55M1(void)
    DirectIndexedX(READ, EOR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1316,10 +1183,6 @@ static void Op55M0(void)
    DirectIndexedX(READ, EOR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1549,10 +1412,6 @@ static void OpF6M1(void)
    DirectIndexedX(MODIFY, INC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1561,10 +1420,6 @@ static void OpF6M0(void)
    DirectIndexedX(MODIFY, INC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1647,10 +1502,6 @@ static void OpB5M1(void)
    DirectIndexedX(READ, LDA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1659,10 +1510,6 @@ static void OpB5M0(void)
    DirectIndexedX(READ, LDA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1905,10 +1752,6 @@ static void OpB6X1(void)
    DirectIndexedY(READ, LDX8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -1917,10 +1760,6 @@ static void OpB6X0(void)
    DirectIndexedY(READ, LDX16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2003,10 +1842,6 @@ static void OpB4X1(void)
    DirectIndexedX(READ, LDY8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2015,10 +1850,6 @@ static void OpB4X0(void)
    DirectIndexedX(READ, LDY16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2087,10 +1918,6 @@ static void Op56M1(void)
    DirectIndexedX(MODIFY, LSR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2099,10 +1926,6 @@ static void Op56M0(void)
    DirectIndexedX(MODIFY, LSR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2185,10 +2008,6 @@ static void Op15M1(void)
    DirectIndexedX(READ, ORA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2197,10 +2016,6 @@ static void Op15M0(void)
    DirectIndexedX(READ, ORA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2430,10 +2245,6 @@ static void Op36M1(void)
    DirectIndexedX(MODIFY, ROL8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2442,10 +2253,6 @@ static void Op36M0(void)
    DirectIndexedX(MODIFY, ROL16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2514,10 +2321,6 @@ static void Op76M1(void)
    DirectIndexedX(MODIFY, ROR8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2526,10 +2329,6 @@ static void Op76M0(void)
    DirectIndexedX(MODIFY, ROR16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE /* memory */ + ONE_CYCLE /* opcode */;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2598,10 +2397,6 @@ static void OpF5M1(void)
    DirectIndexedX(READ, SBC8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2610,10 +2405,6 @@ static void OpF5M0(void)
    DirectIndexedX(READ, SBC16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2832,10 +2623,6 @@ static void Op95M1(void)
    DirectIndexedX(WRITE, STA8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -2844,10 +2631,6 @@ static void Op95M0(void)
    DirectIndexedX(WRITE, STA16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3074,10 +2857,6 @@ static void Op96X1(void)
    DirectIndexedY(WRITE, STX8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3086,10 +2865,6 @@ static void Op96X0(void)
    DirectIndexedY(WRITE, STX16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3132,10 +2907,6 @@ static void Op94X1(void)
    DirectIndexedX(WRITE, STY8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3144,10 +2915,6 @@ static void Op94X0(void)
    DirectIndexedX(WRITE, STY16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3190,10 +2957,6 @@ static void Op74M1(void)
    DirectIndexedX(WRITE, STZ8);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3202,10 +2965,6 @@ static void Op74M0(void)
    DirectIndexedX(WRITE, STZ16);
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
-   //    if (ICPU.Registers.DL != 0)
-   // CPU.Cycles += TWO_CYCLES;
-   //    else
-   // CPU.Cycles += ONE_CYCLE;
 #endif
 }
 
@@ -3383,8 +3142,6 @@ static inline void CPUShutdown()
             !(CPU.Flags & (IRQ_PENDING_FLAG | NMI_FLAG)))
       {
          CPU.WaitAddress = NULL;
-         if (Settings.SA1)
-            S9xSA1ExecuteDuringSleep();
 #ifndef USE_BLARGG_APU
          CPU.Cycles = CPU.NextEvent;
          if (IAPU.APUExecuting)
@@ -3423,6 +3180,31 @@ static inline void CPUShutdown()
 #else
 #define CPUShutdown()
 #endif
+
+// From the speed-hacks branch of CatSFC
+static inline void ForceShutdown()
+{
+#ifdef CPU_SHUTDOWN
+#ifndef SA1_OPCODES
+   CPU.WaitAddress = NULL;
+#ifndef USE_BLARGG_APU
+   CPU.Cycles = CPU.NextEvent;
+   if (IAPU.APUExecuting)
+   {
+      ICPU.CPUExecuting = false;
+      do
+      {
+         APU_EXECUTE1();
+      } while (APU.Cycles < CPU.NextEvent);
+      ICPU.CPUExecuting = true;
+   }
+#endif
+#else
+   SA1.Executing = false;
+   SA1.CPUExecuting = false;
+#endif
+#endif
+}
 
 /* BCC */
 static void Op90(void)
@@ -3747,10 +3529,7 @@ static void OpEA(void)
 /**********************************************************************************************/
 
 /* PUSH Instructions ************************************************************************* */
-/* #define PushW(w) \
- *    S9xSetWord (w, ICPU.Registers.S.W - 1);\
- *    ICPU.Registers.S.W -= 2;
- */
+
 #define PushB(b)\
     S9xSetByte (b, ICPU.Registers.S.W--);
 
@@ -3983,10 +3762,6 @@ static void Op5AX0(void)
    w = S9xGetByte (++ICPU.Registers.S.W); \
    w |= (S9xGetByte (++ICPU.Registers.S.W)<<8);
 
-/* w = S9xGetWord (ICPU.Registers.S.W + 1); \
-   ICPU.Registers.S.W += 2;
-*/
-
 #define PullB(b)\
    b = S9xGetByte (++ICPU.Registers.S.W);
 
@@ -4091,7 +3866,6 @@ static void Op28E1(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*     CHECK_FOR_IRQ();*/
 }
 
 static void Op28(void)
@@ -4108,7 +3882,6 @@ static void Op28(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*     CHECK_FOR_IRQ();*/
 }
 
 //PLX
@@ -4866,7 +4639,6 @@ static void OpC2(void)
       ICPU.Registers.YH = 0;
    }
    S9xFixCycles();
-   /*    CHECK_FOR_IRQ(); */
 }
 
 static void OpE2(void)
@@ -4935,7 +4707,6 @@ static void Op40(void)
    CPU.Cycles += TWO_CYCLES;
 #endif
    S9xFixCycles();
-   /*    CHECK_FOR_IRQ(); */
 }
 
 /**********************************************************************************************/
@@ -4944,39 +4715,10 @@ static void Op40(void)
 // WAI
 static void OpCB(void)
 {
-
-   // Ok, let's just C-ify the ASM versions separately.
 #ifdef SA1_OPCODES
    SA1.WaitingForInterrupt = true;
    SA1.PC--;
-#if 0
-   // XXX: FIXME
-   if (Settings.Shutdown)
-   {
-      SA1.Cycles = SA1.NextEvent;
-      if (IAPU.APUExecuting)
-      {
-         SA1.Executing = false;
-         do
-         {
-            APU_EXECUTE1(,
-         }
-         while (APU.Cycles < SA1.NextEvent,         SA1.Executing = true;
-      }
-}
-#endif
 #else // SA1_OPCODES
-#if 0
-
-
-   if (CPU.IRQActive)
-   {
-#ifndef SA1_OPCODES
-      CPU.Cycles += TWO_CYCLES;
-#endif
-   }
-   else
-#endif
    {
       CPU.WaitingForInterrupt = true;
       CPU.PC--;
@@ -5008,16 +4750,194 @@ static void OpCB(void)
 #endif // SA1_OPCODES
 }
 
-// STP
+// Usually an STP opcode
+// SNESAdvance speed hack, not implemented in Snes9xTYL | Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
 static void OpDB(void)
 {
-   CPU.PC--;
-   CPU.Flags |= DEBUG_MODE_FLAG;
+#if !defined NO_SPEEDHACKS && defined CPU_SHUTDOWN
+   uint8_t NextByte = *CPU.PC++;
+
+   ForceShutdown();
+
+   int8_t BranchOffset = (NextByte & 0x7F) | ((NextByte & 0x40) << 1);
+   // ^ -64 .. +63, sign extend bit 6 into 7 for unpacking
+   long TargetAddress = ((int) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
+
+   switch (NextByte & 0x80)
+   {
+   case 0x00: // BNE
+      BranchCheck1 ();
+      if (!CheckZero ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0x80: // BEQ
+      BranchCheck2 ();
+      if (CheckZero ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   }
+#else
+     CPU.PC--;
+     CPU.Flags |= DEBUG_MODE_FLAG;
+#endif
 }
 
-// Reserved S9xOpcode
+// SNESAdvance speed hack, as implemented in Snes9xTYL / Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
 static void Op42(void)
 {
+#if !defined NO_SPEEDHACKS && defined CPU_SHUTDOWN
+   uint8_t NextByte = *CPU.PC++;
+
+   ForceShutdown();
+
+   int8_t BranchOffset = 0xF0 | (NextByte & 0xF); // always negative
+   long TargetAddress = ((int) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
+
+   switch (NextByte & 0xF0)
+   {
+   case 0x10: // BPL
+      BranchCheck1 ();
+      if (!CheckNegative ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0x30: // BMI
+      BranchCheck1 ();
+      if (CheckNegative ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0x50: // BVC
+      BranchCheck0 ();
+      if (!CheckOverflow ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0x70: // BVS
+      BranchCheck0 ();
+      if (CheckOverflow ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0x80: // BRA
+      CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+      CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+      CPU.Cycles++;
+#endif
+#endif
+      CPUShutdown ();
+      return;
+   case 0x90: // BCC
+      BranchCheck0 ();
+      if (!CheckCarry ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0xB0: // BCS
+      BranchCheck0 ();
+      if (CheckCarry ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0xD0: // BNE
+      BranchCheck1 ();
+      if (!CheckZero ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   case 0xF0: // BEQ
+      BranchCheck2 ();
+      if (CheckZero ()) {
+         CPU.PC = CPU.PCBase + TargetAddress;
+#ifdef VAR_CYCLES
+         CPU.Cycles += ONE_CYCLE;
+#else
+#ifndef SA1_OPCODES
+         CPU.Cycles++;
+#endif
+#endif
+         CPUShutdown ();
+      }
+      return;
+   }
+#endif
 }
 
 /*****************************************************************************/

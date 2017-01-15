@@ -1,93 +1,5 @@
-/*******************************************************************************
-  Snes9x - Portable Super Nintendo Entertainment System (TM) emulator.
+#include "../copyright"
 
-  (c) Copyright 1996 - 2002 Gary Henderson (gary.henderson@ntlworld.com) and
-                            Jerremy Koot (jkoot@snes9x.com)
-
-  (c) Copyright 2001 - 2004 John Weidman (jweidman@slip.net)
-
-  (c) Copyright 2002 - 2004 Brad Jorsch (anomie@users.sourceforge.net),
-                            funkyass (funkyass@spam.shaw.ca),
-                            Joel Yliluoma (http://iki.fi/bisqwit/)
-                            Kris Bleakley (codeviolation@hotmail.com),
-                            Matthew Kendora,
-                            Nach (n-a-c-h@users.sourceforge.net),
-                            Peter Bortas (peter@bortas.org) and
-                            zones (kasumitokoduck@yahoo.com)
-
-  C4 x86 assembler and some C emulation code
-  (c) Copyright 2000 - 2003 zsKnight (zsknight@zsnes.com),
-                            _Demo_ (_demo_@zsnes.com), and Nach
-
-  C4 C++ code
-  (c) Copyright 2003 Brad Jorsch
-
-  DSP-1 emulator code
-  (c) Copyright 1998 - 2004 Ivar (ivar@snes9x.com), _Demo_, Gary Henderson,
-                            John Weidman, neviksti (neviksti@hotmail.com),
-                            Kris Bleakley, Andreas Naive
-
-  DSP-2 emulator code
-  (c) Copyright 2003 Kris Bleakley, John Weidman, neviksti, Matthew Kendora, and
-                     Lord Nightmare (lord_nightmare@users.sourceforge.net
-
-  OBC1 emulator code
-  (c) Copyright 2001 - 2004 zsKnight, pagefault (pagefault@zsnes.com) and
-                            Kris Bleakley
-  Ported from x86 assembler to C by sanmaiwashi
-
-  SPC7110 and RTC C++ emulator code
-  (c) Copyright 2002 Matthew Kendora with research by
-                     zsKnight, John Weidman, and Dark Force
-
-  S-DD1 C emulator code
-  (c) Copyright 2003 Brad Jorsch with research by
-                     Andreas Naive and John Weidman
-
-  S-RTC C emulator code
-  (c) Copyright 2001 John Weidman
-
-  ST010 C++ emulator code
-  (c) Copyright 2003 Feather, Kris Bleakley, John Weidman and Matthew Kendora
-
-  Super FX x86 assembler emulator code
-  (c) Copyright 1998 - 2003 zsKnight, _Demo_, and pagefault
-
-  Super FX C emulator code
-  (c) Copyright 1997 - 1999 Ivar, Gary Henderson and John Weidman
-
-
-  SH assembler code partly based on x86 assembler code
-  (c) Copyright 2002 - 2004 Marcus Comstedt (marcus@mc.pp.se)
-
-  (c) Copyright 2014 - 2016 Daniel De Matteis. (UNDER NO CIRCUMSTANCE 
-  WILL COMMERCIAL RIGHTS EVER BE APPROPRIATED TO ANY PARTY)
-
-  Specific ports contains the works of other authors. See headers in
-  individual files.
-
-  Snes9x homepage: http://www.snes9x.com
-
-  Permission to use, copy, modify and distribute Snes9x in both binary and
-  source form, for non-commercial purposes, is hereby granted without fee,
-  providing that this license information and copyright notice appear with
-  all copies and any derived work.
-
-  This software is provided 'as-is', without any express or implied
-  warranty. In no event shall the authors be held liable for any damages
-  arising from the use of this software.
-
-  Snes9x is freeware for PERSONAL USE only. Commercial users should
-  seek permission of the copyright holders first. Commercial use includes
-  charging money for Snes9x or software derived from Snes9x.
-
-  The copyright holders request that bug fixes and improvements to the code
-  should be forwarded to them so everyone can benefit from the modifications
-  in future versions.
-
-  Super NES and Super Nintendo Entertainment System are trademarks of
-  Nintendo Co., Limited and its subsidiary companies.
-*******************************************************************************/
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -100,9 +12,6 @@
 
 void S9xInitC4()
 {
-   // Stupid zsnes code, we can't do the logical thing without breaking
-   // savestates
-   //    Memory.C4RAM = &Memory.FillRAM [0x6000];
    memset(Memory.C4RAM, 0, 0x2000);
 }
 
@@ -278,10 +187,6 @@ static void C4DoScaleRotate(int row_padding)
    uint8_t w = Memory.C4RAM[0x1f89] & ~7;
    uint8_t h = Memory.C4RAM[0x1f8c] & ~7;
 
-   //    printf("%dx%d XScale=%04x YScale=%04x angle=%03x\n", w, h, XScale, YScale, READ_WORD(Memory.C4RAM+0x1f80)&0x1ff);
-   //    printf("Matrix: [%10g %10g]  [%04x %04x]\n", A/4096.0, B/4096.0, A&0xffff, B&0xffff);
-   //    printf("        [%10g %10g]  [%04x %04x]\n", C/4096.0, D/4096.0, C&0xffff, D&0xffff);
-
    // Clear the output RAM
    memset(Memory.C4RAM, 0, (w + row_padding / 4)*h / 2);
 
@@ -380,9 +285,8 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
       //.loop
       if (X1 > 0xff && Y1 > 0xff && X1 < 0x6000 && Y1 < 0x6000)
       {
-         uint16_t addr = ((X1 & ~0x7ff) + (Y1 & ~0x7ff) * 12 + (Y1 & 0x700)) >> 7;
-         addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((
-                   X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
+         uint16_t addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((
+                            X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
          uint8_t bit = 0x80 >> ((X1 >> 8) & 7);
          Memory.C4RAM[addr + 0x300] &= ~bit;
          Memory.C4RAM[addr + 0x301] &= ~bit;
@@ -787,9 +691,7 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
          case 0x54: // Square
          {
             int64_t a = SAR64((int64_t)READ_3WORD(Memory.C4RAM + 0x1f80) << 40, 40);
-            // printf("%08X%08X\n", (uint32_t)(a>>32), (uint32_t)(a&0xFFFFFFFF));
             a *= a;
-            // printf("%08X%08X\n", (uint32_t)(a>>32), (uint32_t)(a&0xFFFFFFFF));
             WRITE_3WORD(Memory.C4RAM + 0x1f83, a);
             WRITE_3WORD(Memory.C4RAM + 0x1f86, (a >> 24));
          }
