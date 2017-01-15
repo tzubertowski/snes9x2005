@@ -195,7 +195,10 @@ void _makepath(char* path, const char* drive, const char* dir,
    }
    else
       *path = 0;
-   strcat(path, fname);
+
+   if (fname)
+      strcat(path, fname);
+
    if (ext && *ext)
    {
       strcat(path, ".");
@@ -322,7 +325,6 @@ void retro_init(void)
    struct retro_log_callback log;
    enum retro_pixel_format rgb565;
    static const struct retro_variable vars[] = {
-      { "catsfc_SwapJoypads", "Swap Joypads; disabled|enabled" },
       { "catsfc_VideoMode",   "Video Mode; auto|NTSC|PAL" },
       { NULL, NULL },
    };
@@ -409,11 +411,6 @@ uint32_t S9xReadJoypad(int port)
 static void check_variables(void)
 {
    struct retro_variable var;
-
-   var.key = "catsfc_SwapJoypads";
-   var.value = NULL;
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-         Settings.SwapJoypads = strcmp(var.value, "disabled");
 
    var.key = "catsfc_VideoMode";
    var.value = NULL;

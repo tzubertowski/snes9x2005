@@ -104,14 +104,13 @@ static void CommonS9xReset(void)
 
 void S9xReset(void)
 {
-   S9xResetPPU();
    CommonS9xReset();
+   S9xResetPPU();
    memset(Memory.RAM, 0x55, 0x20000);
 }
 
 void S9xSoftReset(void)
 {
-   S9xSoftResetPPU();
    CommonS9xReset();
+   S9xSoftResetPPU();
 }
-
