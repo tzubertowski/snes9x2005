@@ -8,4 +8,3 @@ void S9xResetSDD1();
 void S9xSDD1PostLoadState();
 
 #endif
-

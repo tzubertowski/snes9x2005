@@ -9,11 +9,11 @@
 struct FxInit_s
 {
    uint32_t  vFlags;
-   uint8_t*  pvRegisters;   /* 768 bytes located in the memory at address 0x3000 */
-   uint32_t  nRamBanks;  /* Number of 64kb-banks in GSU-RAM/BackupRAM (banks 0x70-0x73) */
-   uint8_t*  pvRam;      /* Pointer to GSU-RAM */
-   uint32_t  nRomBanks;  /* Number of 32kb-banks in Cart-ROM */
-   uint8_t*  pvRom;      /* Pointer to Cart-ROM */
+   uint8_t*  pvRegisters; /* 768 bytes located in the memory at address 0x3000 */
+   uint32_t  nRamBanks;   /* Number of 64kb-banks in GSU-RAM/BackupRAM (banks 0x70-0x73) */
+   uint8_t*  pvRam;       /* Pointer to GSU-RAM */
+   uint32_t  nRomBanks;   /* Number of 32kb-banks in Cart-ROM */
+   uint8_t*  pvRom;       /* Pointer to Cart-ROM */
 };
 
 /* Reset the FxChip */
@@ -39,9 +39,6 @@ extern uint32_t FxGetPlotOptionRegister();
 extern uint32_t FxGetSourceRegisterIndex();
 extern uint32_t FxGetDestinationRegisterIndex();
 
-/* Get string for opcode currently in the pipe */
-extern void FxPipeString(char* pvString);
-
 /* Get the byte currently in the pipe */
 extern uint8_t FxPipe();
 
@@ -65,4 +62,3 @@ extern void fx_updateRamBank(uint8_t Byte);
 extern void fx_computeScreenPointers();
 
 #endif
-

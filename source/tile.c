@@ -1009,4 +1009,3 @@ void DrawLargePixel16Sub1_2(uint32_t Tile, int32_t Offset,
 
    RENDER_TILE_LARGE(ScreenColors [pixel], LARGE_SUB_PIXEL1_2)
 }
-

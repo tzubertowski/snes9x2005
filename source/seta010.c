@@ -36,10 +36,6 @@ bool seta_hack;
 //temporary Op04 requirement
 #include <math.h>
 
-#ifndef PI
-#define PI 3.1415926535897932384626433832795
-#endif
-
 ST010_Regs ST010;
 
 uint8_t S9xGetST010(uint32_t Address)
@@ -288,12 +284,6 @@ void ST010_Rotate(int16_t Theta, int16_t X0, int16_t Y0, int16_t* X1, int16_t* Y
    *Y1 = (Y0 * ST010_Cos(Theta) >> 15) - (X0 * ST010_Sin(Theta) >> 15);
 }
 
-void SETA_Distance(int16_t Y0, int16_t X0, int16_t* Distance)
-{
-   if (X0 < 0) X0 = -X0;
-   *Distance = ((X0 * 0x7af0) + 0x4000) >> 15;
-}
-
 void ST010_SortDrivers(uint16_t Positions, uint16_t Places[32], uint16_t Drivers[32])
 {
    bool Sorted;
@@ -331,7 +321,6 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       ST010.control_enable = true;
       return;
    }
-   //printf("Write %06X:%02X\n", Address, Byte);
 
    if ((Address & 0xFFF) == 0x20 && ST010.control_enable)
       ST010.op_reg = Byte;
@@ -574,7 +563,6 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          y = Memory.SRAM[2] | (Memory.SRAM[3] << 8);
 #endif
          square = (int16_t)sqrt((double)(y * y + x * x));
-         //SETA_Distance( x,y,square );
 
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
@@ -743,4 +731,3 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       ST010.execute = 0;
    }
 }
-

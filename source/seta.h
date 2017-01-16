@@ -29,37 +29,36 @@ typedef struct SETA_ST010_STRUCT
    uint8_t output_params[16];
    uint8_t op_reg;
    uint8_t execute;
-   bool control_enable;
+   bool    control_enable;
 } ST010_Regs;
 
 typedef struct SETA_ST011_STRUCT
 {
-   bool waiting4command;
-   uint8_t status;
-   uint8_t command;
+   bool     waiting4command;
+   uint8_t  status;
+   uint8_t  command;
    uint32_t in_count;
    uint32_t in_index;
    uint32_t out_count;
    uint32_t out_index;
-   uint8_t parameters [512];
-   uint8_t output [512];
+   uint8_t  parameters [512];
+   uint8_t  output [512];
 } ST011_Regs;
 
 typedef struct SETA_ST018_STRUCT
 {
-   bool waiting4command;
-   uint8_t status;
-   uint8_t part_command;
-   uint8_t pass;
+   bool     waiting4command;
+   uint8_t  status;
+   uint8_t  part_command;
+   uint8_t  pass;
    uint32_t command;
    uint32_t in_count;
    uint32_t in_index;
    uint32_t out_count;
    uint32_t out_index;
-   uint8_t parameters [512];
-   uint8_t output [512];
+   uint8_t  parameters [512];
+   uint8_t  output [512];
 } ST018_Regs;
 
 #endif
 #endif
-

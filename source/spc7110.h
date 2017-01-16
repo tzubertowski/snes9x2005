@@ -35,10 +35,10 @@ void SPC7110Grab(char*);
 typedef struct SPC7110RTC
 {
    unsigned char reg[16];
-   int16_t index;
-   uint8_t control;
-   bool init;
-   time_t last_used;
+   int16_t       index;
+   uint8_t       control;
+   bool          init;
+   time_t        last_used;
 } S7RTC;
 
 typedef struct SPC7110EmuVars
@@ -88,20 +88,20 @@ typedef struct SPC7110EmuVars
    unsigned char reg4840;
    unsigned char reg4841;
    unsigned char reg4842;
-   uint8_t AlignBy;
-   uint8_t written;
-   uint8_t offset_add;
-   uint32_t DataRomOffset;
-   uint32_t DataRomSize;
-   uint32_t bank50Internal;
-   uint8_t bank50[DECOMP_BUFFER_SIZE];
-
+   uint8_t       AlignBy;
+   uint8_t       written;
+   uint8_t       offset_add;
+   uint32_t      DataRomOffset;
+   uint32_t      DataRomSize;
+   uint32_t      bank50Internal;
+   uint8_t       bank50[DECOMP_BUFFER_SIZE];
 } SPC7110Regs;
+
 extern SPC7110Regs s7r;
 extern S7RTC rtc_f9;
+
 // These are defined in spc7110.cpp
 bool S9xSaveSPC7110RTC(S7RTC* rtc_f9);
 bool S9xLoadSPC7110RTC(S7RTC* rtc_f9);
 
 #endif
-

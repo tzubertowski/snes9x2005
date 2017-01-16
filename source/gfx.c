@@ -11,7 +11,6 @@
 #include "cheats.h"
 
 #define M7 19
-#define M8 19
 
 void ComputeClipWindows();
 
@@ -699,9 +698,6 @@ static inline void SelectTileRenderer(bool normal)
 
 void S9xSetupOBJ()
 {
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering) fprintf(stderr, "Entering SetupOBJS()\n");
-#endif
    int SmallWidth, SmallHeight;
    int LargeWidth, LargeHeight;
 
@@ -749,10 +745,6 @@ void S9xSetupOBJ()
       SmallHeight >>= 1;
       LargeHeight >>= 1;
    }
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering) fprintf(stderr, "Sizes are %dx%d and %dx%d\n",
-                                       SmallWidth, SmallHeight, LargeWidth, LargeHeight);
-#endif
 
    /* OK, we have three cases here. Either there's no priority, priority is
     * normal FirstSprite, or priority is FirstSprite+Y. The first two are
@@ -761,16 +753,8 @@ void S9xSetupOBJ()
    int Height;
    uint8_t S;
 
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering) fprintf(stderr, "Priority rotation=%d, OAMAddr=%d -> ",
-                                       PPU.OAMPriorityRotation, PPU.OAMAddr * 2 | (PPU.OAMFlip & 1));
-#endif
    if (!PPU.OAMPriorityRotation || !(PPU.OAMFlip & PPU.OAMAddr & 1))
    {
-#ifdef MK_DEBUG_RTO
-      if (Settings.BGLayering) fprintf(stderr, "normal FirstSprite = %02x\n",
-                                          PPU.FirstSprite);
-#endif
       /* normal case */
       uint8_t LineOBJ[SNES_HEIGHT_EXTENDED];
       memset(LineOBJ, 0, sizeof(LineOBJ));
@@ -811,9 +795,6 @@ void S9xSetupOBJ()
                if (LineOBJ[Y] >= 32)
                {
                   GFX.OBJLines[Y].RTOFlags |= 0x40;
-#ifdef MK_DEBUG_RTO
-                  if (Settings.BGLayering) fprintf(stderr, "%d: OBJ %02x ranged over\n", Y, S);
-#endif
                   continue;
                }
                GFX.OBJLines[Y].Tiles -= GFX.OBJVisibleTiles[S];
@@ -846,9 +827,6 @@ void S9xSetupOBJ()
    else
    {
       /* evil FirstSprite+Y case */
-#ifdef MK_DEBUG_RTO
-      if (Settings.BGLayering) fprintf(stderr, "FirstSprite+Y\n");
-#endif
 
       /* First, find out which sprites are on which lines */
       uint8_t OBJOnLine[SNES_HEIGHT_EXTENDED][128];
@@ -920,9 +898,6 @@ void S9xSetupOBJ()
                   if (j >= 32)
                   {
                      GFX.OBJLines[Y].RTOFlags |= 0x40;
-#ifdef MK_DEBUG_RTO
-                     if (Settings.BGLayering) fprintf(stderr, "%d: OBJ %02x ranged over\n", Y, S);
-#endif
                      break;
                   }
                   GFX.OBJLines[Y].Tiles -= GFX.OBJVisibleTiles[S];
@@ -938,34 +913,11 @@ void S9xSetupOBJ()
       }
    }
 
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering)
-   {
-      fprintf(stderr, "Sprites per line:\n");
-      for (int xxx = 0; xxx < SNES_HEIGHT_EXTENDED; xxx++)
-      {
-         fprintf(stderr, "Line %d: RTO=%02x Tiles=%d", xxx, GFX.OBJLines[xxx].RTOFlags,
-                 34 - GFX.OBJLines[xxx].Tiles);
-         for (int j = 0; j < 32 && GFX.OBJLines[xxx].OBJ[j].Sprite >= 0; j++)
-            fprintf(stderr, " %02x.%d", GFX.OBJLines[xxx].OBJ[j].Sprite,
-                    GFX.OBJLines[xxx].OBJ[j].Line);
-         fprintf(stderr, "\n");
-      }
-
-      fprintf(stderr, "Exiting SetupObj()\n");
-   }
-#endif
-
    IPPU.OBJChanged = false;
 }
 
 static void DrawOBJS(bool OnMain, uint8_t D)
 {
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering) fprintf(stderr, "Entering DrawOBJS() for %d-%d\n",
-                                       GFX.StartY, GFX.EndY);
-#endif
-
    BG.BitShift = 4;
    BG.TileShift = 5;
    BG.TileAddress = PPU.OBJNameBase;
@@ -984,6 +936,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
       uint16_t Pos;
       bool Value;
    } Windows[7];
+
    int clipcount = GFX.pCurrentClip->Count [4];
    if (!clipcount)
    {
@@ -1026,15 +979,6 @@ static void DrawOBJS(bool OnMain, uint8_t D)
          }
       }
    }
-
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering)
-   {
-      fprintf(stderr, "Windows:\n");
-      for (int xxx = 0; xxx < 6; xxx++)
-         fprintf(stderr, "%d: %d = %d\n", xxx, Windows[xxx].Pos, Windows[xxx].Value);
-   }
-#endif
 
    if (Settings.SupportHiRes)
    {
@@ -1082,9 +1026,6 @@ static void DrawOBJS(bool OnMain, uint8_t D)
    for (Y = GFX.StartY, Offset = Y * GFX.PPL; Y <= GFX.EndY;
          Y++, Offset += GFX.PPL)
    {
-#ifdef MK_DEBUG_RTO
-      bool Flag = 0;
-#endif
       int I = 0;
 #ifdef MK_DISABLE_TIME_OVER
       int tiles = 0;
@@ -1097,32 +1038,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
       {
          tiles += GFX.OBJVisibleTiles[S];
          if (tiles <= 0)
-         {
-#ifdef MK_DEBUG_RTO
-            if (Settings.BGLayering)
-            {
-               if (!Flag)
-               {
-                  Flag = 1;
-                  fprintf(stderr, "Line %d:", Y);
-               }
-               fprintf(stderr, " [%02x]", S);
-            }
-#endif
             continue;
-         }
-
-#ifdef MK_DEBUG_RTO
-         if (Settings.BGLayering)
-         {
-            if (!Flag)
-            {
-               Flag = 1;
-               fprintf(stderr, "Line %d:", Y);
-            }
-            fprintf(stderr, " %02x", S);
-         }
-#endif
 
          if (OnMain && SUB_OR_ADD(4))
             SelectTileRenderer(!GFX.Pseudo && PPU.OBJ [S].Palette < 4);
@@ -1151,14 +1067,6 @@ static void DrawOBJS(bool OnMain, uint8_t D)
                && X < PPU.OBJ[S].HPos + GFX.OBJWidths[S];
                TileX = (TileX + TileInc) & 0x0f, X += 8, O += 8 * GFX.PixSize)
          {
-#ifdef MK_DEBUG_RTO
-            if (Settings.BGLayering)
-            {
-               if (X < -7) continue;
-               if ((t - 1) < 0) fprintf(stderr, "-[%d]", 35 - t);
-               else fprintf(stderr, "-%d", 35 - t);
-            }
-#endif
             if (X < -7 || --t < 0 || X == 256) continue;
             if (X >= NextPos)
             {
@@ -1189,14 +1097,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
             }
          }
       }
-#ifdef MK_DEBUG_RTO
-      if (Settings.BGLayering) if (Flag) fprintf(stderr, "\n");
-#endif
    }
-#ifdef MK_DEBUG_RTO
-   if (Settings.BGLayering) fprintf(stderr, "Exiting DrawOBJS() for %d-%d\n",
-                                       GFX.StartY, GFX.EndY);
-#endif
 }
 
 static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
@@ -3057,40 +2958,6 @@ static void DrawBGMode7Background16Sub1_2_i(uint8_t* Screen, int bg)
                              theColor, (ScreenColors[b & GFX.Mode7Mask]));
 }
 
-#define _BUILD_SETUP(F) \
-GFX.BuildPixel = BuildPixel##F; \
-GFX.BuildPixel2 = BuildPixel2##F; \
-GFX.DecomposePixel = DecomposePixel##F; \
-RED_LOW_BIT_MASK = RED_LOW_BIT_MASK_##F; \
-GREEN_LOW_BIT_MASK = GREEN_LOW_BIT_MASK_##F; \
-BLUE_LOW_BIT_MASK = BLUE_LOW_BIT_MASK_##F; \
-RED_HI_BIT_MASK = RED_HI_BIT_MASK_##F; \
-GREEN_HI_BIT_MASK = GREEN_HI_BIT_MASK_##F; \
-BLUE_HI_BIT_MASK = BLUE_HI_BIT_MASK_##F; \
-MAX_RED = MAX_RED_##F; \
-MAX_GREEN = MAX_GREEN_##F; \
-MAX_BLUE = MAX_BLUE_##F; \
-GREEN_HI_BIT = ((MAX_GREEN_##F + 1) >> 1); \
-SPARE_RGB_BIT_MASK = SPARE_RGB_BIT_MASK_##F; \
-RGB_LOW_BITS_MASK = (RED_LOW_BIT_MASK_##F | \
-           GREEN_LOW_BIT_MASK_##F | \
-           BLUE_LOW_BIT_MASK_##F); \
-RGB_HI_BITS_MASK = (RED_HI_BIT_MASK_##F | \
-          GREEN_HI_BIT_MASK_##F | \
-          BLUE_HI_BIT_MASK_##F); \
-RGB_HI_BITS_MASKx2 = ((RED_HI_BIT_MASK_##F | \
-             GREEN_HI_BIT_MASK_##F | \
-             BLUE_HI_BIT_MASK_##F) << 1); \
-RGB_REMOVE_LOW_BITS_MASK = ~RGB_LOW_BITS_MASK; \
-FIRST_COLOR_MASK = FIRST_COLOR_MASK_##F; \
-SECOND_COLOR_MASK = SECOND_COLOR_MASK_##F; \
-THIRD_COLOR_MASK = THIRD_COLOR_MASK_##F; \
-ALPHA_BITS_MASK = ALPHA_BITS_MASK_##F; \
-FIRST_THIRD_COLOR_MASK = FIRST_COLOR_MASK | THIRD_COLOR_MASK; \
-TWO_LOW_BITS_MASK = RGB_LOW_BITS_MASK | (RGB_LOW_BITS_MASK << 1); \
-HIGH_BITS_SHIFTED_TWO_MASK = (( (FIRST_COLOR_MASK | SECOND_COLOR_MASK | THIRD_COLOR_MASK) & \
-                                ~TWO_LOW_BITS_MASK ) >> 2);
-
 static void RenderScreen(uint8_t* Screen, bool sub, bool force_no_add, uint8_t D)
 {
    bool BG0;
@@ -3248,29 +3115,6 @@ static void RenderScreen(uint8_t* Screen, bool sub, bool force_no_add, uint8_t D
       break;
    default:
       break;
-   }
-}
-
-#include "font.h"
-
-void DisplayChar(uint8_t* Screen, uint8_t c)
-{
-   int line = (((c & 0x7f) - 32) >> 4) * font_height;
-   int offset = (((c & 0x7f) - 32) & 15) * font_width;
-   int h, w;
-   uint16_t* s = (uint16_t*) Screen;
-   for (h = 0; h < font_height; h++, line++,
-         s += GFX.PPL - font_width)
-   {
-      for (w = 0; w < font_width; w++, s++)
-      {
-         uint8_t p = font [line][offset + w];
-
-         if (p == '#')
-            *s = Settings.DisplayColor;
-         else if (p == '.')
-            *s = BLACK;
-      }
    }
 }
 

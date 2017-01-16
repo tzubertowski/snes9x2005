@@ -9,4 +9,3 @@ void S9xStartHDMA();
 void S9xDoDMA(uint8_t);
 
 #endif
-

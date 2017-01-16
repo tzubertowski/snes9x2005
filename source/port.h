@@ -8,7 +8,6 @@
 #include <string.h>
 #include <sys/types.h>
 
-/* #define PIXEL_FORMAT RGB565 */
 #ifdef PSP
 #define PIXEL_FORMAT BGR555
 #else
@@ -40,8 +39,6 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 #define strncasecmp strnicmp
 #endif
 
-void S9xGenerateSound(void);
-
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
 
@@ -56,5 +53,7 @@ void S9xGenerateSound(void);
 
 #include <libretro.h>
 
-#endif
+#define MIN(A,B) ((A) < (B) ? (A) : (B))
+#define MAX(A,B) ((A) > (B) ? (A) : (B))
 
+#endif

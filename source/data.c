@@ -85,5 +85,3 @@ uint8_t mul_brightness [16][32] =
       0x1e, 0x1f
    }
 };
-
-

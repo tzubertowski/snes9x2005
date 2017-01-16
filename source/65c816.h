@@ -70,6 +70,7 @@ typedef union
       uint8_t l, h;
    } B;
 #endif
+
    uint16_t W;
 } pair;
 
@@ -77,14 +78,13 @@ typedef struct
 {
    uint8_t  PB;
    uint8_t  DB;
-   pair   P;
-   pair   A;
-   pair   D;
-   pair   S;
-   pair   X;
-   pair   Y;
+   pair     P;
+   pair     A;
+   pair     D;
+   pair     S;
+   pair     X;
+   pair     Y;
    uint16_t PC;
 } SRegisters;
 
 #endif
-

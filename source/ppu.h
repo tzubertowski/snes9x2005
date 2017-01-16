@@ -31,52 +31,52 @@ struct ClipData
 
 typedef struct
 {
-   bool  ColorsChanged;
+   bool     ColorsChanged;
    uint8_t  HDMA;
-   bool  HDMAStarted;
+   bool     HDMAStarted;
    uint8_t  MaxBrightness;
-   bool  LatchedBlanking;
-   bool  OBJChanged;
-   bool  RenderThisFrame;
-   bool  DirectColourMapsNeedRebuild;
+   bool     LatchedBlanking;
+   bool     OBJChanged;
+   bool     RenderThisFrame;
+   bool     DirectColourMapsNeedRebuild;
    uint32_t FrameCount;
    uint32_t RenderedFramesCount;
    uint32_t DisplayedRenderedFrameCount;
    uint32_t SkippedFrames;
    uint32_t FrameSkip;
-   uint8_t*  TileCache [3];
-   uint8_t*  TileCached [3];
+   uint8_t* TileCache [3];
+   uint8_t* TileCached [3];
 #ifdef CORRECT_VRAM_READS
    uint16_t VRAMReadBuffer;
 #else
    bool  FirstVRAMRead;
 #endif
-   bool  DoubleHeightPixels;
-   bool  Interlace;
-   bool  InterlaceSprites;
-   bool  DoubleWidthPixels;
-   bool  HalfWidthPixels;
-   int    RenderedScreenHeight;
-   int    RenderedScreenWidth;
-   uint32_t Red [256];
-   uint32_t Green [256];
-   uint32_t Blue [256];
-   uint8_t*  XB;
-   uint16_t ScreenColors [256];
-   int     PreviousLine;
-   int     CurrentLine;
-   int     Controller;
-   uint32_t Joypads[5];
-   uint32_t SuperScope;
-   uint32_t Mouse[2];
-   int    PrevMouseX[2];
-   int    PrevMouseY[2];
+   bool            DoubleHeightPixels;
+   bool            Interlace;
+   bool            InterlaceSprites;
+   bool            DoubleWidthPixels;
+   bool            HalfWidthPixels;
+   int             RenderedScreenHeight;
+   int             RenderedScreenWidth;
+   uint32_t        Red [256];
+   uint32_t        Green [256];
+   uint32_t        Blue [256];
+   uint8_t*        XB;
+   uint16_t        ScreenColors [256];
+   int             PreviousLine;
+   int             CurrentLine;
+   int             Controller;
+   uint32_t        Joypads[5];
+   uint32_t        SuperScope;
+   uint32_t        Mouse[2];
+   int             PrevMouseX[2];
+   int             PrevMouseY[2];
    struct ClipData Clip [2];
 } InternalPPU;
 
 struct SOBJ
 {
-   short  HPos;
+   short    HPos;
    uint16_t VPos;
    uint16_t Name;
    uint8_t  VFlip;
@@ -88,14 +88,14 @@ struct SOBJ
 
 typedef struct
 {
-   uint8_t  BGMode;
-   uint8_t  BG3Priority;
-   uint8_t  Brightness;
+   uint8_t BGMode;
+   uint8_t BG3Priority;
+   uint8_t Brightness;
 
    struct
    {
-      bool High;
-      uint8_t Increment;
+      bool     High;
+      uint8_t  Increment;
       uint16_t Address;
       uint16_t Mask1;
       uint16_t FullGraphicCount;
@@ -107,19 +107,19 @@ typedef struct
       uint16_t SCBase;
       uint16_t VOffset;
       uint16_t HOffset;
-      uint8_t BGSize;
+      uint8_t  BGSize;
       uint16_t NameBase;
       uint16_t SCSize;
    } BG [4];
 
-   bool  CGFLIP;
-   uint16_t CGDATA [256];
-   uint8_t  FirstSprite;
-   uint8_t  LastSprite;
+   bool        CGFLIP;
+   uint16_t    CGDATA [256];
+   uint8_t     FirstSprite;
+   uint8_t     LastSprite;
    struct SOBJ OBJ [128];
-   uint8_t  OAMPriorityRotation;
-   uint16_t OAMAddr;
-   uint8_t  RangeTimeOver;
+   uint8_t     OAMPriorityRotation;
+   uint16_t    OAMAddr;
+   uint8_t     RangeTimeOver;
 
    uint8_t  OAMFlip;
    uint16_t OAMTileAddress;
@@ -128,18 +128,18 @@ typedef struct
    uint16_t VBeamPosLatched;
    uint16_t HBeamPosLatched;
 
-   uint8_t  HBeamFlip;
-   uint8_t  VBeamFlip;
-   uint8_t  HVBeamCounterLatched;
+   uint8_t HBeamFlip;
+   uint8_t VBeamFlip;
+   uint8_t HVBeamCounterLatched;
 
-   short  MatrixA;
-   short  MatrixB;
-   short  MatrixC;
-   short  MatrixD;
-   short  CentreX;
-   short  CentreY;
-   uint8_t  Joypad1ButtonReadPos;
-   uint8_t  Joypad2ButtonReadPos;
+   short   MatrixA;
+   short   MatrixB;
+   short   MatrixC;
+   short   MatrixD;
+   short   CentreX;
+   short   CentreY;
+   uint8_t Joypad1ButtonReadPos;
+   uint8_t Joypad2ButtonReadPos;
 
    uint8_t  CGADD;
    uint8_t  FixedColourRed;
@@ -149,21 +149,21 @@ typedef struct
    uint16_t ScreenHeight;
    uint32_t WRAM;
    uint8_t  BG_Forced;
-   bool  ForcedBlanking;
-   bool  OBJThroughMain;
-   bool  OBJThroughSub;
+   bool     ForcedBlanking;
+   bool     OBJThroughMain;
+   bool     OBJThroughSub;
    uint8_t  OBJSizeSelect;
    uint16_t OBJNameBase;
-   bool  OBJAddition;
+   bool     OBJAddition;
    uint8_t  OAMReadFlip;
    uint8_t  OAMData [512 + 32];
-   bool  VTimerEnabled;
-   bool  HTimerEnabled;
-   short  HTimerPosition;
+   bool     VTimerEnabled;
+   bool     HTimerEnabled;
+   short    HTimerPosition;
    uint8_t  Mosaic;
-   bool  BGMosaic [4];
-   bool  Mode7HFlip;
-   bool  Mode7VFlip;
+   bool     BGMosaic [4];
+   bool     Mode7HFlip;
+   bool     Mode7VFlip;
    uint8_t  Mode7Repeat;
    uint8_t  Window1Left;
    uint8_t  Window1Right;
@@ -173,20 +173,20 @@ typedef struct
    uint8_t  ClipWindowOverlapLogic [6];
    uint8_t  ClipWindow1Enable [6];
    uint8_t  ClipWindow2Enable [6];
-   bool  ClipWindow1Inside [6];
-   bool  ClipWindow2Inside [6];
-   bool  RecomputeClipWindows;
+   bool     ClipWindow1Inside [6];
+   bool     ClipWindow2Inside [6];
+   bool     RecomputeClipWindows;
    uint8_t  CGFLIPRead;
    uint16_t OBJNameSelect;
-   bool  Need16x8Mulitply;
+   bool     Need16x8Mulitply;
    uint8_t  Joypad3ButtonReadPos;
    uint8_t  MouseSpeed[2];
 
    // XXX Do these need to be added to snapshot.cpp?
    uint16_t OAMWriteRegister;
-   uint8_t BGnxOFSbyte;
-   uint8_t OpenBus1;
-   uint8_t OpenBus2;
+   uint8_t  BGnxOFSbyte;
+   uint8_t  OpenBus1;
+   uint8_t  OpenBus2;
 } SPPU;
 
 #define CLIP_OR 0
@@ -196,10 +196,10 @@ typedef struct
 
 typedef struct
 {
-   bool  TransferDirection;
-   bool  AAddressFixed;
-   bool  AAddressDecrement;
-   uint8_t  TransferMode;
+   bool    TransferDirection;
+   bool    AAddressFixed;
+   bool    AAddressDecrement;
+   uint8_t TransferMode;
 
    uint8_t  ABank;
    uint16_t AAddress;
@@ -210,7 +210,7 @@ typedef struct
    uint16_t TransferBytes;
 
    // H-DMA only:
-   bool  HDMAIndirectAddressing;
+   bool     HDMAIndirectAddressing;
    uint16_t IndirectAddress;
    uint8_t  IndirectBank;
    uint8_t  Repeat;
@@ -241,7 +241,6 @@ extern SPPU PPU;
 extern SDMA DMA [8];
 extern InternalPPU IPPU;
 
-#include "gfx.h"
 #include "memmap.h"
 
 typedef struct
@@ -276,4 +275,3 @@ void JustifierButtons(uint32_t*);
 bool JustifierOffscreen();
 
 #endif
-

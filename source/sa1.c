@@ -735,4 +735,3 @@ void S9xSA1ReadVariableLengthData(bool inc, bool no_shift)
       Memory.FillRAM [0x225b] = (uint8_t)(addr >> 16);
    }
 }
-

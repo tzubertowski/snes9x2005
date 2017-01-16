@@ -12,7 +12,6 @@
 #include "missing.h"
 #include "dma.h"
 #include "apu.h"
-#include "gfx.h"
 #include "sa1.h"
 #include "spc7110.h"
 

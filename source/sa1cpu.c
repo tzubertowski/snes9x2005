@@ -142,4 +142,3 @@ void S9xSA1MainLoop()
       (*SA1.S9xOpcodes [*SA1.PC++].S9xOpcode)();
    }
 }
-

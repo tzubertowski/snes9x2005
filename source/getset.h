@@ -478,11 +478,9 @@ INLINE uint8_t* GetBasePointer(uint32_t Address)
    }
    case MAP_SPC7110_ROM:
       return Get7110BasePtr(Address);
-   case MAP_PPU:
-      //just a guess, but it looks like this should match the CPU as a source.
-      return (Memory.FillRAM);
-   case MAP_CPU:
-      //fixes Ogre Battle's green lines
+   case MAP_PPU: //just a guess, but it looks like this should match the CPU as a source.
+   case MAP_CPU: //fixes Ogre Battle's green lines
+   case MAP_OBC_RAM:
       return (Memory.FillRAM);
    case MAP_DSP:
       return (Memory.FillRAM - 0x6000);
@@ -495,8 +493,6 @@ INLINE uint8_t* GetBasePointer(uint32_t Address)
       return (Memory.SRAM - 0x6000);
    case MAP_C4:
       return (Memory.C4RAM - 0x6000);
-   case MAP_OBC_RAM:
-      return GetBasePointerOBC1(Address);
    case MAP_SETA_DSP:
       return Memory.SRAM;
    case MAP_DEBUG:

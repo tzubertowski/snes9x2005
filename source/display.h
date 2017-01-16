@@ -18,4 +18,3 @@ bool S9xLoadROMImage(const char* string);
 const char* S9xGetFilename(const char* extension);
 
 #endif
-
