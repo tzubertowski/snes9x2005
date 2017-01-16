@@ -31,4 +31,3 @@ extern int16_t C4CosTable[];
 extern int16_t C4SinTable[];
 
 #endif
-

@@ -7,7 +7,6 @@
 #include "missing.h"
 #include "apu.h"
 #include "dma.h"
-#include "gfx.h"
 #include "display.h"
 #include "sa1.h"
 #include "sdd1.h"
@@ -17,6 +16,7 @@
 #include "fxemu.h"
 #include "fxinst.h"
 extern struct FxInit_s SuperFX;
+extern uint8_t mul_brightness [16][32];
 
 uint32_t justifiers = 0xFFFF00AA;
 uint8_t in_bit = 0;

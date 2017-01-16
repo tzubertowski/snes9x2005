@@ -60,15 +60,16 @@ typedef union
       uint8_t A, Y;
    } B;
 #endif
+
    uint16_t W;
 } YAndA;
 
 typedef struct
 {
-   uint8_t  P;
-   YAndA YA;
-   uint8_t  X;
-   uint8_t  S;
+   uint8_t   P;
+   YAndA     YA;
+   uint8_t   X;
+   uint8_t   S;
    uint16_t  PC;
 } SAPURegisters;
 

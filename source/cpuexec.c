@@ -13,8 +13,6 @@
 #include "sa1.h"
 #include "spc7110.h"
 
-extern void S9xProcessSound(unsigned int);
-
 void S9xMainLoop_SA1_SFX(void);
 void S9xMainLoop_SA1_NoSFX(void);
 void S9xMainLoop_NoSA1_SFX(void);
@@ -112,10 +110,7 @@ void S9xMainLoop_SA1_SFX(void)
    S9xAPUPackStatus();
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
-   {
-      S9xSyncSpeed();
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-   }
 
 #ifdef DETECT_NASTY_FX_INTERLEAVE
    if (CPU.BRKTriggered && Settings.SuperFX && !CPU.TriedInterleavedMode2)
@@ -196,10 +191,7 @@ void S9xMainLoop_SA1_NoSFX(void)
    S9xAPUPackStatus();
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
-   {
-      S9xSyncSpeed();
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-   }
 }
 
 void S9xMainLoop_NoSA1_SFX(void)
@@ -269,10 +261,7 @@ void S9xMainLoop_NoSA1_SFX(void)
    S9xAPUPackStatus();
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
-   {
-      S9xSyncSpeed();
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-   }
 
 #ifdef DETECT_NASTY_FX_INTERLEAVE
    if (CPU.BRKTriggered && Settings.SuperFX && !CPU.TriedInterleavedMode2)
@@ -351,10 +340,7 @@ void S9xMainLoop_NoSA1_NoSFX(void)
    S9xAPUPackStatus();
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
-   {
-      S9xSyncSpeed();
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-   }
 }
 
 void S9xSetIRQ(uint32_t source)
@@ -402,9 +388,6 @@ void S9xDoHBlankProcessing_SFX()
       S9xSuperFXExec();
 
 #ifndef USE_BLARGG_APU
-      if (Settings.SoundSync)
-         S9xGenerateSound();
-
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)
       {
@@ -435,8 +418,6 @@ void S9xDoHBlankProcessing_SFX()
          CPU.Flags |= SCAN_KEYS_FLAG;
          S9xStartHDMA();
       }
-
-      S9xProcessSound(0);
 
       if (PPU.VTimerEnabled && !PPU.HTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)
          S9xSetIRQ(PPU_V_BEAM_IRQ_SOURCE);
@@ -579,9 +560,6 @@ void S9xDoHBlankProcessing_NoSFX()
    case HBLANK_END_EVENT:
 
 #ifndef USE_BLARGG_APU
-      if (Settings.SoundSync)
-         S9xGenerateSound();
-
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)
       {
@@ -613,8 +591,6 @@ void S9xDoHBlankProcessing_NoSFX()
          CPU.Flags |= SCAN_KEYS_FLAG;
          S9xStartHDMA();
       }
-
-      S9xProcessSound(0);
 
       if (PPU.VTimerEnabled && !PPU.HTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)
          S9xSetIRQ(PPU_V_BEAM_IRQ_SOURCE);
@@ -740,4 +716,3 @@ void S9xDoHBlankProcessing_NoSFX()
 
    S9xReschedule();
 }
-

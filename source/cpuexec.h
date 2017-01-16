@@ -24,22 +24,21 @@ typedef struct
     if (CPU.Cycles >= CPU.NextEvent) \
    S9xDoHBlankProcessing_NoSFX ();
 
-
 typedef struct
 {
-   uint8_t*  Speed;
-   SOpcodes* S9xOpcodes;
+   uint8_t*   Speed;
+   SOpcodes*  S9xOpcodes;
    SRegisters Registers;
-   uint8_t  _Carry;
-   uint8_t  _Zero;
-   uint8_t  _Negative;
-   uint8_t  _Overflow;
-   bool  CPUExecuting;
-   uint32_t ShiftedPB;
-   uint32_t ShiftedDB;
-   uint32_t Frame;
-   uint32_t Scanline;
-   uint32_t FrameAdvanceCount;
+   uint8_t    _Carry;
+   uint8_t    _Zero;
+   uint8_t    _Negative;
+   uint8_t    _Overflow;
+   bool       CPUExecuting;
+   uint32_t   ShiftedPB;
+   uint32_t   ShiftedDB;
+   uint32_t   Frame;
+   uint32_t   Scanline;
+   uint32_t   FrameAdvanceCount;
 } SICPU;
 
 void S9xMainLoop(void);
@@ -132,4 +131,3 @@ static inline void S9xReschedule()
 }
 
 #endif
-

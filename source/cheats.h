@@ -13,26 +13,25 @@ typedef struct
     uint32_t  address;
     uint8_t   byte;
     uint8_t   saved_byte;
-    bool   enabled;
-    bool   saved;
-    char    name[MAX_SFCCHEAT_NAME];
-}SCheat;
-
+    bool      enabled;
+    bool      saved;
+    char      name[MAX_SFCCHEAT_NAME];
+} SCheat;
 
 typedef struct
 {
     SCheat   c [MAX_CHEATS_T];
-    uint32_t	    num_cheats;
-    uint8_t	    CWRAM [0x20000];
-    uint8_t	    CSRAM [0x10000];
-    uint8_t	    CIRAM [0x2000];
-    uint8_t           *RAM;
-    uint8_t           *FillRAM;
-    uint8_t           *SRAM;
-    uint32_t	    WRAM_BITS [0x20000 >> 3];
-    uint32_t	    SRAM_BITS [0x10000 >> 3];
-    uint32_t	    IRAM_BITS [0x2000 >> 3];
-}SCheatData;
+    uint32_t num_cheats;
+    uint8_t	 CWRAM [0x20000];
+    uint8_t	 CSRAM [0x10000];
+    uint8_t	 CIRAM [0x2000];
+    uint8_t* RAM;
+    uint8_t* FillRAM;
+    uint8_t* SRAM;
+    uint32_t WRAM_BITS [0x20000 >> 3];
+    uint32_t SRAM_BITS [0x10000 >> 3];
+    uint32_t IRAM_BITS [0x2000 >> 3];
+} SCheatData;
 
 typedef enum
 {
@@ -76,4 +75,3 @@ void S9xOutputCheatSearchResults (SCheatData *cheats);
 #endif
 
 #endif
-

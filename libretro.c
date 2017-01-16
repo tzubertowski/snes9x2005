@@ -26,7 +26,6 @@ void* linearMemAlign(size_t size, size_t alignment);
 void linearFree(void* mem);
 #endif
 
-
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
 static retro_input_poll_t poll_cb = NULL;
@@ -45,7 +44,6 @@ char slash = '/';
 #endif
 
 static float samples_per_frame = 0.0;
-
 
 #ifdef PERF_TEST
 #define RETRO_PERFORMANCE_INIT(name) \
@@ -76,7 +74,6 @@ void retro_set_environment(retro_environment_t cb)
       log_cb = NULL;
 
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
-
 }
 
 
@@ -86,7 +83,8 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 }
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
-{}
+{
+}
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
 {
@@ -112,7 +110,6 @@ unsigned retro_api_version()
 
 void S9xMessage(int type, int number, const char* message)
 {
-#if 1
 #define MAX_MESSAGE_LEN (36 * 3)
 
    static char buffer [MAX_MESSAGE_LEN + 1];
@@ -121,7 +118,6 @@ void S9xMessage(int type, int number, const char* message)
    strncpy(buffer, message, MAX_MESSAGE_LEN);
    buffer [MAX_MESSAGE_LEN] = 0;
    S9xSetInfoString(buffer);
-#endif
 }
 
 void S9xDeinitDisplay(void)
@@ -145,7 +141,6 @@ void S9xDeinitDisplay(void)
    GFX.ZBuffer_buffer = NULL;
    GFX.SubZBuffer = NULL;
    GFX.SubZBuffer_buffer = NULL;
-
 }
 
 void S9xInitDisplay(void)
@@ -172,16 +167,11 @@ void S9xInitDisplay(void)
    GFX.ZBuffer = GFX.ZBuffer_buffer + safety;
    GFX.SubZBuffer = GFX.SubZBuffer_buffer + safety;
 
-
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
 }
 
 bool S9xInitUpdate()
 {
-   //   IPPU.RenderThisFrame = 0;
-   //   video_cb(dummy_frame,256,224,512);
-   //   return (false);
-
    return (true);
 }
 #ifndef __WIN32__
@@ -303,7 +293,6 @@ void init_sfc_setting(void)
    Settings.StretchScreenshots = 1;
 
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
-
 }
 
 #ifdef USE_BLARGG_APU
@@ -359,12 +348,10 @@ void retro_init(void)
    S9xInitSound();
 #endif
    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
-
 }
 
 void retro_deinit(void)
 {
-
    if (Settings.SPC7110)
       (*CleanUp7110)();
 
@@ -376,8 +363,6 @@ void retro_deinit(void)
 #ifdef PERF_TEST
    perf_cb.perf_log();
 #endif
-
-
 }
 
 uint32_t S9xReadJoypad(int port)
@@ -421,12 +406,10 @@ static void check_variables(void)
    }
 }
 
-
 #ifdef PSP
 #define FRAMESKIP
 #endif
 
-//#define NO_VIDEO_OUTPUT
 static float samples_to_play = 0.0;
 void retro_run(void)
 {
@@ -492,7 +475,6 @@ void retro_run(void)
 
       sceGuFinish();
 
-
       video_cb(texture_vram_p, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight,
                GFX.Pitch);
 #else
@@ -509,23 +491,6 @@ void retro_run(void)
       IPPU.RenderThisFrame = true;
    }
 #endif
-
-}
-
-void S9xGenerateSound()
-{
-
-}
-
-
-void S9xProcessSound(unsigned int samples)
-{
-
-}
-
-void S9xLoadSDD1Data()
-{
-
 }
 
 bool S9xReadMousePosition(int which1, int* x, int* y, uint32_t* buttons)
@@ -596,6 +561,7 @@ unsigned retro_get_region(void)
 {
    return Settings.PAL ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
+
 void retro_get_system_info(struct retro_system_info* info)
 {
 #ifdef LOAD_FROM_MEMORY_TEST
@@ -645,7 +611,6 @@ void retro_reset(void)
    CPU.Flags = 0;
    S9xReset();
 }
-
 
 size_t retro_serialize_size(void)
 {
@@ -715,6 +680,7 @@ bool retro_serialize(void* data, size_t size)
 
    return true;
 }
+
 bool retro_unserialize(const void* data, size_t size)
 {
    const uint8_t* buffer = data;
@@ -906,7 +872,6 @@ static void init_descriptors(void)
 }
 
 bool retro_load_game(const struct retro_game_info* game)
-
 {
    CPU.Flags = 0;
   init_descriptors();
@@ -939,9 +904,9 @@ bool retro_load_game_special(unsigned game_type,
 {
    return false;
 }
+
 void retro_unload_game(void)
 {
-
 }
 
 void* retro_get_memory_data(unsigned type)
@@ -953,20 +918,12 @@ void* retro_get_memory_data(unsigned type)
       case RETRO_MEMORY_SAVE_RAM:
          data = Memory.SRAM;
          break;
-      case RETRO_MEMORY_RTC:
-#if 0
-         data = RTCData.reg;
-#endif
-         break;
       case RETRO_MEMORY_SYSTEM_RAM:
          data = Memory.RAM;
          break;
       case RETRO_MEMORY_VIDEO_RAM:
          data = Memory.VRAM;
          break;
-      //case RETRO_MEMORY_ROM:
-      //   data = Memory.ROM;
-      //   break;
       default:
          break;
    }
@@ -986,7 +943,7 @@ size_t retro_get_memory_size(unsigned type)
             size = 0x20000;
          break;
       case RETRO_MEMORY_RTC:
-         size = (Settings.SRTC || Settings.SPC7110RTC)?20:0;
+         size = (Settings.SRTC || Settings.SPC7110RTC) ? 20 : 0;
          break;
       case RETRO_MEMORY_SYSTEM_RAM:
          size = 128 * 1024;
@@ -994,9 +951,6 @@ size_t retro_get_memory_size(unsigned type)
       case RETRO_MEMORY_VIDEO_RAM:
          size = 64 * 1024;
          break;
-      //case RETRO_MEMORY_ROM:
-      //   data = Memory.CalculatedSize;
-      //   break;
       default:
          size = 0;
          break;

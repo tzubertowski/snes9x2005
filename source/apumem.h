@@ -132,4 +132,3 @@ INLINE void S9xAPUSetByte(uint8_t byte, uint32_t Address)
    }
 }
 #endif
-

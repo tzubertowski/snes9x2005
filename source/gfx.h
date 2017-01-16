@@ -21,56 +21,56 @@ extern struct SGFX GFX;
 bool S9xInitGFX();
 void S9xDeinitGFX();
 bool S9xInitUpdate(void);
-#define S9xSyncSpeed()
-
 
 struct SGFX
 {
    // Initialize these variables
-   uint8_t*  Screen_buffer;
-   uint8_t*  SubScreen_buffer;
-   uint8_t*  ZBuffer_buffer;
-   uint8_t*  SubZBuffer_buffer;
+   uint8_t* Screen_buffer;
+   uint8_t* SubScreen_buffer;
+   uint8_t* ZBuffer_buffer;
+   uint8_t* SubZBuffer_buffer;
 
-   uint8_t*  Screen;
-   uint8_t*  SubScreen;
-   uint8_t*  ZBuffer;
-   uint8_t*  SubZBuffer;
+   uint8_t* Screen;
+   uint8_t* SubScreen;
+   uint8_t* ZBuffer;
+   uint8_t* SubZBuffer;
    uint32_t Pitch;
 
    // Setup in call to S9xInitGFX()
-   int   Delta;
-   uint16_t* X2;
-   uint16_t* ZERO_OR_X2;
-   uint16_t* ZERO;
-   uint32_t RealPitch; // True pitch of Screen buffer.
-   uint32_t Pitch2;    // Same as RealPitch except while using speed up hack for Glide.
-   uint32_t ZPitch;    // Pitch of ZBuffer
-   uint32_t PPL;         // Number of pixels on each of Screen buffer
-   uint32_t PPLx2;
-   uint32_t PixSize;
-   uint8_t S_safety_margin[8];
-   uint8_t*  S;
-   uint8_t DB_safety_margin[8];
-   uint8_t*  DB;
-   ptrdiff_t DepthDelta;
-   uint8_t  Z1;          // Depth for comparison
-   uint8_t  Z2;          // Depth to save
-   uint8_t  ZSprite;     // Used to ensure only 1st sprite is drawn per pixel
-   uint32_t FixedColour;
-   const char* InfoString;
-   uint32_t InfoStringTimeout;
-   uint32_t StartY;
-   uint32_t EndY;
+   int              Delta;
+   uint16_t*        X2;
+   uint16_t*        ZERO_OR_X2;
+   uint16_t*        ZERO;
+   uint32_t         RealPitch;           // True pitch of Screen buffer.
+   uint32_t         Pitch2;              // Same as RealPitch except while using speed up hack for Glide.
+   uint32_t         ZPitch;              // Pitch of ZBuffer
+   uint32_t         PPL;                 // Number of pixels on each of Screen buffer
+   uint32_t         PPLx2;
+   uint32_t         PixSize;
+   uint8_t          S_safety_margin[8];
+   uint8_t*         S;
+   uint8_t          DB_safety_margin[8];
+   uint8_t*         DB;
+   ptrdiff_t        DepthDelta;
+   uint8_t          Z1;                  // Depth for comparison
+   uint8_t          Z2;                  // Depth to save
+   uint8_t          ZSprite;             // Used to ensure only 1st sprite is drawn per pixel
+   uint32_t         FixedColour;
+   const char*      InfoString;
+   uint32_t         InfoStringTimeout;
+   uint32_t         StartY;
+   uint32_t         EndY;
    struct ClipData* pCurrentClip;
-   uint32_t Mode7Mask;
-   uint32_t Mode7PriorityMask;
-   uint8_t  OBJWidths[128];
-   uint8_t  OBJVisibleTiles[128];
+   uint32_t         Mode7Mask;
+   uint32_t         Mode7PriorityMask;
+   uint8_t          OBJWidths[128];
+   uint8_t          OBJVisibleTiles[128];
+
    struct
    {
       uint8_t RTOFlags;
       int16_t Tiles;
+
       struct
       {
          int8_t Sprite;
@@ -78,12 +78,11 @@ struct SGFX
       } OBJ[32];
    } OBJLines [SNES_HEIGHT_EXTENDED];
 
-   uint8_t  r212c;
-   uint8_t  r212d;
-   uint8_t  r2130;
-   uint8_t  r2131;
-   bool  Pseudo;
-
+   uint8_t r212c;
+   uint8_t r212d;
+   uint8_t r2130;
+   uint8_t r2131;
+   bool    Pseudo;
 };
 
 struct SLineData
@@ -114,7 +113,7 @@ typedef struct
 
    uint8_t* Buffer;
    uint8_t* Buffered;
-   bool  DirectColourMode;
+   bool     DirectColourMode;
 } SBG;
 
 struct SLineMatrixData
@@ -224,4 +223,3 @@ typedef void (*LargePixelRenderer)(uint32_t Tile, int32_t Offset,
                                    uint32_t StartLine, uint32_t LineCount);
 
 #endif
-

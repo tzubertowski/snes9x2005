@@ -285,4 +285,3 @@ static void StackRelativeIndirectIndexed(AccessMode a, InternalOp op)
    (*op)(Addr);
 }
 #endif
-

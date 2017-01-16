@@ -14,7 +14,6 @@
 #include "spc7110.h"
 #include "obc1.h"
 
-
 #include "fxemu.h"
 
 extern struct FxInit_s SuperFX;

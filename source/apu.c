@@ -422,19 +422,19 @@ void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
       // ADSR mode
       static unsigned long AttackRate [16] =
       {
-         4100, 2600, 1500, 1000, 640, 380, 260, 160,
-         96, 64, 40, 24, 16, 10, 6, 1
+         4100u, 2600u, 1500u, 1000u, 640u, 380u, 260u, 160u,
+         96u, 64u, 40u, 24u, 16u, 10u, 6u, 1u
       };
       static unsigned long DecayRate [8] =
       {
-         1200, 740, 440, 290, 180, 110, 74, 37
+         1200u, 740u, 440u, 290u, 180u, 110u, 74u, 37u
       };
       static unsigned long SustainRate [32] =
       {
-         ~0, 38000, 28000, 24000, 19000, 14000, 12000, 9400,
-         7100, 5900, 4700, 3500, 2900, 2400, 1800, 1500,
-         1200, 880, 740, 590, 440, 370, 290, 220,
-         180, 150, 110, 92, 74, 55, 37, 18
+         ~0u, 38000u, 28000u, 24000u, 19000u, 14000u, 12000u, 9400u,
+         7100u, 5900u, 4700u, 3500u, 2900u, 2400u, 1800u, 1500u,
+         1200u, 880u, 740u, 590u, 440u, 370u, 290u, 220u,
+         180u, 150u, 110u, 92u, 74u, 55u, 37u, 18u
       };
       // XXX: can DSP be switched to ADSR mode directly from GAIN/INCREASE/
       // DECREASE mode? And if so, what stage of the sequence does it start
@@ -470,17 +470,17 @@ void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
       {
          static unsigned long IncreaseRate [32] =
          {
-            ~0, 4100, 3100, 2600, 2000, 1500, 1300, 1000,
-            770, 640, 510, 380, 320, 260, 190, 160,
-            130, 96, 80, 64, 48, 40, 32, 24,
-            20, 16, 12, 10, 8, 6, 4, 2
+            ~0u, 4100u, 3100u, 2600u, 2000u, 1500u, 1300u, 1000u,
+            770u, 640u, 510u, 380u, 320u, 260u, 190u, 160u,
+            130u, 96u, 80u, 64u, 48u, 40u, 32u, 24u,
+            20u, 16u, 12u, 10u, 8u, 6u, 4u, 2u
          };
          static unsigned long DecreaseRateExp [32] =
          {
-            ~0, 38000, 28000, 24000, 19000, 14000, 12000, 9400,
-            7100, 5900, 4700, 3500, 2900, 2400, 1800, 1500,
-            1200, 880, 740, 590, 440, 370, 290, 220,
-            180, 150, 110, 92, 74, 55, 37, 18
+            ~0u, 38000u, 28000u, 24000u, 19000u, 14000u, 12000u, 9400u,
+            7100u, 5900u, 4700u, 3500u, 2900u, 2400u, 1800u, 1500u,
+            1200u, 880u, 740u, 590u, 440u, 370u, 290u, 220u,
+            180u, 150u, 110u, 92u, 74u, 55u, 37u, 18u
          };
          if (gain & 0x40)
          {

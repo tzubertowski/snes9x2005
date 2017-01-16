@@ -82,36 +82,25 @@ typedef void (*dsp_copy_func_t)( unsigned char** io, void* state, size_t );
 
 typedef struct
 {
-   /* decoded samples (twice the size to simplify wrap handling) */
-   int buf [BRR_BUF_SIZE_X2];
-   /* place in buffer where next samples will be decoded */
-   int buf_pos;
-   /* relative fractional position in sample (0x1000 = 1.0) */
-   int interp_pos;
-   /* address of current BRR block */
-   int brr_addr;
-   /* current decoding offset in BRR block */
-   int brr_offset;
-   /* pointer to voice's DSP registers */
-   uint8_t* regs;
-   /* bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc. */
-   int vbit;
-   /* KON delay/current setup phase */
-   int kon_delay;
-   int env_mode;
-   /* current envelope level */
-   int env;
-   /* used by GAIN mode 7, very obscure quirk */
-   int hidden_env;
-   uint8_t t_envx_out;
+   int      buf [BRR_BUF_SIZE_X2]; // decoded samples (twice the size to simplify wrap handling)
+   int      buf_pos;               // place in buffer where next samples will be decoded
+   int      interp_pos;            // relative fractional position in sample (0x1000 = 1.0)
+   int      brr_addr;              // address of current BRR block
+   int      brr_offset;            // current decoding offset in BRR block
+   uint8_t* regs;                  // pointer to voice's DSP registers
+   int      vbit;                  // bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc.
+   int      kon_delay;             // KON delay/current setup phase
+   int      env_mode;
+   int      env;                   // current envelope level
+   int      hidden_env;            // used by GAIN mode 7, very obscure quirk
+   uint8_t  t_envx_out;
 } dsp_voice_t;
 
 typedef struct
 {
    uint8_t regs [REGISTER_COUNT];
 
-   /* Echo history keeps most recent 8 samples
-           (twice the size to simplify wrap handling) */
+   /* Echo history keeps most recent 8 samples (twice the size to simplify wrap handling) */
 
    int echo_hist [ECHO_HIST_SIZE_X2] [2];
 
@@ -126,7 +115,7 @@ typedef struct
    int phase;              /* next clock cycle to run (0-31) */
 
    /* Hidden registers also written to when main register is written to */
-   int new_kon;
+   int     new_kon;
    uint8_t endx_buf;
    uint8_t envx_buf;
    uint8_t outx_buf;
@@ -168,10 +157,11 @@ typedef struct
    int16_t* out;
    int16_t* out_end;
    int16_t* out_begin;
-   int16_t extra [EXTRA_SIZE];
+   int16_t  extra [EXTRA_SIZE];
 
-   int rom_enabled;
-   uint8_t *rom, *hi_ram;
+   int     rom_enabled;
+   uint8_t *rom;
+   uint8_t *hi_ram;
 } dsp_state_t;
 
 #if !SPC_NO_COPY_STATE_FUNCS
@@ -254,20 +244,20 @@ typedef struct
       int sp;
    } cpu_regs;
 
-   int  dsp_time;
-   int  spc_time;
+   int dsp_time;
+   int spc_time;
 
-   int         tempo;
+   int tempo;
 
-   int         extra_clocks;
-   int16_t*   buf_begin;
+   int      extra_clocks;
+   int16_t* buf_begin;
    int16_t*	buf_end;
-   int16_t*   extra_pos;
-   int16_t    extra_buf [EXTRA_SIZE];
+   int16_t* extra_pos;
+   int16_t  extra_buf [EXTRA_SIZE];
 
-   int         rom_enabled;
-   uint8_t     rom    [ROM_SIZE];
-   uint8_t     hi_ram [ROM_SIZE];
+   int     rom_enabled;
+   uint8_t rom    [ROM_SIZE];
+   uint8_t hi_ram [ROM_SIZE];
 
    unsigned char cycle_table [256];
 
@@ -275,7 +265,7 @@ typedef struct
    {
       /* padding to neutralize address overflow */
       union {
-         uint8_t padding1 [0x100];
+         uint8_t  padding1 [0x100];
          uint16_t align; /* makes compiler align data for 16-bit access */
       } padding1 [1];
       uint8_t ram      [0x10000];

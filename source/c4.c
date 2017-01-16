@@ -136,14 +136,3 @@ void C4Op0D()
    C41FYVal = (int16_t)(C41FYVal * tanval * 0.99);
    C41FXVal = (int16_t)(C41FXVal * tanval * 0.98);
 }
-
-#ifdef ZSNES_C4
-void C4LoaDMem(char* C4RAM)
-{
-   memmove(C4RAM + (READ_WORD(C4RAM + 0x1f45) & 0x1fff),
-           S9xGetMemPointer(READ_3WORD(C4RAM + 0x1f40)),
-           READ_WORD(C4RAM + 0x1f43));
-}
-#endif
-
-

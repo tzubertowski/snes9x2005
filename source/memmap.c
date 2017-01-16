@@ -35,16 +35,6 @@ extern struct FxInit_s SuperFX;
 #define SET_UI_COLOR(r,g,b) ;
 #endif
 
-//you would think everyone would have these
-//since they're so useful.
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 static int retry_count = 0;
 static uint8_t bytes0x2000 [0x2000];
 int is_bsx(unsigned char*);
@@ -110,8 +100,6 @@ const uint32_t crc32Table[256] =
    0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
-
-
 
 void S9xDeinterleaveType1(int TotalFileSize, uint8_t* base)
 {
@@ -401,11 +389,6 @@ bool S9xInitMemory()
 
 void S9xDeinitMemory()
 {
-#ifdef __W32_HEAP
-   if (_HEAPOK != _heapchk())
-      MessageBox(GUI.hWnd, "Deinit", "Heap Corrupt", MB_OK);
-#endif
-
    if (Memory.RAM)
    {
       free((char*) Memory.RAM);
@@ -929,7 +912,7 @@ again:
 
       //set swapped here.
 
-      if (max(swappedlorom, swappedhirom) >= max(loromscore, hiromscore))
+      if (MAX(swappedlorom, swappedhirom) >= MAX(loromscore, hiromscore))
       {
          Memory.ExtendedFormat = BIGFIRST;
          hi_score = swappedhirom;
@@ -1032,7 +1015,6 @@ again:
          {
             S9xDeinterleaveType1(Memory.CalculatedSize - 0x400000, Memory.ROM);
             S9xDeinterleaveType1(0x400000, Memory.ROM + Memory.CalculatedSize - 0x400000);
-
          }
 
          Memory.LoROM = false;
@@ -1410,7 +1392,6 @@ void InitROM(bool Interleaved)
       size = 1 << power2;
       uint32_t remainder = Memory.CalculatedSize - size;
 
-
       int i;
 
       for (i = 0; i < size; i++)
@@ -1435,10 +1416,8 @@ void InitROM(bool Interleaved)
          sum1 -= sub;
       }
 
-
       if (remainder)
          sum1 += sum2 * (size / remainder);
-
 
       sum1 &= 0xffff;
       Memory.CalculatedChecksum = sum1;
@@ -1548,12 +1527,9 @@ void FixROMSpeed()
    if (CPU.FastROMSpeed == 0)
       CPU.FastROMSpeed = SLOW_ONE_CYCLE;
 
-
    for (c = 0x800; c < 0x1000; c++)
-   {
       if (c & 0x8 || c & 0x400)
          Memory.MemorySpeed [c] = (uint8_t) CPU.FastROMSpeed;
-   }
 }
 
 
@@ -2254,7 +2230,7 @@ void TalesROMMap(bool Interleaved)
 
    if ((strncmp("TALES", (char*)Memory.Map[8] + 0xFFC0, 5) == 0))
    {
-      if (((*(Memory.Map[8] + 0xFFDE)) == (*(Memory.Map[0x808] + 0xFFDE))))
+      if (*(Memory.Map[8] + 0xFFDE) == *(Memory.Map[0x808] + 0xFFDE))
       {
          Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
          SET_UI_COLOR(255, 0, 0);
@@ -3075,20 +3051,6 @@ const char* ROMID()
 
 void ApplyROMFixes()
 {
-#ifdef __W32_HEAP
-   if (_HEAPOK != _heapchk())
-      MessageBox(GUI.hWnd, "ApplyROMFixes", "Heap Corrupt", MB_OK);
-#endif
-
-   //don't steal my work! -MK
-   if (Memory.ROMCRC32 == 0x1B4A5616
-         && strncmp(Memory.ROMName, "RUDORA NO HIHOU", 15) == 0)
-   {
-      strncpy(Memory.ROMName, "THIS SCRIPT WAS STOLEN", 22);
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-   }
-
    /*
    HACKS NSRT can fix that we hadn't detected before.
    [14:25:13] <@Nach>     case 0x0c572ef0: //So called Hook (US)(2648)
@@ -3213,7 +3175,6 @@ void ApplyROMFixes()
       LoROMMap();
    }
 
-
    //NMI hacks
    CPU.NMITriggerPoint = 4;
    if (strcmp(Memory.ROMName, "CACOMA KNIGHT") == 0)
@@ -3232,7 +3193,6 @@ void ApplyROMFixes()
          strncmp(Memory.ROMName, "WAR 2410", 8) == 0)
       Settings.Shutdown = false;
 
-
    //APU timing hacks
 
 #ifndef USE_BLARGG_APU
@@ -3242,7 +3202,6 @@ void ApplyROMFixes()
          strncmp(Memory.ROMId, "JG", 2) == 0 ||
          strcmp(Memory.ROMName, "GAIA GENSOUKI 1 JPN") == 0)
       IAPU.OneCycle = 13;
-
 
    // RENDERING RANGER R2
    if (strcmp(Memory.ROMId, "AVCJ") == 0 ||
@@ -3321,7 +3280,6 @@ void ApplyROMFixes()
    if (strncmp(Memory.ROMName, "UNIRACERS", 9) == 0)
       SNESGameFixes.Uniracers = true;
 
-
    //is this even useful now?
    if (strcmp(Memory.ROMName, "ALIENS vs. PREDATOR") == 0)
       SNESGameFixes.alienVSpredetorFix = true;
@@ -3361,7 +3319,6 @@ void ApplyROMFixes()
          strncmp(Memory.ROMId, "AJE", 3) == 0)
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 103) / 100;
 
-
    if (strncmp(Memory.ROMId, "A3M", 3) == 0 && Settings.CyclesPercentage == 100)
       // Mortal Kombat 3. Fixes cut off speech sample
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 110) / 100;
@@ -3378,7 +3335,6 @@ void ApplyROMFixes()
          Settings.CyclesPercentage == 100)
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 101) / 100;
 
-
 #ifdef DETECT_NASTY_FX_INTERLEAVE
    //XXX: Test without these. Win32 port indicates they aren't needed?
    //Apparently are needed!
@@ -3392,7 +3348,6 @@ void ApplyROMFixes()
    // Start Trek: Deep Sleep 9
    if (strncmp(Memory.ROMId, "A9D", 3) == 0 && Settings.CyclesPercentage == 100)
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 110) / 100;
-
 
    //SA-1 Speedup settings
    SA1.WaitAddress = NULL;
@@ -3557,7 +3512,6 @@ void ApplyROMFixes()
       SA1.WaitByteAddress2 = Memory.SRAM + 0x0808;
    }
 
-
    //Other
 
    // Additional game fixes by sanmaiwashi ...
@@ -3570,7 +3524,6 @@ void ApplyROMFixes()
       bytes0x2000 [0xb1a] = 0xea;
       SNESGameFixes.SRAMInitialValue = 0x6b;
    }
-
 
    // HITOMI3
    if (strcmp(Memory.ROMName, "HITOMI3") == 0)
@@ -3614,8 +3567,6 @@ void ApplyROMFixes()
    }
    //BNE
 }
-
-
 
 int is_bsx(unsigned char* p)
 {

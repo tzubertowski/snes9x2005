@@ -198,4 +198,3 @@
                                 ~TWO_LOW_BITS_MASK ) >> 2)
 
 #endif
-

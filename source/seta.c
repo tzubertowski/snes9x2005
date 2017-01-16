@@ -14,4 +14,3 @@ void S9xSetSetaDSP(uint8_t Byte, uint32_t Address)
 {
    SetSETA(Address, Byte);
 }
-

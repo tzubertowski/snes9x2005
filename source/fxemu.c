@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 /* The FxChip Emulator's internal variables */
-struct FxRegs_s GSU = FxRegs_s_null;
+struct FxRegs_s GSU; // This will be initialized when loading a ROM
 
 uint32_t(**fx_ppfFunctionTable)(uint32_t) = 0;
 void (**fx_ppfPlotTable)() = 0;
@@ -477,4 +477,3 @@ uint8_t FxPipe()
 {
    return GSU.vPipe;
 }
-

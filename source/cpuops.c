@@ -3545,13 +3545,7 @@ static void OpEA(void)
 
 #define PushWE(w) \
     S9xSetByte ((w)>>8, ICPU.Registers.S.W--);\
-   ICPU.Registers.SH=0x01;\
-   S9xSetByte ((w)&0xff, (ICPU.Registers.S.W--)&0xFFFF);\
-    ICPU.Registers.SH = 0x01;
-
-#define PushWENew(w) \
-    S9xSetByte ((w)>>8, ICPU.Registers.S.W--);\
-   S9xSetByte ((w)&0xff, (ICPU.Registers.S.W--)&0xFFFF);\
+    S9xSetByte ((w)&0xff, (ICPU.Registers.S.W--)&0xFFFF);\
     ICPU.Registers.SH = 0x01;
 
 //PEA NL
@@ -3561,7 +3555,7 @@ static void OpF4E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2;
 #endif
-   PushWENew((unsigned short)OpAddress);
+   PushWE((unsigned short)OpAddress);
 }
 
 static void OpF4(void)
@@ -3580,7 +3574,7 @@ static void OpD4E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed;
 #endif
-   PushWENew((unsigned short)OpAddress);
+   PushWE((unsigned short)OpAddress);
 }
 
 static void OpD4(void)
@@ -3599,7 +3593,7 @@ static void Op62E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2 + ONE_CYCLE;
 #endif
-   PushWENew((unsigned short)OpAddress);
+   PushWE((unsigned short)OpAddress);
 }
 
 static void Op62(void)
@@ -3656,7 +3650,7 @@ static void Op8B(void)
 //PHD NL
 static void Op0BE1(void)
 {
-   PushWENew(ICPU.Registers.D.W);
+   PushWE(ICPU.Registers.D.W);
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
@@ -3771,14 +3765,6 @@ static void Op5AX0(void)
    b = S9xGetByte (ICPU.Registers.S.W);
 
 #define PullWE(w) \
-   ICPU.Registers.S.W++;\
-   ICPU.Registers.SH=0x01;\
-   w = S9xGetByte (ICPU.Registers.S.W); \
-   ICPU.Registers.S.W++; \
-   ICPU.Registers.SH=0x01;\
-   w |= (S9xGetByte (ICPU.Registers.S.W)<<8);
-
-#define PullWENew(w) \
    PullW(w);\
    ICPU.Registers.SH=0x01;
 
@@ -3838,7 +3824,7 @@ static void Op2BE1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += TWO_CYCLES;
 #endif
-   PullWENew(ICPU.Registers.D.W);
+   PullWE(ICPU.Registers.D.W);
    SetZN16(ICPU.Registers.D.W);
 }
 
@@ -4443,7 +4429,7 @@ static void Op22E1(void)
    CPU.Cycles += CPU.MemSpeedx2 + CPU.MemSpeed;
 #endif
    PushB(ICPU.Registers.PB);
-   PushWENew(CPU.PC - CPU.PCBase - 1);
+   PushWE(CPU.PC - CPU.PCBase - 1);
    ICPU.Registers.PB = (uint8_t)(OpAddress >> 16);
    ICPU.ShiftedPB = OpAddress & 0xff0000;
    S9xSetPCBase(OpAddress);
@@ -4464,7 +4450,7 @@ static void Op22(void)
 
 static void Op6BE1(void)
 {
-   PullWENew(ICPU.Registers.PC);
+   PullWE(ICPU.Registers.PC);
    PullB(ICPU.Registers.PB);
    ICPU.ShiftedPB = ICPU.Registers.PB << 16;
    S9xSetPCBase(ICPU.ShiftedPB + ((ICPU.Registers.PC + 1) & 0xffff));
@@ -4503,7 +4489,7 @@ static void OpFCE1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2 + ONE_CYCLE;
 #endif
-   PushWENew(CPU.PC - CPU.PCBase - 1);
+   PushWE(CPU.PC - CPU.PCBase - 1);
    S9xSetPCBase(ICPU.ShiftedPB + OpAddress);
 }
 
@@ -5224,4 +5210,3 @@ SOpcodes S9xOpcodesM0X1[256] =
    {OpFAX1},    {OpFB},      {OpFC},      {OpFDM0},    {OpFEM0},
    {OpFFM0}
 };
-

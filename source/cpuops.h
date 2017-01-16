@@ -10,4 +10,3 @@ if (CPU.IRQActive && !CheckFlag (IRQ) && !Settings.DisableIRQ) \
     S9xOpcode_IRQ()
 
 #endif
-

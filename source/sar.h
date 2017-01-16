@@ -51,4 +51,3 @@ static inline int64_t SAR64(const int64_t b, const int n)
 #endif
 
 #endif
-

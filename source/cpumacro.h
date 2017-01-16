@@ -737,4 +737,3 @@ static void TRB8(long Addr)
    S9xSetByte(Work8, Addr);
 }
 #endif
-

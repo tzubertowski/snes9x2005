@@ -12,10 +12,6 @@ struct Band
    uint32_t Right;
 };
 
-#undef MIN
-#undef MAX
-#define MIN(A,B) ((A) < (B) ? (A) : (B))
-#define MAX(A,B) ((A) > (B) ? (A) : (B))
 #define BAND_EMPTY(B) (B.Left >= B.Right)
 #define BANDS_INTERSECT(A,B) ((A.Left >= B.Left && A.Left < B.Right) || \
                        (B.Left >= A.Left && B.Left < A.Right))
@@ -674,4 +670,3 @@ Clip_ok:;
       } // for (int w...
    } // for (int c...
 }
-
