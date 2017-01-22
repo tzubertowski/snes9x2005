@@ -2001,7 +2001,6 @@ void Apu9E()
       IAPU.Registers.YA.B.A = Work8;
    }
    // XXX How should Overflow, Half Carry, Zero and Negative flags be set??
-   // APUSetZN16 (IAPU.Registers.YA.W);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
@@ -2009,8 +2008,7 @@ void Apu9E()
 void Apu9F()
 {
    // XCN A
-   IAPU.Registers.YA.B.A = (IAPU.Registers.YA.B.A >> 4) | (IAPU.Registers.YA.B.A <<
-                           4);
+   IAPU.Registers.YA.B.A = (IAPU.Registers.YA.B.A >> 4) | (IAPU.Registers.YA.B.A << 4);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
