@@ -873,21 +873,24 @@ static void init_descriptors(void)
 
 bool retro_load_game(const struct retro_game_info* game)
 {
+   struct retro_system_av_info av_info;
+   if (!game)
+      return false;
+
    CPU.Flags = 0;
-  init_descriptors();
-  check_variables();
+   init_descriptors();
+   check_variables();
 
 #ifdef LOAD_FROM_MEMORY_TEST
    if (!LoadROM(game))
 #else
-   if (!LoadROM(game->path))
+      if (!LoadROM(game->path))
 #endif
-      return false;
+         return false;
 
    Settings.FrameTime = (Settings.PAL ? Settings.FrameTimePAL :
-                         Settings.FrameTimeNTSC);
+         Settings.FrameTimeNTSC);
 
-   struct retro_system_av_info av_info;
    retro_get_system_av_info(&av_info);
 
 #ifdef USE_BLARGG_APU
