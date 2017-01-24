@@ -46,7 +46,6 @@ void S9xMainLoop_SA1_SFX(void)
    for (;;)
    {
       APU_EXECUTE();
-
       if (CPU.Flags)
       {
          if (CPU.Flags & NMI_FLAG)
@@ -57,7 +56,7 @@ void S9xMainLoop_SA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
+                  ++CPU.PC;
                }
                S9xOpcode_NMI();
             }
@@ -70,7 +69,7 @@ void S9xMainLoop_SA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
+                  ++CPU.PC;
                }
                if (CPU.IRQActive && !Settings.DisableIRQ)
                {
@@ -127,7 +126,6 @@ void S9xMainLoop_SA1_NoSFX(void)
    for (;;)
    {
       APU_EXECUTE();
-
       if (CPU.Flags)
       {
          if (CPU.Flags & NMI_FLAG)
@@ -199,7 +197,6 @@ void S9xMainLoop_NoSA1_SFX(void)
    for (;;)
    {
       APU_EXECUTE();
-
       if (CPU.Flags)
       {
          if (CPU.Flags & NMI_FLAG)
@@ -210,7 +207,7 @@ void S9xMainLoop_NoSA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
+                  ++CPU.PC;
                }
                S9xOpcode_NMI();
             }
@@ -223,7 +220,7 @@ void S9xMainLoop_NoSA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
+                  ++CPU.PC;
                }
                if (CPU.IRQActive && !Settings.DisableIRQ)
                {
@@ -278,7 +275,6 @@ void S9xMainLoop_NoSA1_NoSFX(void)
    for (;;)
    {
       APU_EXECUTE();
-
       if (CPU.Flags)
       {
          if (CPU.Flags & NMI_FLAG)
@@ -381,7 +377,6 @@ void S9xDoHBlankProcessing_SFX()
    case HBLANK_START_EVENT:
       if (IPPU.HDMA && CPU.V_Counter <= PPU.ScreenHeight)
          IPPU.HDMA = S9xDoHDMA(IPPU.HDMA);
-
       break;
 
    case HBLANK_END_EVENT:
@@ -390,12 +385,7 @@ void S9xDoHBlankProcessing_SFX()
 #ifndef USE_BLARGG_APU
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)
-      {
          APU.Cycles -= Settings.H_Max;
-#ifdef MK_APU
-         S9xCatchupCount();
-#endif
-      }
       else
          APU.Cycles = 0;
 #else
@@ -455,17 +445,6 @@ void S9xDoHBlankProcessing_SFX()
             CPU.Flags |= NMI_FLAG;
             CPU.NMICycleCount = CPU.NMITriggerPoint;
          }
-
-#ifdef OLD_SNAPSHOT_CODE
-         if (CPU.Flags & SAVE_SNAPSHOT_FLAG)
-         {
-            CPU.Flags &= ~SAVE_SNAPSHOT_FLAG;
-            Registers.PC = CPU.PC - CPU.PCBase;
-            S9xPackStatus();
-            S9xAPUPackStatus();
-            Snapshot(NULL);
-         }
-#endif
       }
 
       if (CPU.V_Counter == PPU.ScreenHeight + 3)
@@ -554,7 +533,6 @@ void S9xDoHBlankProcessing_NoSFX()
    case HBLANK_START_EVENT:
       if (IPPU.HDMA && CPU.V_Counter <= PPU.ScreenHeight)
          IPPU.HDMA = S9xDoHDMA(IPPU.HDMA);
-
       break;
 
    case HBLANK_END_EVENT:
@@ -562,12 +540,7 @@ void S9xDoHBlankProcessing_NoSFX()
 #ifndef USE_BLARGG_APU
       CPU.Cycles -= Settings.H_Max;
       if (IAPU.APUExecuting)
-      {
          APU.Cycles -= Settings.H_Max;
-#ifdef MK_APU
-         S9xCatchupCount();
-#endif
-      }
       else
          APU.Cycles = 0;
 #else
@@ -579,8 +552,7 @@ void S9xDoHBlankProcessing_NoSFX()
       CPU.NextEvent = -1;
       ICPU.Scanline++;
 
-      if (++CPU.V_Counter >= (Settings.PAL ? SNES_MAX_PAL_VCOUNTER :
-                              SNES_MAX_NTSC_VCOUNTER))
+      if (++CPU.V_Counter >= (Settings.PAL ? SNES_MAX_PAL_VCOUNTER : SNES_MAX_NTSC_VCOUNTER))
       {
          CPU.V_Counter = 0;
          Memory.FillRAM[0x213F] ^= 0x80;
@@ -628,17 +600,6 @@ void S9xDoHBlankProcessing_NoSFX()
             CPU.Flags |= NMI_FLAG;
             CPU.NMICycleCount = CPU.NMITriggerPoint;
          }
-
-#ifdef OLD_SNAPSHOT_CODE
-         if (CPU.Flags & SAVE_SNAPSHOT_FLAG)
-         {
-            CPU.Flags &= ~SAVE_SNAPSHOT_FLAG;
-            Registers.PC = CPU.PC - CPU.PCBase;
-            S9xPackStatus();
-            S9xAPUPackStatus();
-            Snapshot(NULL);
-         }
-#endif
       }
 
       if (CPU.V_Counter == PPU.ScreenHeight + 3)
@@ -705,14 +666,11 @@ void S9xDoHBlankProcessing_NoSFX()
       }
 #endif
       break;
-
    case HTIMER_BEFORE_EVENT:
    case HTIMER_AFTER_EVENT:
-      if (PPU.HTimerEnabled && (!PPU.VTimerEnabled
-                                || CPU.V_Counter == PPU.IRQVBeamPos))
+      if (PPU.HTimerEnabled && (!PPU.VTimerEnabled || CPU.V_Counter == PPU.IRQVBeamPos))
          S9xSetIRQ(PPU_H_BEAM_IRQ_SOURCE);
       break;
    }
-
    S9xReschedule();
 }

@@ -104,7 +104,7 @@ static inline void S9xSA1PackStatus(void)
 {
    SA1.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
    SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) |
-                       (SA1._Negative & 0x80) | (SA1._Overflow << 6);
+                      (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
 static inline void S9xSA1FixCycles(void)

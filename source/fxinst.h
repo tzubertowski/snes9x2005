@@ -280,9 +280,6 @@ struct FxRegs_s
 /* Update pipe from ROM */
 #define FETCHPIPE { PIPE = PRGBANK(R15); }
 
-/* ABS */
-#define ABS(x) ((x)<0?-(x):(x))
-
 /* Access source register */
 #define SREG (*GSU.pvSreg)
 
