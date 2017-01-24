@@ -67,32 +67,24 @@ INLINE uint8_t S9xAPUGetByte(uint32_t Address)
 {
    Address &= 0xffff;
 
-   if (Address <= 0xff && Address >= 0xf0)
+   if (Address == 0xf3)
+      return S9xGetAPUDSP();
+
+   bool zero = (Address >= 0xfd && Address <= 0xff);
+   uint8_t t = IAPU.RAM [Address];
+
+#ifdef SPC700_SHUTDOWN
+   if (zero || (Address >= 0xf4 && Address <= 0xf7))
    {
-      if (Address >= 0xf4 && Address <= 0xf7)
-      {
-#ifdef SPC700_SHUTDOWN
-         IAPU.WaitAddress2 = IAPU.WaitAddress1;
-         IAPU.WaitAddress1 = IAPU.PC;
-#endif
-         return (IAPU.RAM [Address]);
-      }
-      else if (Address == 0xf3)
-         return (S9xGetAPUDSP());
-      if (Address >= 0xfd)
-      {
-#ifdef SPC700_SHUTDOWN
-         IAPU.WaitAddress2 = IAPU.WaitAddress1;
-         IAPU.WaitAddress1 = IAPU.PC;
-#endif
-         uint8_t t = IAPU.RAM [Address];
-         IAPU.RAM [Address] = 0;
-         return (t);
-      }
-      return (IAPU.RAM [Address]);
+      IAPU.WaitAddress2 = IAPU.WaitAddress1;
+      IAPU.WaitAddress1 = IAPU.PC;
    }
-   else
-      return (IAPU.RAM [Address]);
+#endif
+
+   if(zero)
+      IAPU.RAM [Address] = 0;
+
+   return t;
 }
 
 INLINE void S9xAPUSetByte(uint8_t byte, uint32_t Address)

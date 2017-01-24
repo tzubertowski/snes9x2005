@@ -6,21 +6,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <fcntl.h>
 
 #define CLIP16(v) \
-   if ((v) < -32768) \
+if ((v) < -32768) \
     (v) = -32768; \
-   else \
-   if ((v) > 32767) \
-(v) = 32767
+else \
+if ((v) > 32767) \
+    (v) = 32767
 
 #define CLIP8(v) \
-   if ((v) < -128) \
+if ((v) < -128) \
     (v) = -128; \
-   else \
-   if ((v) > 127) \
-(v) = 127
+else if ((v) > 127) \
+         (v) = 127
 
 #include "snes9x.h"
 #include "soundux.h"
@@ -29,7 +27,6 @@
 #include "cpuexec.h"
 
 extern int32_t Echo [24000];
-extern int32_t DummyEchoBuffer [SOUND_BUFFER_SIZE];
 extern int32_t MixBuffer [SOUND_BUFFER_SIZE];
 extern int32_t EchoBuffer [SOUND_BUFFER_SIZE];
 extern int32_t FilterTaps [8];
@@ -40,6 +37,42 @@ extern int32_t Loop [16];
 
 extern long FilterValues[4][2];
 extern int32_t NoiseFreq [32];
+uint32_t AttackRate [16] =
+{
+   4100, 2600, 1500, 1000, 640, 380, 260, 160,
+   96,   64,   40,   24,   16,  10,  6,   1
+};
+
+uint32_t DecayRate [8] =
+{
+   1200, 740, 440, 290, 180, 110, 74, 37
+};
+
+uint32_t DecreaseRateExp [32] =
+{
+   0xFFFFFFFF, 38000, 28000, 24000, 19000, 14000, 12000, 9400,
+   7100,       5900,  4700,  3500,  2900,  2400,  1800,  1500,
+   1200,       880,   740,   590,   440,   370,   290,   220,
+   180,        150,   110,   92,    74,    55,    37,    18
+};
+
+uint32_t IncreaseRate [32] =
+{
+   0xFFFFFFFF, 4100, 3100, 2600, 2000, 1500, 1300, 1000,
+   770,        640,  510,  380,  320,  260,  190,  160,
+   130,        96,   80,   64,   48,   40,   32,   24,
+   20,         16,   12,   10,   8,    6,    4,    2
+};
+
+#define SustainRate DecreaseRateExp
+
+// precalculated env rates for S9xSetEnvRate
+uint32_t AttackERate     [16][10];
+uint32_t DecayERate       [8][10];
+uint32_t SustainERate    [32][10];
+uint32_t IncreaseERate   [32][10];
+uint32_t DecreaseERateExp[32][10];
+uint32_t KeyOffERate         [10];
 
 static int32_t noise_gen;
 
@@ -51,7 +84,6 @@ static int32_t noise_gen;
 #define ENVX_SHIFT 24
 
 void DecodeBlockAsm(int8_t*, int16_t*, int32_t*, int32_t*);
-void DecodeBlockAsm2(int8_t*, int16_t*, int32_t*, int32_t*);
 
 // F is channel's current frequency and M is the 16-bit modulation waveform
 // from the previous channel multiplied by the current envelope volume level.
@@ -59,17 +91,6 @@ void DecodeBlockAsm2(int8_t*, int16_t*, int32_t*, int32_t*);
 
 #define LAST_SAMPLE 0xffffff
 #define JUST_PLAYED_LAST_SAMPLE(c) ((c)->sample_pointer >= LAST_SAMPLE)
-
-void S9xSetEightBitConsoleSound(bool Enabled)
-{
-   if (Settings.EightBitConsoleSound != Enabled)
-   {
-      Settings.EightBitConsoleSound = Enabled;
-      int i;
-      for (i = 0; i < 8; i++)
-         SoundData.channels[i].needs_decode = true;
-   }
-}
 
 static inline uint8_t* S9xGetSampleAddress(int sample_number)
 {
@@ -92,7 +113,7 @@ void S9xAPUSetEndX(int ch)
    APU.DSP [APU_ENDX] |= 1 << ch;
 }
 
-void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target)
+void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target, unsigned int mode)
 {
    ch->envx_target = target;
 
@@ -104,37 +125,38 @@ void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target)
    else
       ch->direction = direction;
 
-   static int64_t steps [] =
-   {
-      // 0, 64, 1238, 1238, 256, 1, 64, 109, 64, 1238
-      0,
-      (int64_t) FIXED_POINT * 1000 * 64,
-      (int64_t) FIXED_POINT * 1000 * 619,
-      (int64_t) FIXED_POINT * 1000 * 619,
-      (int64_t) FIXED_POINT * 1000 * 128,
-      (int64_t) FIXED_POINT * 1000 * 1,
-      (int64_t) FIXED_POINT * 1000 * 64,
-      (int64_t) FIXED_POINT * 1000 * 55,
-      (int64_t) FIXED_POINT * 1000 * 64,
-      (int64_t) FIXED_POINT * 1000 * 619
-   };
-
    if (rate == 0 || so.playback_rate == 0)
       ch->erate = 0;
    else
    {
-      ch->erate = (uint32_t)
-                  (steps [ch->state] / (rate * so.playback_rate));
+      switch (mode >> 28)
+      {
+      case 0: // Attack
+         ch->erate = AttackERate[ch->env_ind_attack][ch->state];
+         break;
+      case 1: // Decay
+         ch->erate = DecayERate[ch->env_ind_decay][ch->state];
+         break;
+      case 2: // Sustain
+         ch->erate = SustainERate[ch->env_ind_sustain][ch->state];
+         break;
+      case 3: // Increase
+         ch->erate = IncreaseERate[mode & 0x1f][ch->state];
+         break;
+      case 4: // DecreaseExp
+         ch->erate = DecreaseERateExp[mode & 0x1f][ch->state];
+         break;
+      case 5: // KeyOff
+         ch->erate = KeyOffERate[ch->state];
+         break;
+      }
    }
 }
 
-
-void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction,
-                        int target)
+void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction, int target, unsigned int mode)
 {
-   S9xSetEnvRate(&SoundData.channels [channel], rate, direction, target);
+   S9xSetEnvRate(&SoundData.channels [channel], rate, direction, target, mode);
 }
-
 
 void S9xSetSoundVolume(int channel, int16_t volume_left, int16_t volume_right)
 {
@@ -180,7 +202,7 @@ void S9xSetEchoEnable(uint8_t byte)
       if (byte & (1 << i))
          SoundData.channels [i].echo_buf_ptr = EchoBuffer;
       else
-         SoundData.channels [i].echo_buf_ptr = DummyEchoBuffer;
+         SoundData.channels [i].echo_buf_ptr = NULL;
    }
 }
 
@@ -192,7 +214,7 @@ void S9xSetEchoFeedback(int feedback)
 
 void S9xSetEchoDelay(int delay)
 {
-   SoundData.echo_buffer_size = (512 * delay * so.playback_rate) / 32000;
+   SoundData.echo_buffer_size = (512 * delay * so.playback_rate) >> 15;
    SoundData.echo_buffer_size <<= 1;
    if (SoundData.echo_buffer_size)
       SoundData.echo_ptr %= SoundData.echo_buffer_size;
@@ -209,7 +231,7 @@ void S9xSetEchoWriteEnable(uint8_t byte)
 
 void S9xSetFrequencyModulationEnable(uint8_t byte)
 {
-   SoundData.pitch_mod = byte & ~1;
+   SoundData.pitch_mod = byte & 0xFE;
 }
 
 void S9xSetSoundKeyOff(int channel)
@@ -220,7 +242,7 @@ void S9xSetSoundKeyOff(int channel)
    {
       ch->state = SOUND_RELEASE;
       ch->mode = MODE_RELEASE;
-      S9xSetEnvRate(ch, 8, -1, 0);
+      S9xSetEnvRate(ch, 8, -1, 0, 5 << 28);
    }
 }
 
@@ -247,10 +269,8 @@ void S9xFixSoundAfterSnapshotLoad()
       SoundData.channels [i].envxx = SoundData.channels [i].envx << ENVX_SHIFT;
       SoundData.channels [i].next_sample = 0;
       SoundData.channels [i].interpolate = 0;
-      SoundData.channels [i].previous [0] = (int32_t)
-                                            SoundData.channels [i].previous16 [0];
-      SoundData.channels [i].previous [1] = (int32_t)
-                                            SoundData.channels [i].previous16 [1];
+      SoundData.channels [i].previous [0] = (int32_t) SoundData.channels [i].previous16 [0];
+      SoundData.channels [i].previous [1] = (int32_t) SoundData.channels [i].previous16 [1];
    }
    IAPU.Scanline = 0;
 }
@@ -264,10 +284,21 @@ void S9xSetFilterCoefficient(int tap, int value)
       FilterTapDefinitionBitfield |= 1 << (tap & 7);
 }
 
-void S9xSetSoundADSR(int channel, int attack_rate, int decay_rate,
-                     int sustain_rate, int sustain_level, int release_rate)
+void S9xSetSoundADSR(int channel, int attack_ind, int decay_ind, int sustain_ind, int sustain_level, int release_rate)
 {
+   int attack_rate  = AttackRate [attack_ind];
+   int decay_rate   = DecayRate [decay_ind];
+   int sustain_rate = SustainRate [sustain_ind];
+
+   // Hack for ROMs that use a very short attack rate, key on a
+   // channel, then switch to decay mode. e.g. Final Fantasy II.
+   if(attack_rate == 1)
+      attack_rate = 0;
+
    Channel* ch = &SoundData.channels[channel];
+   ch->env_ind_attack = attack_ind;
+   ch->env_ind_decay = decay_ind;
+   ch->env_ind_sustain = sustain_ind;
    ch->attack_rate = attack_rate;
    ch->decay_rate = decay_rate;
    ch->sustain_rate = sustain_rate;
@@ -277,15 +308,14 @@ void S9xSetSoundADSR(int channel, int attack_rate, int decay_rate,
    switch (SoundData.channels[channel].state)
    {
    case SOUND_ATTACK:
-      S9xSetEnvRate(ch, attack_rate, 1, 127);
+      S9xSetEnvRate(ch, attack_rate, 1, 127, 0);
       break;
-
    case SOUND_DECAY:
       S9xSetEnvRate(ch, decay_rate, -1,
-                    (MAX_ENVELOPE_HEIGHT * (sustain_level + 1)) >> 3);
+                    (MAX_ENVELOPE_HEIGHT * (sustain_level + 1)) >> 3, 1 << 28);
       break;
    case SOUND_SUSTAIN:
-      S9xSetEnvRate(ch, sustain_rate, -1, 0);
+      S9xSetEnvRate(ch, sustain_rate, -1, 0, 2 << 28);
       break;
    }
 }
@@ -320,14 +350,13 @@ int S9xGetEnvelopeHeight(int channel)
    return (0);
 }
 
-void S9xSetSoundFrequency(int channel, int hertz)
+void S9xSetSoundFrequency(int channel, int hertz) // hertz [0~64K<<1]
 {
    if (so.playback_rate)
    {
       if (SoundData.channels[channel].type == SOUND_NOISE)
          hertz = NoiseFreq [APU.DSP [APU_FLG] & 0x1f];
-      SoundData.channels[channel].frequency = (int)
-                                              (((int64_t) hertz * FIXED_POINT) / so.playback_rate);
+      SoundData.channels[channel].frequency = (hertz * so.freqbase) >> 11;
    }
 }
 
@@ -345,13 +374,11 @@ void S9xSetSoundType(int channel, int type_of_sound)
 void DecodeBlock(Channel* ch)
 {
    int32_t out;
-   unsigned char filter;
+   uint8_t filter;
    unsigned char shift;
    signed char sample1, sample2;
-   unsigned char i;
-   bool invalid_header;
 
-   if (ch->block_pointer > 0x10000 - 9)
+   if (ch->block_pointer >= 0x10000 - 9)
    {
       ch->last_block = true;
       ch->loop = false;
@@ -359,274 +386,88 @@ void DecodeBlock(Channel* ch)
       return;
    }
 
-   if (Settings.EightBitConsoleSound)
+   int8_t* compressed = (int8_t*) &IAPU.RAM [ch->block_pointer];
+
+   filter = *compressed;
+   if ((ch->last_block = filter & 1))
+      ch->loop = (filter & 2) != 0;
+
+   int16_t* raw = ch->block = ch->decoded;
+   unsigned int i;
+
+   compressed++;
+
+   int32_t prev0 = ch->previous [0];
+   int32_t prev1 = ch->previous [1];
+   shift = filter >> 4;
+
+   switch ((filter >> 2) & 3)
    {
-      signed char* compressed = (signed char*) &IAPU.RAM [ch->block_pointer];
-
-      filter = *compressed;
-      if ((ch->last_block = filter & 1))
-         ch->loop = (filter & 2) != 0;
-
-      int16_t interim[16];
-      uint8_t interim_byte = 0;
-
-      compressed++;
-
-      // Seperate out the header parts used for decoding
-
-      shift = filter >> 4;
-
-      // Header validity check: if range(shift) is over 12, ignore
-      // all bits of the data for that block except for the sign bit of each
-      invalid_header = (shift >= 0xD);
-
-      filter = filter & 0x0c;
-
-      int32_t prev0 = ch->previous [0];
-      int32_t prev1 = ch->previous [1];
-
-      int16_t amplitude = 0;
-
+   case 0:
       for (i = 8; i != 0; i--)
       {
          sample1 = *compressed++;
          sample2 = sample1 << 4;
-         //Sample 2 = Bottom Nibble, Sign Extended.
          sample2 >>= 4;
-         //Sample 1 = Top Nibble, shifted down and Sign Extended.
          sample1 >>= 4;
-         if (invalid_header)
-         {
-            sample1 >>= 3;
-            sample2 >>= 3;
-         }
-
-         int nybblesmp;
-         for (nybblesmp = 0; nybblesmp < 2; nybblesmp++)
-         {
-            out = (((nybblesmp) ? sample2 : sample1) << shift);
-            out >>= 1;
-
-            switch (filter)
-            {
-            case 0x00:
-               // Method0 - [Smp]
-               break;
-
-            case 0x04:
-               // Method1 - [Delta]+[Smp-1](15/16)
-               out += (prev0 >> 1) + ((-prev0) >> 5);
-               break;
-
-            case 0x08:
-               // Method2 - [Delta]+[Smp-1](61/32)-[Smp-2](15/16)
-               out += (prev0) + ((-(prev0 + (prev0 >> 1))) >> 5) - (prev1 >> 1) + (prev1 >> 5);
-               break;
-
-            default:
-               // Method3 - [Delta]+[Smp-1](115/64)-[Smp-2](13/16)
-               out += (prev0) + ((-(prev0 + (prev0 << 2) + (prev0 << 3))) >> 7) -
-                      (prev1 >> 1) + ((prev1 + (prev1 >> 1)) >> 4);
-               break;
-
-            }
-            CLIP16(out);
-            int16_t result = (int16_t)(out << 1);
-            if (abs(result) > amplitude)
-               amplitude = abs(result);
-            interim[interim_byte++] = out;
-            prev1 = (int16_t)prev0;
-            prev0 = (int16_t)(out << 1);
-         }
+         *raw++ = ((int32_t) sample1 << shift);
+         *raw++ = ((int32_t) sample2 << shift);
       }
-      ch->previous [0] = prev0;
-      ch->previous [1] = prev1;
-
-      int32_t total_deviation_from_previous = 0;
-      for (i = 1; i < 16; i++)
-         total_deviation_from_previous += abs(interim[i] - interim[i - 1]);
-      if (total_deviation_from_previous >= (int32_t) amplitude * 4)
-      {
-         /* Looks like noise. Generate noise. */
-         for (i = 0; i < 16; i++)
-         {
-            int feedback = (noise_gen << 13) ^ (noise_gen << 14);
-            noise_gen = (feedback & 0x4000) ^ (noise_gen >> 1);
-            ch->decoded[i] = (noise_gen << 17) >> 17;
-         }
-      }
-      else if (interim[0] < interim[1] && interim[1] < interim[2]
-               && interim[2] < interim[3]
-               && interim[4] > interim[5] && interim[5] > interim[6]
-               && interim[6] > interim[7] && interim[7] > interim[8]
-               && interim[8] > interim[9] && interim[9] > interim[10]
-               && interim[10] > interim[11]
-               && interim[12] < interim[13] && interim[13] < interim[14]
-               && interim[14] < interim[15])
-      {
-         /* Looks like a sine or triangle wave. Make it a
-          * triangle wave with an amplitude equivalent to that
-          * of the highest amplitude sample of the block. */
-         ch->decoded[0] =  ch->decoded[8]  = 0;
-         ch->decoded[1] =  ch->decoded[7]  = amplitude / 4;
-         ch->decoded[2] =  ch->decoded[6]  = amplitude / 2;
-         ch->decoded[3] =  ch->decoded[5]  = amplitude * 3 / 4;
-         ch->decoded[4] =  amplitude;
-         ch->decoded[9] =  ch->decoded[15] = -(amplitude / 4);
-         ch->decoded[10] = ch->decoded[14] = -(amplitude / 2);
-         ch->decoded[11] = ch->decoded[13] = -(amplitude * 3 / 4);
-         ch->decoded[12] = -amplitude;
-      }
-      else if (interim[0] > interim[1] && interim[1] > interim[2]
-               && interim[2] > interim[3]
-               && interim[4] < interim[5] && interim[5] < interim[6]
-               && interim[6] < interim[7] && interim[7] < interim[8]
-               && interim[8] < interim[9] && interim[9] < interim[10]
-               && interim[10] < interim[11]
-               && interim[12] > interim[13] && interim[13] > interim[14]
-               && interim[14] > interim[15])
-      {
-         /* Inverted triangle wave. */
-         ch->decoded[0] =  ch->decoded[8]  = 0;
-         ch->decoded[1] =  ch->decoded[7]  = -(amplitude / 4);
-         ch->decoded[2] =  ch->decoded[6]  = -(amplitude / 2);
-         ch->decoded[3] =  ch->decoded[5]  = -(amplitude * 3 / 4);
-         ch->decoded[4] = -amplitude;
-         ch->decoded[9] =  ch->decoded[15] = amplitude / 4;
-         ch->decoded[10] = ch->decoded[14] = amplitude / 2;
-         ch->decoded[11] = ch->decoded[13] = amplitude * 3 / 4;
-         ch->decoded[12] = amplitude;
-      }
-      else if (interim[0] < interim[1] && interim[1] < interim[2]
-               && interim[2] < interim[3] && interim[3] < interim[4]
-               && interim[4] < interim[5] && interim[5] < interim[6]
-               && interim[6] < interim[7]
-               && interim[8] > interim[9] && interim[9] > interim[10]
-               && interim[10] > interim[11] && interim[11] > interim[12]
-               && interim[12] > interim[13] && interim[13] > interim[14]
-               && interim[14] > interim[15])
-      {
-         /* Looks like a V wave. Make it a half-triangle wave
-          * with an amplitude equivalent to that
-          * of the highest amplitude sample of the block. */
-         ch->decoded[0] =  0;
-         ch->decoded[1] =  ch->decoded[15] = amplitude / 8;
-         ch->decoded[2] =  ch->decoded[14] = amplitude / 4;
-         ch->decoded[3] =  ch->decoded[13] = amplitude * 3 / 8;
-         ch->decoded[4] =  ch->decoded[12] = amplitude / 2;
-         ch->decoded[5] =  ch->decoded[11] = amplitude * 5 / 8;
-         ch->decoded[6] =  ch->decoded[10] = amplitude * 3 / 4;
-         ch->decoded[7] =  ch->decoded[9]  = amplitude * 7 / 8;
-         ch->decoded[8] =  amplitude;
-      }
-      else if (interim[0] > interim[1] && interim[1] > interim[2]
-               && interim[2] > interim[3] && interim[3] > interim[4]
-               && interim[4] > interim[5] && interim[5] > interim[6]
-               && interim[6] > interim[7]
-               && interim[8] < interim[9] && interim[9] < interim[10]
-               && interim[10] < interim[11] && interim[11] < interim[12]
-               && interim[12] < interim[13] && interim[13] < interim[14]
-               && interim[14] < interim[15])
-      {
-         /* Inverted V wave. */
-         ch->decoded[0] =  0;
-         ch->decoded[1] =  ch->decoded[15] = -(amplitude / 8);
-         ch->decoded[2] =  ch->decoded[14] = -(amplitude / 4);
-         ch->decoded[3] =  ch->decoded[13] = -(amplitude * 3 / 8);
-         ch->decoded[4] =  ch->decoded[12] = -(amplitude / 2);
-         ch->decoded[5] =  ch->decoded[11] = -(amplitude * 5 / 8);
-         ch->decoded[6] =  ch->decoded[10] = -(amplitude * 3 / 4);
-         ch->decoded[7] =  ch->decoded[9]  = -(amplitude * 7 / 8);
-         ch->decoded[8] =  -amplitude;
-      }
-      else
-      {
-         // Make it a square wave with an amplitude equivalent to that
-         // of the highest amplitude sample of the block.
-         // But actually put half of the amplitude, because
-         // square waves are just loud.
-         for (i = 0; i < 8; i++)
-            ch->decoded[i] = amplitude / 2;
-         for (i = 8; i < 16; i++)
-            ch->decoded[i] = -(amplitude / 2);
-      }
-   }
-   else
-   {
-      signed char* compressed = (signed char*) &IAPU.RAM [ch->block_pointer];
-
-      filter = *compressed;
-      if ((ch->last_block = filter & 1))
-         ch->loop = (filter & 2) != 0;
-
-      compressed++;
-      int16_t* raw = ch->block = ch->decoded;
-
-      // Seperate out the header parts used for decoding
-
-      shift = filter >> 4;
-
-      // Header validity check: if range(shift) is over 12, ignore
-      // all bits of the data for that block except for the sign bit of each
-      invalid_header = (shift >= 0xD);
-
-      filter = filter & 0x0c;
-
-      int32_t prev0 = ch->previous [0];
-      int32_t prev1 = ch->previous [1];
-
+      prev1 = *(raw - 2);
+      prev0 = *(raw - 1);
+      break;
+   case 1:
       for (i = 8; i != 0; i--)
       {
          sample1 = *compressed++;
          sample2 = sample1 << 4;
-         //Sample 2 = Bottom Nibble, Sign Extended.
          sample2 >>= 4;
-         //Sample 1 = Top Nibble, shifted down and Sign Extended.
          sample1 >>= 4;
-         if (invalid_header)
-         {
-            sample1 >>= 3;
-            sample2 >>= 3;
-         }
-
-         int nybblesmp;
-         for (nybblesmp = 0; nybblesmp < 2; nybblesmp++)
-         {
-            out = (((nybblesmp) ? sample2 : sample1) << shift);
-            out >>= 1;
-
-            switch (filter)
-            {
-            case 0x00:
-               // Method0 - [Smp]
-               break;
-
-            case 0x04:
-               // Method1 - [Delta]+[Smp-1](15/16)
-               out += (prev0 >> 1) + ((-prev0) >> 5);
-               break;
-
-            case 0x08:
-               // Method2 - [Delta]+[Smp-1](61/32)-[Smp-2](15/16)
-               out += (prev0) + ((-(prev0 + (prev0 >> 1))) >> 5) - (prev1 >> 1) + (prev1 >> 5);
-               break;
-
-            default:
-               // Method3 - [Delta]+[Smp-1](115/64)-[Smp-2](13/16)
-               out += (prev0) + ((-(prev0 + (prev0 << 2) + (prev0 << 3))) >> 7) -
-                      (prev1 >> 1) + ((prev1 + (prev1 >> 1)) >> 4);
-               break;
-
-            }
-            CLIP16(out);
-            *raw++ = (int16_t)(out << 1);
-            prev1 = (int16_t)prev0;
-            prev0 = (int16_t)(out << 1);
-         }
+         prev0 = (int16_t) prev0;
+         *raw++ = prev1 = ((int32_t) sample1 << shift) + prev0 - (prev0 >> 4);
+         prev1 = (int16_t) prev1;
+         *raw++ = prev0 = ((int32_t) sample2 << shift) + prev1 - (prev1 >> 4);
       }
-      ch->previous [0] = prev0;
-      ch->previous [1] = prev1;
+      break;
+   case 2:
+      for (i = 8; i != 0; i--)
+      {
+         sample1 = *compressed++;
+         sample2 = sample1 << 4;
+         sample2 >>= 4;
+         sample1 >>= 4;
+         out = (sample1 << shift) - prev1 + (prev1 >> 4);
+         prev1 = (int16_t) prev0;
+         prev0 &= ~3;
+         *raw++ = prev0 = out + (prev0 << 1) - (prev0 >> 5) - (prev0 >> 4);
+         out = (sample2 << shift) - prev1 + (prev1 >> 4);
+         prev1 = (int16_t) prev0;
+         prev0 &= ~3;
+         *raw++ = prev0 = out + (prev0 << 1) - (prev0 >> 5) - (prev0 >> 4);
+      }
+      break;
+   case 3:
+      for (i = 8; i != 0; i--)
+      {
+         sample1 = *compressed++;
+         sample2 = sample1 << 4;
+         sample2 >>= 4;
+         sample1 >>= 4;
+         out = (sample1 << shift);
+         out = out - prev1 + (prev1 >> 3) + (prev1 >> 4);
+         prev1 = (int16_t) prev0;
+         prev0 &= ~3;
+         *raw++ = prev0 = out + (prev0 << 1) - (prev0 >> 3) - (prev0 >> 4) - (prev1 >> 6);
+         out = (sample2 << shift);
+         out = out - prev1 + (prev1 >> 3) + (prev1 >> 4);
+         prev1 = (int16_t) prev0;
+         prev0 &= ~3;
+         *raw++ = prev0 = out + (prev0 << 1) - (prev0 >> 3) - (prev0 >> 4) - (prev1 >> 6);
+      }
+      break;
    }
+   ch->previous [0] = prev0;
+   ch->previous [1] = prev1;
    ch->block_pointer += 9;
 }
 
@@ -641,7 +482,7 @@ static inline void MixStereo(int sample_count)
    {
       Channel* ch = &SoundData.channels[J];
 
-      if (ch->state == SOUND_SILENT || !(so.sound_switch & (1 << J)))
+      if (ch->state == SOUND_SILENT)
          continue;
 
       int32_t VL, VR;
@@ -698,15 +539,13 @@ static inline void MixStereo(int sample_count)
                   if (ch->sustain_level != 8)
                   {
                      S9xSetEnvRate(ch, ch->decay_rate, -1,
-                                   (MAX_ENVELOPE_HEIGHT * ch->sustain_level)
-                                   >> 3);
+                                   (MAX_ENVELOPE_HEIGHT * ch->sustain_level) >> 3, 1 << 28);
                      break;
                   }
                   ch->state = SOUND_SUSTAIN;
-                  S9xSetEnvRate(ch, ch->sustain_rate, -1, 0);
+                  S9xSetEnvRate(ch, ch->sustain_rate, -1, 0, 2 << 28);
                }
                break;
-
             case SOUND_DECAY:
                while (ch->env_error >= FIXED_POINT)
                {
@@ -722,10 +561,9 @@ static inline void MixStereo(int sample_count)
                      goto stereo_exit;
                   }
                   ch->state = SOUND_SUSTAIN;
-                  S9xSetEnvRate(ch, ch->sustain_rate, -1, 0);
+                  S9xSetEnvRate(ch, ch->sustain_rate, -1, 0, 2 << 28);
                }
                break;
-
             case SOUND_SUSTAIN:
                while (ch->env_error >= FIXED_POINT)
                {
@@ -739,7 +577,6 @@ static inline void MixStereo(int sample_count)
                   goto stereo_exit;
                }
                break;
-
             case SOUND_RELEASE:
                while (ch->env_error >= FIXED_POINT)
                {
@@ -753,7 +590,6 @@ static inline void MixStereo(int sample_count)
                   goto stereo_exit;
                }
                break;
-
             case SOUND_INCREASE_LINEAR:
                ch->env_error &= FIXED_POINT_REMAINDER;
                ch->envx += step << 1;
@@ -765,10 +601,9 @@ static inline void MixStereo(int sample_count)
                   ch->envxx = 127 << ENVX_SHIFT;
                   ch->state = SOUND_GAIN;
                   ch->mode = MODE_GAIN;
-                  S9xSetEnvRate(ch, 0, -1, 0);
+                  S9xSetEnvRate(ch, 0, -1, 0, 0);
                }
                break;
-
             case SOUND_INCREASE_BENT_LINE:
                if (ch->envx >= (MAX_ENVELOPE_HEIGHT * 3) / 4)
                {
@@ -792,10 +627,9 @@ static inline void MixStereo(int sample_count)
                   ch->envxx = 127 << ENVX_SHIFT;
                   ch->state = SOUND_GAIN;
                   ch->mode = MODE_GAIN;
-                  S9xSetEnvRate(ch, 0, -1, 0);
+                  S9xSetEnvRate(ch, 0, -1, 0, 0);
                }
                break;
-
             case SOUND_DECREASE_LINEAR:
                ch->env_error &= FIXED_POINT_REMAINDER;
                ch->envx -= step << 1;
@@ -806,7 +640,6 @@ static inline void MixStereo(int sample_count)
                   goto stereo_exit;
                }
                break;
-
             case SOUND_DECREASE_EXPONENTIAL:
                while (ch->env_error >= FIXED_POINT)
                {
@@ -820,9 +653,8 @@ static inline void MixStereo(int sample_count)
                   goto stereo_exit;
                }
                break;
-
             case SOUND_GAIN:
-               S9xSetEnvRate(ch, 0, -1, 0);
+               S9xSetEnvRate(ch, 0, -1, 0, 0);
                break;
             }
             ch-> left_vol_level = (ch->envx * ch->volume_left) / 128;
@@ -916,6 +748,10 @@ static inline void MixStereo(int sample_count)
 
          MixBuffer [I    ] += VL;
          MixBuffer [I + 1] += VR;
+
+         if (!ch->echo_buf_ptr)
+            continue;
+         
          ch->echo_buf_ptr [I    ] += VL;
          ch->echo_buf_ptr [I + 1] += VR;
       }
@@ -924,10 +760,16 @@ stereo_exit:
    }
 }
 
-void S9xMixSamples(uint8_t* buffer, int sample_count)
+void S9xMixSamples(uint16_t* buffer, int sample_count)
 {
    int J;
    int I;
+
+   if (so.mute_sound)
+   {
+      memset(buffer, 0, sample_count * sizeof(buffer [0]));
+      return;
+   }
 
    if (SoundData.echo_enable)
       memset(EchoBuffer, 0, sample_count * sizeof(EchoBuffer [0]));
@@ -944,19 +786,14 @@ void S9xMixSamples(uint8_t* buffer, int sample_count)
          for (J = 0; J < sample_count; J++)
          {
             int E = Echo [SoundData.echo_ptr];
+            Echo[SoundData.echo_ptr++] = (E * SoundData.echo_feedback) / 128 + EchoBuffer [J];
 
-            Echo [SoundData.echo_ptr] = (E * SoundData.echo_feedback) / 128 +
-                                        EchoBuffer [J];
-
-            if ((SoundData.echo_ptr += 1) >= SoundData.echo_buffer_size)
+            if (SoundData.echo_ptr >= SoundData.echo_buffer_size)
                SoundData.echo_ptr = 0;
 
-            I = (MixBuffer [J] *
-                 SoundData.master_volume [J & 1] +
-                 E * SoundData.echo_volume [J & 1]) / VOL_DIV16;
-
+            I = (MixBuffer[J] * SoundData.master_volume [J & 1] + E * SoundData.echo_volume [J & 1]) / VOL_DIV16;
             CLIP16(I);
-            ((int16_t*) buffer)[J] = I;
+            buffer[J] = I;
          }
       }
       else
@@ -964,39 +801,26 @@ void S9xMixSamples(uint8_t* buffer, int sample_count)
          // ... with filter defined.
          for (J = 0; J < sample_count; J++)
          {
-            int E = Echo [SoundData.echo_ptr];
-
-            Loop [(Z - 0) & 15] = E;
-            E =  E                    * FilterTaps [0];
-            if (FilterTapDefinitionBitfield & 0x02) E += Loop [(Z -  2) & 15] *
-                     FilterTaps [1];
-            if (FilterTapDefinitionBitfield & 0x04) E += Loop [(Z -  4) & 15] *
-                     FilterTaps [2];
-            if (FilterTapDefinitionBitfield & 0x08) E += Loop [(Z -  6) & 15] *
-                     FilterTaps [3];
-            if (FilterTapDefinitionBitfield & 0x10) E += Loop [(Z -  8) & 15] *
-                     FilterTaps [4];
-            if (FilterTapDefinitionBitfield & 0x20) E += Loop [(Z - 10) & 15] *
-                     FilterTaps [5];
-            if (FilterTapDefinitionBitfield & 0x40) E += Loop [(Z - 12) & 15] *
-                     FilterTaps [6];
-            if (FilterTapDefinitionBitfield & 0x80) E += Loop [(Z - 14) & 15] *
-                     FilterTaps [7];
+            Loop [(Z - 0) & 15] = Echo [SoundData.echo_ptr];
+            int                                     E =  Loop [(Z -  0) & 15] * FilterTaps [0];
+            if (FilterTapDefinitionBitfield & 0x02) E += Loop [(Z -  2) & 15] * FilterTaps [1];
+            if (FilterTapDefinitionBitfield & 0x04) E += Loop [(Z -  4) & 15] * FilterTaps [2];
+            if (FilterTapDefinitionBitfield & 0x08) E += Loop [(Z -  6) & 15] * FilterTaps [3];
+            if (FilterTapDefinitionBitfield & 0x10) E += Loop [(Z -  8) & 15] * FilterTaps [4];
+            if (FilterTapDefinitionBitfield & 0x20) E += Loop [(Z - 10) & 15] * FilterTaps [5];
+            if (FilterTapDefinitionBitfield & 0x40) E += Loop [(Z - 12) & 15] * FilterTaps [6];
+            if (FilterTapDefinitionBitfield & 0x80) E += Loop [(Z - 14) & 15] * FilterTaps [7];
             E /= 128;
             Z++;
 
-            Echo [SoundData.echo_ptr] = (E * SoundData.echo_feedback) / 128 +
-                                        EchoBuffer [J];
+            Echo[SoundData.echo_ptr++] = (E * SoundData.echo_feedback) / 128 + EchoBuffer[J];
 
-            if ((SoundData.echo_ptr += 1) >= SoundData.echo_buffer_size)
+            if (SoundData.echo_ptr >= SoundData.echo_buffer_size)
                SoundData.echo_ptr = 0;
 
-            I = (MixBuffer [J] *
-                 SoundData.master_volume [J & 1] +
-                 E * SoundData.echo_volume [J & 1]) / VOL_DIV16;
-
+            I = (MixBuffer[J] * SoundData.master_volume [J & 1] + E * SoundData.echo_volume [J & 1]) / VOL_DIV16;
             CLIP16(I);
-            ((int16_t*) buffer)[J] = I;
+            buffer[J] = I;
          }
       }
    }
@@ -1005,14 +829,11 @@ void S9xMixSamples(uint8_t* buffer, int sample_count)
       // 16-bit mono or stereo sound, no echo
       for (J = 0; J < sample_count; J++)
       {
-         I = (MixBuffer [J] *
-              SoundData.master_volume [J & 1]) / VOL_DIV16;
-
+         I = (MixBuffer[J] * SoundData.master_volume [J & 1]) / VOL_DIV16;
          CLIP16(I);
-         ((int16_t*) buffer)[J] = I;
+         buffer[J] = I;
       }
    }
-
 }
 
 void S9xResetSound(bool full)
@@ -1041,6 +862,10 @@ void S9xResetSound(bool full)
       SoundData.channels[i].sustain_rate = 0;
       SoundData.channels[i].release_rate = 0;
       SoundData.channels[i].sustain_level = 0;
+      // notaz
+      SoundData.channels[i].env_ind_attack = 0;
+      SoundData.channels[i].env_ind_decay = 0;
+      SoundData.channels[i].env_ind_sustain = 0;
       SoundData.echo_ptr = 0;
       SoundData.echo_feedback = 0;
       SoundData.echo_buffer_size = 1;
@@ -1055,10 +880,6 @@ void S9xResetSound(bool full)
    FilterTaps [7] = 0;
    FilterTapDefinitionBitfield = 0;
    noise_gen = 1;
-   so.sound_switch = 255;
-   so.samples_mixed_so_far = 0;
-   so.play_position = 0;
-   so.err_counter = 0;
 
    if (full)
    {
@@ -1066,9 +887,6 @@ void S9xResetSound(bool full)
       SoundData.echo_write_enabled = 0;
       SoundData.echo_channel_enable = 0;
       SoundData.pitch_mod = 0;
-      SoundData.dummy[0] = 0;
-      SoundData.dummy[1] = 0;
-      SoundData.dummy[2] = 0;
       SoundData.master_volume[0] = 0;
       SoundData.master_volume[1] = 0;
       SoundData.echo_volume[0] = 0;
@@ -1077,18 +895,46 @@ void S9xResetSound(bool full)
    }
 
    SoundData.master_volume [0] = SoundData.master_volume [1] = 127;
-   if (so.playback_rate)
-      so.err_rate = (uint32_t)(FIXED_POINT * SNES_SCANLINE_TIME /
-                             (1.0 / so.playback_rate));
-   else
-      so.err_rate = 0;
+   so.mute_sound = true;
 }
 
 void S9xSetPlaybackRate(uint32_t playback_rate)
 {
    so.playback_rate = playback_rate;
-   so.err_rate = (uint32_t)(SNES_SCANLINE_TIME * FIXED_POINT / (1.0 /
-                          (double) so.playback_rate));
+
+   if (playback_rate)
+   {
+      // notaz: calculate a value (let's call it freqbase) to simplify channel freq calculations later.
+      so.freqbase = (FIXED_POINT << 11) / (playback_rate * 33 / 32);
+      // now precalculate env rates for S9xSetEnvRate
+      static int steps [] =
+      {
+         0, 64, 619, 619, 128, 1, 64, 55, 64, 619
+      };
+
+      int i, u;
+
+      for (u = 0 ; u < 10 ; u++)
+      {
+         int64_t fp1000su = ((int64_t) FIXED_POINT * 1000 * steps[u]);
+
+         for (i = 0 ; i < 16 ; i++)
+            AttackERate[i][u] = (uint32_t) (fp1000su / (AttackRate[i] * playback_rate));
+
+         for (i = 0 ; i < 8 ; i++)
+            DecayERate[i][u]  = (uint32_t) (fp1000su / (DecayRate[i]  * playback_rate));
+
+         for (i = 0 ; i < 32 ; i++)
+         {
+            SustainERate[i][u] = (uint32_t) (fp1000su / (SustainRate[i] * playback_rate));
+            IncreaseERate[i][u] = (uint32_t) (fp1000su / (IncreaseRate[i] * playback_rate));
+            DecreaseERateExp[i][u] = (uint32_t) (fp1000su / (DecreaseRateExp[i] / 2 * playback_rate));
+         }
+
+         KeyOffERate[u] = (uint32_t) (fp1000su / (8 * playback_rate));
+      }
+   }
+
    S9xSetEchoDelay(APU.DSP [APU_EDL] & 0xf);
    int i;
    for (i = 0; i < 8; i++)
@@ -1097,13 +943,8 @@ void S9xSetPlaybackRate(uint32_t playback_rate)
 
 bool S9xInitSound()
 {
-   so.sound_fd = -1;
-   so.sound_switch = 255;
-
    so.playback_rate = 0;
-   so.buffer_size = 0;
-   so.encoded = false;
-
+   S9xResetSound(true);
    return (1);
 }
 
@@ -1120,20 +961,9 @@ bool S9xSetSoundMode(int channel, int mode)
          return (true);
       }
       break;
-
    case MODE_DECREASE_LINEAR:
    case MODE_DECREASE_EXPONENTIAL:
    case MODE_GAIN:
-      if (ch->mode != MODE_RELEASE)
-      {
-         ch->mode = mode;
-         if (ch->state != SOUND_SILENT)
-            ch->state = mode;
-
-         return (true);
-      }
-      break;
-
    case MODE_INCREASE_LINEAR:
    case MODE_INCREASE_BENT_LINE:
       if (ch->mode != MODE_RELEASE)
@@ -1141,11 +971,9 @@ bool S9xSetSoundMode(int channel, int mode)
          ch->mode = mode;
          if (ch->state != SOUND_SILENT)
             ch->state = mode;
-
          return (true);
       }
       break;
-
    case MODE_ADSR:
       if (ch->mode == MODE_NONE || ch->mode == MODE_ADSR)
       {
@@ -1155,11 +983,6 @@ bool S9xSetSoundMode(int channel, int mode)
    }
 
    return (false);
-}
-
-void S9xSetSoundControl(int sound_switch)
-{
-   so.sound_switch = sound_switch;
 }
 
 void S9xPlaySample(int channel)
@@ -1202,14 +1025,14 @@ void S9xPlaySample(int channel)
          {
             ch->state = SOUND_SUSTAIN;
             ch->envx = (MAX_ENVELOPE_HEIGHT * ch->sustain_level) >> 3;
-            S9xSetEnvRate(ch, ch->sustain_rate, -1, 0);
+            S9xSetEnvRate(ch, ch->sustain_rate, -1, 0, 2 << 28);
          }
          else
          {
             ch->state = SOUND_DECAY;
             ch->envx = MAX_ENVELOPE_HEIGHT;
             S9xSetEnvRate(ch, ch->decay_rate, -1,
-                          (MAX_ENVELOPE_HEIGHT * ch->sustain_level) >> 3);
+                          (MAX_ENVELOPE_HEIGHT * ch->sustain_level) >> 3, 1 << 28);
          }
          ch-> left_vol_level = (ch->envx * ch->volume_left) / 128;
          ch->right_vol_level = (ch->envx * ch->volume_right) / 128;
@@ -1220,31 +1043,25 @@ void S9xPlaySample(int channel)
          ch->envx = 0;
          ch->left_vol_level = 0;
          ch->right_vol_level = 0;
-         S9xSetEnvRate(ch, ch->attack_rate, 1, MAX_ENVELOPE_HEIGHT);
+         S9xSetEnvRate(ch, ch->attack_rate, 1, MAX_ENVELOPE_HEIGHT, 0);
       }
       ch->envxx = ch->envx << ENVX_SHIFT;
       break;
-
    case MODE_GAIN:
       ch->state = SOUND_GAIN;
       break;
-
    case MODE_INCREASE_LINEAR:
       ch->state = SOUND_INCREASE_LINEAR;
       break;
-
    case MODE_INCREASE_BENT_LINE:
       ch->state = SOUND_INCREASE_BENT_LINE;
       break;
-
    case MODE_DECREASE_LINEAR:
       ch->state = SOUND_DECREASE_LINEAR;
       break;
-
    case MODE_DECREASE_EXPONENTIAL:
       ch->state = SOUND_DECREASE_EXPONENTIAL;
       break;
-
    default:
       break;
    }

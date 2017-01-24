@@ -44,6 +44,7 @@ char slash = '/';
 #endif
 
 static float samples_per_frame = 0.0;
+static float samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
 
 #ifdef PERF_TEST
 #define RETRO_PERFORMANCE_INIT(name) \
@@ -264,13 +265,12 @@ void init_sfc_setting(void)
 {
    memset(&Settings, 0, sizeof(Settings));
    Settings.JoystickEnabled = false;
-   Settings.SoundPlaybackRate = 32000; // -> ds2sound.h for defs
-   Settings.SoundBufferSize = 512;
+   Settings.SoundPlaybackRate = samplerate;
    Settings.CyclesPercentage = 100;
 
    Settings.DisableSoundEcho = false;
    Settings.InterpolatedSound = true;
-   Settings.APUEnabled = Settings.NextAPUEnabled = true;
+   Settings.APUEnabled = true;
 
    Settings.H_Max = SNES_CYCLES_PER_SCANLINE;
    Settings.SkipFrames = AUTO_FRAMERATE;
@@ -285,7 +285,6 @@ void init_sfc_setting(void)
 
    Settings.Transparency = true;
    Settings.SupportHiRes = true;
-   Settings.ThreadSound = false;
 #ifdef USE_BLARGG_APU
    Settings.SoundSync = false;
 #endif
@@ -597,13 +596,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info)
       info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE *
                           SNES_MAX_PAL_VCOUNTER));
 
-   info->timing.sample_rate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
-
-   // small hack to improve av sync
-   // since S9xSetPlaybackRate only accepts integral numbers.
-
-   info->timing.fps = info->timing.fps * 32000 / info->timing.sample_rate;
-   info->timing.sample_rate = 32000;
+   info->timing.sample_rate = samplerate;
 }
 
 void retro_reset(void)
@@ -894,7 +887,7 @@ bool retro_load_game(const struct retro_game_info* game)
    Settings.SoundPlaybackRate = av_info.timing.sample_rate;
 #else
    samples_per_frame = av_info.timing.sample_rate / av_info.timing.fps;
-   S9xSetPlaybackRate(32*1024);
+   S9xSetPlaybackRate(Settings.SoundPlaybackRate);
 #endif
    return true;
 }

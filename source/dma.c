@@ -31,13 +31,6 @@ extern uint8_t* HDMABasePointers [8];
 uint32_t HDMARawPointers[8]; // Cart address space pointer
 #endif
 
-#if defined(__linux__) || defined(__WIN32__)
-static int S9xCompareSDD1IndexEntries(const void* p1, const void* p2)
-{
-   return (*(uint32_t*) p1 - * (uint32_t*) p2);
-}
-#endif
-
 /**********************************************************************************************/
 /* S9xDoDMA()                                                                                   */
 /* This function preforms the general dma transfer                                            */

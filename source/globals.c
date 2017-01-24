@@ -85,7 +85,6 @@ SCheatData Cheat;
 SoundStatus so;
 
 int32_t Echo [24000];
-int32_t DummyEchoBuffer [SOUND_BUFFER_SIZE];
 int32_t MixBuffer [SOUND_BUFFER_SIZE];
 int32_t EchoBuffer [SOUND_BUFFER_SIZE];
 int32_t FilterTaps [8];
