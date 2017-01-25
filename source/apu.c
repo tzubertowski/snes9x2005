@@ -9,8 +9,6 @@
 #include "cpuexec.h"
 
 extern int32_t  NoiseFreq       [32];
-extern uint16_t DecreaseRateExp [32];
-extern uint16_t IncreaseRate    [32];
 
 bool S9xInitAPU()
 {
@@ -353,17 +351,17 @@ void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
       if(S9xSetSoundMode(channel, (gain & 0x20) ?
                          MODE_INCREASE_BENT_LINE :
                          MODE_INCREASE_LINEAR))
-         S9xSetEnvelopeRate(channel, IncreaseRate [gain & 0x1f], 1, 127, (3 << 28) | gain);
+         S9xSetEnvelopeRate(channel, gain, 1, 127, (3 << 28) | gain);
    }
    else if (gain & 0x20)
    {
       if(S9xSetSoundMode(channel, MODE_DECREASE_EXPONENTIAL))
-         S9xSetEnvelopeRate(channel, DecreaseRateExp [gain & 0x1f] / 2, -1, 0, (4 << 28) | gain);
+         S9xSetEnvelopeRate(channel, gain, -1, 0, (4 << 28) | gain);
    }
    else
    {
       if (S9xSetSoundMode(channel, MODE_DECREASE_LINEAR))
-         S9xSetEnvelopeRate(channel, IncreaseRate [gain & 0x1f], -1, 0, (3 << 28) | gain);
+         S9xSetEnvelopeRate(channel, gain, -1, 0, (3 << 28) | gain);
    }
 }
 
