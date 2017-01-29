@@ -18,10 +18,10 @@
 #include "cpumacro.h"
 #include "apu.h"
 
-long OpAddress;
+int32_t OpAddress;
 
 // For use with the opcodes whose functions here examine the OpAddress.
-static void OpAddressPassthrough(long Addr)
+static void OpAddressPassthrough(int32_t Addr)
 {
    OpAddress = Addr;
 }
@@ -678,7 +678,7 @@ static void Op3CM0(void)
 /* CMP *************************************************************************************** */
 static void OpC9M1(void)
 {
-   int32_t Int32 = (int) ICPU.Registers.AL - (intptr_t) * CPU.PC++;
+   int32_t Int32 = (int32_t) ICPU.Registers.AL - (int32_t) *CPU.PC++;
    ICPU._Carry = Int32 >= 0;
    SetZN8((uint8_t) Int32);
 #ifndef SA1_OPCODES
@@ -690,10 +690,9 @@ static void OpC9M0(void)
 {
    int32_t Int32;
 #ifdef FAST_LSB_WORD_ACCESS
-   Int32 = (long) ICPU.Registers.A.W - (long) * (uint16_t*) CPU.PC;
+   Int32 = (int32_t) ICPU.Registers.A.W - (int32_t) *(uint16_t*)CPU.PC;
 #else
-   Int32 = (long) ICPU.Registers.A.W -
-           (long)(*CPU.PC + (*(CPU.PC + 1) << 8));
+   Int32 = (int32_t) ICPU.Registers.A.W - (int32_t)(*CPU.PC + (*(CPU.PC + 1) << 8));
 #endif
    ICPU._Carry = Int32 >= 0;
    SetZN16((uint16_t) Int32);
@@ -932,7 +931,7 @@ static void OpD3M0(void)
 /* CMX *************************************************************************************** */
 static void OpE0X1(void)
 {
-   int32_t Int32 = (int) ICPU.Registers.XL - (intptr_t) * CPU.PC++;
+   int32_t Int32 = (int32_t) ICPU.Registers.XL - (int32_t) *CPU.PC++;
    ICPU._Carry = Int32 >= 0;
    SetZN8((uint8_t) Int32);
 #ifndef SA1_OPCODES
@@ -944,10 +943,9 @@ static void OpE0X0(void)
 {
    int32_t Int32;
 #ifdef FAST_LSB_WORD_ACCESS
-   Int32 = (long) ICPU.Registers.X.W - (long) * (uint16_t*) CPU.PC;
+   Int32 = (int32_t) ICPU.Registers.X.W - (int32_t) *(uint16_t*)CPU.PC;
 #else
-   Int32 = (long) ICPU.Registers.X.W -
-           (long)(*CPU.PC + (*(CPU.PC + 1) << 8));
+   Int32 = (int32_t) ICPU.Registers.X.W - (int32_t)(*CPU.PC + (*(CPU.PC + 1) << 8));
 #endif
    ICPU._Carry = Int32 >= 0;
    SetZN16((uint16_t) Int32);
@@ -994,7 +992,7 @@ static void OpECX0(void)
 /* CMY *************************************************************************************** */
 static void OpC0X1(void)
 {
-   int32_t Int32 = (int) ICPU.Registers.YL - (intptr_t) * CPU.PC++;
+   int32_t Int32 = (int32_t) ICPU.Registers.YL - (int32_t) *CPU.PC++;
    ICPU._Carry = Int32 >= 0;
    SetZN8((uint8_t) Int32);
 #ifndef SA1_OPCODES
@@ -1006,10 +1004,9 @@ static void OpC0X0(void)
 {
    int32_t Int32;
 #ifdef FAST_LSB_WORD_ACCESS
-   Int32 = (long) ICPU.Registers.Y.W - (long) * (uint16_t*) CPU.PC;
+   Int32 = (int32_t) ICPU.Registers.Y.W - (int32_t) *(uint16_t*)CPU.PC;
 #else
-   Int32 = (long) ICPU.Registers.Y.W -
-           (long)(*CPU.PC + (*(CPU.PC + 1) << 8));
+   Int32 = (int32_t) ICPU.Registers.Y.W - (int32_t)(*CPU.PC + (*(CPU.PC + 1) << 8));
 #endif
    ICPU._Carry = Int32 >= 0;
    SetZN16((uint16_t) Int32);
@@ -3555,7 +3552,7 @@ static void OpF4E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2;
 #endif
-   PushWE((unsigned short)OpAddress);
+   PushWE((uint16_t)OpAddress);
 }
 
 static void OpF4(void)
@@ -3564,7 +3561,7 @@ static void OpF4(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2;
 #endif
-   PushW((unsigned short)OpAddress);
+   PushW((uint16_t)OpAddress);
 }
 
 //PEI NL
@@ -3574,7 +3571,7 @@ static void OpD4E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed;
 #endif
-   PushWE((unsigned short)OpAddress);
+   PushWE((uint16_t)OpAddress);
 }
 
 static void OpD4(void)
@@ -3583,7 +3580,7 @@ static void OpD4(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeed;
 #endif
-   PushW((unsigned short)OpAddress);
+   PushW((uint16_t)OpAddress);
 }
 
 //PER NL
@@ -3593,7 +3590,7 @@ static void Op62E1(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2 + ONE_CYCLE;
 #endif
-   PushWE((unsigned short)OpAddress);
+   PushWE((uint16_t)OpAddress);
 }
 
 static void Op62(void)
@@ -3602,7 +3599,7 @@ static void Op62(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2 + ONE_CYCLE;
 #endif
-   PushW((unsigned short)OpAddress);
+   PushW((uint16_t)OpAddress);
 }
 
 
@@ -4747,7 +4744,7 @@ static void OpDB(void)
 
    int8_t BranchOffset = (NextByte & 0x7F) | ((NextByte & 0x40) << 1);
    // ^ -64 .. +63, sign extend bit 6 into 7 for unpacking
-   long TargetAddress = ((int) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
+   int32_t TargetAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
    switch (NextByte & 0x80)
    {
@@ -4795,7 +4792,7 @@ static void Op42(void)
    ForceShutdown();
 
    int8_t BranchOffset = 0xF0 | (NextByte & 0xF); // always negative
-   long TargetAddress = ((int) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
+   int32_t TargetAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
    switch (NextByte & 0xF0)
    {

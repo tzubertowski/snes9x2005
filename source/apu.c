@@ -27,7 +27,7 @@ void S9xDeinitAPU()
 {
    if (IAPU.RAM)
    {
-      free((char*) IAPU.RAM);
+      free(IAPU.RAM);
       IAPU.RAM = NULL;
    }
 }
@@ -36,7 +36,7 @@ uint8_t APUROM [64];
 
 void S9xResetAPU()
 {
-   int i, j;
+   int32_t i, j;
 
    Settings.APUEnabled = true;
 
@@ -104,7 +104,7 @@ void S9xSetAPUDSP(uint8_t byte)
    uint8_t reg = IAPU.RAM [0xf2];
    static uint8_t KeyOn;
    static uint8_t KeyOnPrev;
-   int i;
+   int32_t i;
 
    switch (reg)
    {
@@ -133,11 +133,11 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_NON:
       if (byte != APU.DSP [APU_NON])
       {
-         int c;
+         int32_t c;
          uint8_t mask = 1;
          for (c = 0; c < 8; c++, mask <<= 1)
          {
-            int type;
+            int32_t type;
 
             if (byte & mask)
                type = SOUND_NOISE;
@@ -169,7 +169,7 @@ void S9xSetAPUDSP(uint8_t byte)
       break;
    case APU_KOFF:
    {
-      int c;
+      int32_t c;
       uint8_t mask = 1;
       for (c = 0; c < 8; c++, mask <<= 1)
       {
@@ -199,7 +199,7 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_KON:
       if (byte)
       {
-         int c;
+         int32_t c;
          uint8_t mask = 1;
          for (c = 0; c < 8; c++, mask <<= 1)
          {
@@ -327,7 +327,7 @@ void S9xSetAPUDSP(uint8_t byte)
       APU.DSP [reg] = byte;
 }
 
-void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
+void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
 {
    if (adsr1 & 0x80) // ADSR mode
    {

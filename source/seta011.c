@@ -10,7 +10,7 @@ ST011_Regs ST011;
 uint8_t board[9][9];
 
 // debug
-static int line = 0;
+static int32_t line = 0;
 
 uint8_t S9xGetST011(uint32_t Address)
 {
@@ -104,7 +104,7 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
       {
          // 9x9 board data: top to bottom, left to right
          // Values represent piece types and ownership
-         int lcv;
+         int32_t lcv;
          for (lcv = 0; lcv < 9; lcv++)
             memcpy(board[lcv], ST011.parameters + lcv * 10, 9 * 1);
       }

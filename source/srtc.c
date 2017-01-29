@@ -35,7 +35,7 @@ Index Description     Range (nibble)
 SRTC_DATA           rtc;
 
 
-static int month_keys[12] = { 1, 4, 4, 0, 2, 5, 0, 3, 6, 1, 4, 6 };
+static int32_t month_keys[12] = { 1, 4, 4, 0, 2, 5, 0, 3, 6, 1, 4, 6 };
 
 
 /*********************************************************************************************
@@ -77,12 +77,12 @@ void S9xHardResetSRTC()
 /* S9xSRTCComputeDayOfWeek()                                                                  */
 /* Return 0-6 for Sunday-Saturday                                                             */
 /**********************************************************************************************/
-unsigned int    S9xSRTCComputeDayOfWeek()
+uint32_t S9xSRTCComputeDayOfWeek()
 {
-   unsigned    year = rtc.data[10] * 10 + rtc.data[9];
-   unsigned    month = rtc.data[8];
-   unsigned    day = rtc.data[7] * 10 + rtc.data[6];
-   unsigned    day_of_week;
+   uint32_t year = rtc.data[10] * 10 + rtc.data[9];
+   uint32_t month = rtc.data[8];
+   uint32_t day = rtc.data[7] * 10 + rtc.data[6];
+   uint32_t day_of_week;
 
    year += (rtc.data[11] - 9) * 100;
 
@@ -105,9 +105,9 @@ unsigned int    S9xSRTCComputeDayOfWeek()
 /* S9xSRTCDaysInMonth()                                                                       */
 /* Return the number of days in a specific month for a certain year                           */
 /**********************************************************************************************/
-int   S9xSRTCDaysInMmonth(int month, int year)
+int32_t S9xSRTCDaysInMmonth(int32_t month, int32_t year)
 {
-   int     mdays;
+   int32_t mdays;
 
    switch (month)
    {
@@ -145,8 +145,8 @@ int   S9xSRTCDaysInMmonth(int month, int year)
 /**********************************************************************************************/
 void  S9xUpdateSrtcTime()
 {
-   time_t   cur_systime;
-   long    time_diff;
+   time_t  cur_systime;
+   int32_t time_diff;
 
    // Keep track of game time by computing the number of seconds that pass on the system
    // clock and adding the same number of seconds to the S-RTC clock structure.
@@ -166,23 +166,22 @@ void  S9xUpdateSrtcTime()
       //        If your tick interval is different adjust the
       //        DAYTICK, HOURTICK, and MINUTETICK defines
 
-      time_diff = (long)(cur_systime - rtc.system_timestamp);
+      time_diff = (int32_t)(cur_systime - rtc.system_timestamp);
       rtc.system_timestamp = cur_systime;
 
       if (time_diff > 0)
       {
-         int      seconds;
-         int      minutes;
-         int      hours;
-         int      days;
-         int      month;
-         int      year;
-         int      temp_days;
+         int32_t seconds;
+         int32_t minutes;
+         int32_t hours;
+         int32_t days;
+         int32_t month;
+         int32_t year;
+         int32_t temp_days;
 
-         int      year_hundreds;
-         int      year_tens;
-         int      year_ones;
-
+         int32_t year_hundreds;
+         int32_t year_tens;
+         int32_t year_ones;
 
          if (time_diff > DAYTICKS)
          {
@@ -420,8 +419,7 @@ void S9xSRTCPreSaveState()
    {
       S9xUpdateSrtcTime();
 
-      int s = Memory.SRAMSize ?
-              (1 << (Memory.SRAMSize + 3)) * 128 : 0;
+      int32_t s = Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0;
       if (s > 0x20000)
          s = 0x20000;
 
@@ -452,8 +450,7 @@ void S9xSRTCPostLoadState()
 {
    if (Settings.SRTC)
    {
-      int s = Memory.SRAMSize ?
-              (1 << (Memory.SRAMSize + 3)) * 128 : 0;
+      int32_t s = Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0;
       if (s > 0x20000)
          s = 0x20000;
 

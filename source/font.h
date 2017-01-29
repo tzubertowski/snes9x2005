@@ -58,6 +58,6 @@ static const char* font[] =
    " .          .                                                             .                                                     ",
 };
 
-static int font_width = 8;
-static int font_height = 9;
+static int32_t font_width = 8;
+static int32_t font_height = 9;
 

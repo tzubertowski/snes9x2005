@@ -57,7 +57,7 @@ typedef struct SPC7110DecompressionLocationStruct
 //this maps an index.bin table to the decompression pack
 typedef struct SPC7110DecompressionIndexStruct
 {
-   int      table;
+   int32_t  table;
    bool     is_file;
    Data7110 location[256];
 } Index7110;
@@ -67,8 +67,8 @@ typedef struct SPC7110DecompressionPackStructure
 {
    uint8_t*  binfiles[MAX_TABLES];
    Index7110 tableEnts[MAX_TABLES];
-   int       last_table;
-   int       idx;
+   int32_t   last_table;
+   int32_t   idx;
    uint8_t   last_idx;
    uint16_t  last_offset;
 } Pack7110;
@@ -158,10 +158,10 @@ void MovePackData()
    decompack->last_idx = s7r.reg4804;
 
    //start decompression
-   int table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
+   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
 
    //the table is a offset multiplier byte and a big-endian pointer
-   int j = 4 * s7r.reg4804;
+   int32_t j = 4 * s7r.reg4804;
    j += s7r.DataRomOffset;
    j += table;
 
@@ -194,7 +194,7 @@ void MovePackData()
    //find the table
    if (table != decompack->last_table)
    {
-      int i = 0;
+      int32_t i = 0;
       while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
          i++;
       if (i == MAX_TABLES)
@@ -225,12 +225,12 @@ void MovePackData()
 // and reads the data directly. Method 2
 void ReadPackData()
 {
-   static int table_age_2;
-   static int table_age_3;
-   static int table_age_4;
-   static int table_age_5;
+   static int32_t table_age_2;
+   static int32_t table_age_3;
+   static int32_t table_age_4;
+   static int32_t table_age_5;
 
-   int table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
+   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
 
    if (table == 0)
    {
@@ -254,7 +254,7 @@ void ReadPackData()
 
    decompack->last_idx = s7r.reg4804;
 
-   int j = 4 * s7r.reg4804;
+   int32_t j = 4 * s7r.reg4804;
    j += s7r.DataRomOffset;
    j += table;
 
@@ -283,7 +283,7 @@ void ReadPackData()
    decompack->last_offset %= DECOMP_BUFFER_SIZE;
    if (table != decompack->last_table)
    {
-      int i = 0;
+      int32_t i = 0;
       while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
          i++;
       if (i == MAX_TABLES)
@@ -376,9 +376,9 @@ void GetPackData()
    decompack->last_offset = (s7r.reg4805) | (s7r.reg4806 << 8);
 
    decompack->last_idx = s7r.reg4804;
-   int table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
+   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
 
-   int j = 4 * s7r.reg4804;
+   int32_t j = 4 * s7r.reg4804;
    j += s7r.DataRomOffset;
    j += table;
 
@@ -407,7 +407,7 @@ void GetPackData()
    decompack->last_offset %= DECOMP_BUFFER_SIZE;
    if (table != decompack->last_table)
    {
-      int i = 0;
+      int32_t i = 0;
       while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
          i++;
       if (i == MAX_TABLES)
@@ -899,9 +899,9 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
    case 0x480B:
    {
       s7r.reg480B = data;
-      int table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
+      int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
 
-      int j = 4 * s7r.reg4804;
+      int32_t j = 4 * s7r.reg4804;
       j += s7r.DataRomOffset;
       j += table;
 
@@ -965,7 +965,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
                {
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
                   if (s7r.reg4818 & 0x08)
-                     i += (signed char)s7r.reg4814;
+                     i += (int8_t)s7r.reg4814;
                   else
                      i += s7r.reg4814;
                   i %= s7r.DataRomSize;
@@ -1029,7 +1029,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
 
                   if (s7r.reg4818 & 0x08)
-                     i += (signed char)s7r.reg4814;
+                     i += (int8_t)s7r.reg4814;
                   else
                      i += s7r.reg4814;
                   i %= s7r.DataRomSize;
@@ -1117,7 +1117,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       {
          int16_t m1 = (int16_t)((s7r.reg4824) | (s7r.reg4825 << 8));
          int16_t m2 = (int16_t)((s7r.reg4820) | (s7r.reg4821 << 8));
-         int    mul = m1 * m2;
+         int32_t mul = m1 * m2;
          s7r.reg4828 = (uint8_t)(mul & 0x000000FF);
          s7r.reg4829 = (uint8_t)((mul & 0x0000FF00) >> 8);
          s7r.reg482A = (uint8_t)((mul & 0x00FF0000) >> 16);
@@ -1146,14 +1146,14 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       s7r.reg4827 = data;
       if (s7r.reg482E & 0x01)
       {
-         int quotient;
+         int32_t quotient;
          int16_t remainder;
-         int dividend = (int)(s7r.reg4820 | (s7r.reg4821 << 8) | (s7r.reg4822 << 16) |
-                              (s7r.reg4823 << 24));
+         int32_t dividend = (int32_t)(s7r.reg4820 | (s7r.reg4821 << 8) | (s7r.reg4822 << 16) |
+                                     (s7r.reg4823 << 24));
          int16_t divisor = (int16_t)(s7r.reg4826 | (s7r.reg4827 << 8));
          if (divisor != 0)
          {
-            quotient = (int)(dividend / divisor);
+            quotient = (int32_t)(dividend / divisor);
             remainder = (int16_t)(dividend % divisor);
          }
          else
@@ -1358,9 +1358,9 @@ uint8_t S9xGetSPC7110Byte(uint32_t Address)
 /* Return the number of days in a specific month for a certain year                           */
 /* copied directly for RTC functionality, separated in case of incompatibilities         */
 /**********************************************************************************************/
-int   S9xRTCDaysInMonth(int month, int year)
+int32_t S9xRTCDaysInMonth(int32_t month, int32_t year)
 {
-   int     mdays;
+   int32_t mdays;
 
    switch (month)
    {
@@ -1397,8 +1397,8 @@ int   S9xRTCDaysInMonth(int month, int year)
 
 void  S9xUpdateRTC()
 {
-   time_t   cur_systime;
-   long    time_diff;
+   time_t cur_systime;
+   int32_t time_diff;
 
    // Keep track of game time by computing the number of seconds that pass on the system
    // clock and adding the same number of seconds to the RTC clock structure.
@@ -1413,21 +1413,21 @@ void  S9xUpdateRTC()
       //        If your tick interval is different adjust the
       //        DAYTICK, HOURTICK, and MINUTETICK defines
 
-      time_diff = (long)(cur_systime - rtc_f9.last_used);
+      time_diff = (int32_t)(cur_systime - rtc_f9.last_used);
       rtc_f9.last_used = cur_systime;
 
       if (time_diff > 0)
       {
-         int      seconds;
-         int      minutes;
-         int      hours;
-         int      days;
-         int      month;
-         int      year;
-         int      temp_days;
+         int32_t seconds;
+         int32_t minutes;
+         int32_t hours;
+         int32_t days;
+         int32_t month;
+         int32_t year;
+         int32_t temp_days;
 
-         int      year_tens;
-         int      year_ones;
+         int32_t year_tens;
+         int32_t year_ones;
 
 
          if (time_diff > DAYTICKS)
@@ -1551,16 +1551,16 @@ bool Load7110Index(char* filename)
 {
    FILE* fp;
    uint8_t buffer[12];
-   int table = 0;
+   int32_t table = 0;
    uint8_t index = 0;
    uint32_t offset = 0;
    uint32_t size = 0;
-   int i = 0;
+   int32_t i = 0;
    fp = fopen(filename, "rb");
    if (NULL == fp)
       return false;
 
-   int f_len;
+   int32_t f_len;
    while (1)
    {
       i = 0;
@@ -1593,7 +1593,7 @@ bool Load7110Index(char* filename)
 void SPC7110Load(char* dirname)
 {
    char temp_path[PATH_MAX];
-   int i = 0;
+   int32_t i = 0;
 
    decompack = (Pack7110*)malloc(sizeof(Pack7110));
 
@@ -1650,7 +1650,7 @@ void SPC7110Load(char* dirname)
 void SPC7110Open(char* dirname)
 {
    char temp_path[PATH_MAX];
-   int i = 0;
+   int32_t i = 0;
 
    decompack = (Pack7110*)malloc(sizeof(Pack7110));
 
@@ -1689,7 +1689,7 @@ void SPC7110Open(char* dirname)
 void SPC7110Grab(char* dirname)
 {
    char temp_path[PATH_MAX];
-   int i = 0;
+   int32_t i = 0;
 
    decompack = (Pack7110*)malloc(sizeof(Pack7110));
 
@@ -1761,7 +1761,7 @@ void SPC7110Grab(char* dirname)
 //Cache 1 clean up function
 void Del7110Gfx()
 {
-   int i;
+   int32_t i;
    if (Settings.SPC7110)
    {
       Do7110Logging();
@@ -1786,7 +1786,7 @@ void Del7110Gfx()
 //Cache2 cleanup function
 void Close7110Gfx()
 {
-   int i;
+   int32_t i;
    if (Settings.SPC7110)
    {
       Do7110Logging();
@@ -1811,7 +1811,7 @@ void Close7110Gfx()
 //cache 3's clean-up code
 void Drop7110Gfx()
 {
-   int i;
+   int32_t i;
    if (Settings.SPC7110)
    {
       Do7110Logging();
@@ -1904,7 +1904,7 @@ void Do7110Logging()
 {
    uint8_t ent_temp;
    FILE* flog;
-   int entries = 0;
+   int32_t entries = 0;
 
    if (Settings.SPC7110)
    {
@@ -1955,15 +1955,15 @@ void Do7110Logging()
       if (flog)
       {
          uint8_t buffer[8];
-         int table = 0;
+         int32_t table = 0;
          uint16_t offset = 0;
          uint16_t length = 0;
          fseek(flog, 35, 0);
 
-         int f_len;
+         int32_t f_len;
          while (1)
          {
-            int i = 0;
+            int32_t i = 0;
             Data7110* log = NULL;
             f_len = fread(buffer, 1, 8, flog);
             if (f_len < 8) break;
@@ -2032,11 +2032,11 @@ void Do7110Logging()
       //count entries
       if (flog)
       {
-         int j = 0;
-         int temp = 0;
+         int32_t j = 0;
+         int32_t temp = 0;
          for (j = 0; j < MAX_TABLES; j++)
          {
-            int k;
+            int32_t k;
             for (k = 0; k < 256; k++)
             {
                if (decompack->tableEnts[j].location[k].used_len != 0)
@@ -2068,7 +2068,7 @@ void Do7110Logging()
 
          for (j = 0; j < MAX_TABLES; j++)
          {
-            int k;
+            int32_t k;
             for (k = 0; k < 256; k++)
             {
                if (decompack->tableEnts[j].location[k].used_len != 0)
@@ -2105,7 +2105,7 @@ bool S9xSaveSPC7110RTC(S7RTC* rtc_f9)
 
    if ((fp = fopen(S9xGetFilename("rtc"), "wb")) == NULL)
       return (false);
-   int i = 0;
+   int32_t i = 0;
    uint8_t temp = 0;
    for (i = 0; i < 16; i++)
       fwrite(&rtc_f9->reg[i], 1, 1, fp);
@@ -2135,7 +2135,7 @@ bool S9xLoadSPC7110RTC(S7RTC* rtc_f9)
 
    if ((fp = fopen(S9xGetFilename("rtc"), "rb")) == NULL)
       return (false);
-   int i;
+   int32_t i;
    for (i = 0; i < 16; i++)
       fread(&(rtc_f9->reg[i]), 1, 1, fp);
    uint8_t temp = 0;

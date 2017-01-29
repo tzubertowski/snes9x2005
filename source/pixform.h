@@ -4,8 +4,8 @@
 #define _PIXFORM_H_
 
 /* RGB565 format */
-#define BUILD_PIXEL_RGB565(R,G,B) (((int) (R) << 11) | ((int) (G) << 6) | (int) (B))
-#define BUILD_PIXEL2_RGB565(R,G,B) (((int) (R) << 11) | ((int) (G) << 5) | (int) (B))
+#define BUILD_PIXEL_RGB565(R,G,B) (((int32_t) (R) << 11) | ((int32_t) (G) << 6) | (int32_t) (B))
+#define BUILD_PIXEL2_RGB565(R,G,B) (((int32_t) (R) << 11) | ((int32_t) (G) << 5) | (int32_t) (B))
 #define DECOMPOSE_PIXEL_RGB565(PIX,R,G,B) {(R) = (PIX) >> 11; (G) = ((PIX) >> 6) & 0x1f; (B) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_RGB565 (1 << 5)
 
@@ -24,8 +24,8 @@
 #define ALPHA_BITS_MASK_RGB565    0x0000
 
 /* RGB555 format */
-#define BUILD_PIXEL_RGB555(R,G,B) (((int) (R) << 10) | ((int) (G) << 5) | (int) (B))
-#define BUILD_PIXEL2_RGB555(R,G,B) (((int) (R) << 10) | ((int) (G) << 5) | (int) (B))
+#define BUILD_PIXEL_RGB555(R,G,B) (((int32_t) (R) << 10) | ((int32_t) (G) << 5) | (int32_t) (B))
+#define BUILD_PIXEL2_RGB555(R,G,B) (((int32_t) (R) << 10) | ((int32_t) (G) << 5) | (int32_t) (B))
 #define DECOMPOSE_PIXEL_RGB555(PIX,R,G,B) {(R) = (PIX) >> 10; (G) = ((PIX) >> 5) & 0x1f; (B) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_RGB555 (1 << 15)
 
@@ -44,8 +44,8 @@
 #define ALPHA_BITS_MASK_RGB555    0x0000
 
 /* BGR565 format */
-#define BUILD_PIXEL_BGR565(R,G,B) (((int) (B) << 11) | ((int) (G) << 6) | (int) (R))
-#define BUILD_PIXEL2_BGR565(R,G,B) (((int) (B) << 11) | ((int) (G) << 5) | (int) (R))
+#define BUILD_PIXEL_BGR565(R,G,B) (((int32_t) (B) << 11) | ((int32_t) (G) << 6) | (int32_t) (R))
+#define BUILD_PIXEL2_BGR565(R,G,B) (((int32_t) (B) << 11) | ((int32_t) (G) << 5) | (int32_t) (R))
 #define DECOMPOSE_PIXEL_BGR565(PIX,R,G,B) {(B) = (PIX) >> 11; (G) = ((PIX) >> 6) & 0x1f; (R) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_BGR565 (1 << 5)
 
@@ -64,8 +64,8 @@
 #define ALPHA_BITS_MASK_BGR565    0x0000
 
 /* BGR555 format */
-#define BUILD_PIXEL_BGR555(R,G,B) (((int) (B) << 10) | ((int) (G) << 5) | (int) (R))
-#define BUILD_PIXEL2_BGR555(R,G,B) (((int) (B) << 10) | ((int) (G) << 5) | (int) (R))
+#define BUILD_PIXEL_BGR555(R,G,B) (((int32_t) (B) << 10) | ((int32_t) (G) << 5) | (int32_t) (R))
+#define BUILD_PIXEL2_BGR555(R,G,B) (((int32_t) (B) << 10) | ((int32_t) (G) << 5) | (int32_t) (R))
 #define DECOMPOSE_PIXEL_BGR555(PIX,R,G,B) {(B) = (PIX) >> 10; (G) = ((PIX) >> 5) & 0x1f; (R) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_BGR555 (1 << 15)
 
@@ -84,8 +84,8 @@
 #define ALPHA_BITS_MASK_BGR555    0x0000
 
 /* GBR565 format */
-#define BUILD_PIXEL_GBR565(R,G,B) (((int) (G) << 11) | ((int) (B) << 6) | (int) (R))
-#define BUILD_PIXEL2_GBR565(R,G,B) (((int) (G) << 11) | ((int) (B) << 5) | (int) (R))
+#define BUILD_PIXEL_GBR565(R,G,B) (((int32_t) (G) << 11) | ((int32_t) (B) << 6) | (int32_t) (R))
+#define BUILD_PIXEL2_GBR565(R,G,B) (((int32_t) (G) << 11) | ((int32_t) (B) << 5) | (int32_t) (R))
 #define DECOMPOSE_PIXEL_GBR565(PIX,R,G,B) {(G) = (PIX) >> 11; (B) = ((PIX) >> 6) & 0x1f; (R) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_GBR565 (1 << 5)
 
@@ -104,8 +104,8 @@
 #define ALPHA_BITS_MASK_GBR565    0x0000
 
 /* GBR555 format */
-#define BUILD_PIXEL_GBR555(R,G,B) (((int) (G) << 10) | ((int) (B) << 5) | (int) (R))
-#define BUILD_PIXEL2_GBR555(R,G,B) (((int) (G) << 10) | ((int) (B) << 5) | (int) (R))
+#define BUILD_PIXEL_GBR555(R,G,B) (((int32_t) (G) << 10) | ((int32_t) (B) << 5) | (int32_t) (R))
+#define BUILD_PIXEL2_GBR555(R,G,B) (((int32_t) (G) << 10) | ((int32_t) (B) << 5) | (int32_t) (R))
 #define DECOMPOSE_PIXEL_GBR555(PIX,R,G,B) {(G) = (PIX) >> 10; (B) = ((PIX) >> 5) & 0x1f; (R) = (PIX) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_GBR555 (1 << 15)
 
@@ -124,8 +124,8 @@
 #define ALPHA_BITS_MASK_GBR555    0x0000
 
 /* RGB5551 format */
-#define BUILD_PIXEL_RGB5551(R,G,B) (((int) (R) << 11) | ((int) (G) << 6) | (int) ((B) << 1) | 1)
-#define BUILD_PIXEL2_RGB5551(R,G,B) (((int) (R) << 11) | ((int) (G) << 6) | (int) ((B) << 1) | 1)
+#define BUILD_PIXEL_RGB5551(R,G,B) (((int32_t) (R) << 11) | ((int32_t) (G) << 6) | (int32_t) ((B) << 1) | 1)
+#define BUILD_PIXEL2_RGB5551(R,G,B) (((int32_t) (R) << 11) | ((int32_t) (G) << 6) | (int32_t) ((B) << 1) | 1)
 #define DECOMPOSE_PIXEL_RGB5551(PIX,R,G,B) {(R) = (PIX) >> 11; (G) = ((PIX) >> 6) & 0x1f; (B) = ((PIX) >> 1) & 0x1f; }
 #define SPARE_RGB_BIT_MASK_RGB5551 (1)
 

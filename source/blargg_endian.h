@@ -19,12 +19,6 @@
 
 #include <boolean.h>
 
-#if UINT_MAX < 0xFFFFFFFF || ULONG_MAX == 0xFFFFFFFF
-   typedef unsigned long blargg_ulong;
-#else
-   typedef unsigned blargg_ulong;
-#endif
-
 #include <stdint.h>
 
 /* BLARGG_CPU_CISC: Defined if CPU has very few general-purpose registers (< 16) */
@@ -75,31 +69,31 @@
 #define SET_LE32( addr, data )  (void) (*(uint32_t*) (addr) = (data))
 #endif
 #else
-static INLINE unsigned get_le16( void const* p )
+static INLINE uint32_t get_le16( void const* p )
 {
-   return (unsigned) ((unsigned char const*) p) [1] << 8 | (unsigned) ((unsigned char const*) p) [0];
+   return (uint32_t) ((uint8_t const*) p) [1] << 8 | (uint32_t) ((uint8_t const*) p) [0];
 }
 
-static INLINE blargg_ulong get_le32( void const* p )
+static INLINE uint32_t get_le32( void const* p )
 {
-   return (blargg_ulong) ((unsigned char const*) p) [3] << 24 |
-      (blargg_ulong) ((unsigned char const*) p) [2] << 16 |
-      (blargg_ulong) ((unsigned char const*) p) [1] << 8 |
-      (blargg_ulong) ((unsigned char const*) p) [0];
+   return (uint32_t) ((uint8_t const*) p) [3] << 24 |
+      (uint32_t) ((uint8_t const*) p) [2] << 16 |
+      (uint32_t) ((uint8_t const*) p) [1] << 8 |
+      (uint32_t) ((uint8_t const*) p) [0];
 }
 
-static INLINE void set_le16( void* p, unsigned n )
+static INLINE void set_le16( void* p, uint32_t n )
 {
-   ((unsigned char*) p) [1] = (unsigned char) (n >> 8);
-   ((unsigned char*) p) [0] = (unsigned char) n;
+   ((uint8_t*) p) [1] = (uint8_t) (n >> 8);
+   ((uint8_t*) p) [0] = (uint8_t) n;
 }
 
-static INLINE void set_le32( void* p, blargg_ulong n )
+static INLINE void set_le32( void* p, uint32_t n )
 {
-   ((unsigned char*) p) [0] = (unsigned char) n;
-   ((unsigned char*) p) [1] = (unsigned char) (n >> 8);
-   ((unsigned char*) p) [2] = (unsigned char) (n >> 16);
-   ((unsigned char*) p) [3] = (unsigned char) (n >> 24);
+   ((uint8_t*) p) [0] = (uint8_t) n;
+   ((uint8_t*) p) [1] = (uint8_t) (n >> 8);
+   ((uint8_t*) p) [2] = (uint8_t) (n >> 16);
+   ((uint8_t*) p) [3] = (uint8_t) (n >> 24);
 }
 #endif
 

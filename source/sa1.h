@@ -47,7 +47,7 @@ typedef struct
    uint8_t*      WriteMap [MEMMAP_NUM_BLOCKS];
    int16_t       op1;
    int16_t       op2;
-   int           arithmetic_op;
+   int           arithmetic_op; // For savestate compatibility can't change to int32_t
    int64_t       sum;
    bool          overflow;
    uint8_t       VirtualBitmapFormat;
@@ -56,14 +56,14 @@ typedef struct
    SSA1Registers Registers;
 } SSA1;
 
-#define SA1CheckZero() (SA1._Zero == 0)
-#define SA1CheckCarry() (SA1._Carry)
-#define SA1CheckIRQ() (SA1.Registers.PL & IRQ)
-#define SA1CheckDecimal() (SA1.Registers.PL & Decimal)
-#define SA1CheckIndex() (SA1.Registers.PL & IndexFlag)
-#define SA1CheckMemory() (SA1.Registers.PL & MemoryFlag)
-#define SA1CheckOverflow() (SA1._Overflow)
-#define SA1CheckNegative() (SA1._Negative & 0x80)
+#define SA1CheckZero()      (SA1._Zero == 0)
+#define SA1CheckCarry()     (SA1._Carry)
+#define SA1CheckIRQ()       (SA1.Registers.PL & IRQ)
+#define SA1CheckDecimal()   (SA1.Registers.PL & Decimal)
+#define SA1CheckIndex()     (SA1.Registers.PL & IndexFlag)
+#define SA1CheckMemory()    (SA1.Registers.PL & MemoryFlag)
+#define SA1CheckOverflow()  (SA1._Overflow)
+#define SA1CheckNegative()  (SA1._Negative & 0x80)
 #define SA1CheckEmulation() (SA1.Registers.P.W & Emulation)
 
 #define SA1ClearFlags(f) (SA1.Registers.P.W &= ~(f))

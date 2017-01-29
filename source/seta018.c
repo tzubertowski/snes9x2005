@@ -5,7 +5,7 @@
 
 ST018_Regs ST018;
 
-static int line;  // line counter
+static int32_t line; // line counter
 
 uint8_t S9xGetST018(uint32_t Address)
 {

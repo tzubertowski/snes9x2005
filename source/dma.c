@@ -23,7 +23,7 @@
 static uint8_t sdd1_decode_buffer[0x10000];
 #endif
 
-extern int HDMA_ModeByteCounts [8];
+extern int32_t HDMA_ModeByteCounts [8];
 extern uint8_t* HDMAMemPointers [8];
 extern uint8_t* HDMABasePointers [8];
 
@@ -51,13 +51,13 @@ void S9xDoDMA(uint8_t Channel)
    SDMA* d = &DMA[Channel];
 
 
-   int count = d->TransferBytes;
+   int32_t count = d->TransferBytes;
 
    // Prepare for custom chip DMA
    if (count == 0)
       count = 0x10000;
 
-   int inc = d->AAddressFixed ? 0 : (!d->AAddressDecrement ? 1 : -1);
+   int32_t inc = d->AAddressFixed ? 0 : (!d->AAddressDecrement ? 1 : -1);
 
    if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80)
    {
@@ -115,7 +115,7 @@ void S9xDoDMA(uint8_t Channel)
          memcpy(&spc7110_dma[j], s7r.bank50, d->TransferBytes - j);
          s7_wrap = true;
       }
-      int icount = s7r.reg4809 | (s7r.reg480A << 8);
+      int32_t icount = s7r.reg4809 | (s7r.reg480A << 8);
       icount -= d->TransferBytes;
       s7r.reg4809 = 0x00ff & icount;
       s7r.reg480A = (0xff00 & icount) >> 8;
@@ -129,13 +129,13 @@ void S9xDoDMA(uint8_t Channel)
    {
       // Perform packed bitmap to PPU character format conversion on the
       // data before transmitting it to V-RAM via-DMA.
-      int num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
-      int depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 :
-                  (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
+      int32_t num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
+      int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 :
+                      (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
 
-      int bytes_per_char = 8 * depth;
-      int bytes_per_line = depth * num_chars;
-      int char_line_bytes = bytes_per_char * num_chars;
+      int32_t bytes_per_char = 8 * depth;
+      int32_t bytes_per_line = depth * num_chars;
+      int32_t char_line_bytes = bytes_per_char * num_chars;
       uint32_t addr = (d->AAddress / char_line_bytes) * char_line_bytes;
       uint8_t* base = GetBasePointer((d->ABank << 16) + addr) + addr;
       uint8_t* buffer = &Memory.ROM [MAX_ROM_SIZE - 0x10000];
@@ -144,7 +144,7 @@ void S9xDoDMA(uint8_t Channel)
       uint32_t char_count = inc / bytes_per_char;
 
       in_sa1_dma = true;
-      int i;
+      int32_t i;
 
       switch (depth)
       {
@@ -157,7 +157,7 @@ void S9xDoDMA(uint8_t Channel)
             for (j = 0; j < char_count && p - buffer < count;
                   j++, line += 2)
             {
-               int b, l;
+               int32_t b, l;
                uint8_t* q = line;
                for (l = 0; l < 8; l++, q += bytes_per_line)
                {
@@ -188,7 +188,7 @@ void S9xDoDMA(uint8_t Channel)
                   j++, line += 4)
             {
                uint8_t* q = line;
-               int b, l;
+               int32_t b, l;
                for (l = 0; l < 8; l++, q += bytes_per_line)
                {
                   for (b = 0; b < 4; b++)
@@ -219,7 +219,7 @@ void S9xDoDMA(uint8_t Channel)
                   j++, line += 8)
             {
                uint8_t* q = line;
-               int b, l;
+               int32_t b, l;
                for (l = 0; l < 8; l++, q += bytes_per_line)
                {
                   for (b = 0; b < 8; b++)
@@ -672,7 +672,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
 {
    SDMA* p = &DMA [0];
 
-   int d = 0;
+   int32_t d = 0;
 
    CPU.InDMA = true;
    CPU.Cycles += ONE_CYCLE * 3;
@@ -874,7 +874,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
 
 void S9xResetDMA()
 {
-   int c, d;
+   int32_t c, d;
    for (d = 0; d < 8; d++)
    {
       DMA [d].TransferDirection = false;

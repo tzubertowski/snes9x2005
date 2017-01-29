@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
-int DSP4_Multiply(int16_t Multiplicand, int16_t Multiplier)
+int32_t DSP4_Multiply(int16_t Multiplicand, int16_t Multiplier)
 {
    return Multiplicand * Multiplier;
 }
@@ -515,7 +515,7 @@ DSP4_WAIT(2) resume2:
       // first init
       if (plane == 0x7fff)
       {
-         int pos1, pos2;
+         int32_t pos1, pos2;
 
          // initialize projection
          path_x[0] = x_left;
@@ -1095,7 +1095,7 @@ DSP4_WAIT(3) resume3:
          DSP4_WAIT(4)
 
          // store final values
-         int height;
+         int32_t height;
 
 resume4:
          height = DSP4_READ_WORD(0);
@@ -1229,7 +1229,7 @@ resume7:
                out_index = 6;
 
                // OAM: size,msb data
-               DSP4_Op06(sprite_size, (char) sp_msb);
+               DSP4_Op06(sprite_size, (int8_t) sp_msb);
             }
 
             // normal data
@@ -1247,7 +1247,7 @@ resume7:
             DSP4_WRITE_WORD(out_index + 6, 0);
 
             // OAM: size,msb data
-            DSP4_Op06(sprite_size, (char) sp_msb);
+            DSP4_Op06(sprite_size, (int8_t) sp_msb);
          }
 
          // no sprite information

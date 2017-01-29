@@ -59,7 +59,7 @@ static void C4ConvOAM(void)
 
    if (Memory.C4RAM[0x0620] != 0)
    {
-      int prio, i;
+      int32_t prio, i;
       SprCount = 128 - Memory.C4RAM[0x626];
       uint8_t offset = (Memory.C4RAM[0x626] & 3) * 2;
       for (prio = 0x30; prio >= 0; prio -= 0x10)
@@ -76,7 +76,7 @@ static void C4ConvOAM(void)
             uint8_t* sprptr = S9xGetMemPointer(READ_3WORD(srcptr + 7));
             if (*sprptr != 0)
             {
-               int SprCnt;
+               int32_t SprCnt;
                int16_t X, Y;
                for (SprCnt = *sprptr++; SprCnt > 0 && SprCount > 0; SprCnt--, sprptr += 4)
                {
@@ -127,7 +127,7 @@ static void C4ConvOAM(void)
    // XXX: Copy to OAM? I doubt it.
 }
 
-static void C4DoScaleRotate(int row_padding)
+static void C4DoScaleRotate(int32_t row_padding)
 {
    int16_t A, B, C, D;
 
@@ -203,8 +203,8 @@ static void C4DoScaleRotate(int row_padding)
    // Start loop
    uint32_t X, Y;
    uint8_t byte;
-   int outidx = 0;
-   int x, y;
+   int32_t outidx = 0;
+   int32_t x, y;
    uint8_t bit = 0x80;
    for (y = 0; y < h; y++)
    {
@@ -279,7 +279,7 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
    Y2 = (int16_t)C4WFYVal;
 
    // render line
-   int i;
+   int32_t i;
    for (i = C4WFDist ? C4WFDist : 1; i > 0; i--)
    {
       //.loop
@@ -306,7 +306,7 @@ static void C4DrawWireFrame(void)
    int16_t X2, Y2, Z2;
    uint8_t Color;
 
-   int i;
+   int32_t i;
    for (i = Memory.C4RAM[0x0295]; i > 0; i--, line += 5)
    {
       if (line[0] == 0xff && line[1] == 0xff)
@@ -340,7 +340,7 @@ static void C4TransformLines(void)
    C4WFDist = Memory.C4RAM[0x1f89];
    C4WFScale = Memory.C4RAM[0x1f8c];
 
-   int i;
+   int32_t i;
 
    // transform vertices
    uint8_t* ptr = Memory.C4RAM;
@@ -367,7 +367,7 @@ static void C4TransformLines(void)
    ptr = Memory.C4RAM + 0xb02;
    uint8_t* ptr2 = Memory.C4RAM;
    {
-      int i;
+      int32_t i;
       for (i = READ_WORD(Memory.C4RAM + 0xb00); i > 0; i--, ptr += 2, ptr2 += 8)
       {
          C4WFXVal = READ_WORD(Memory.C4RAM + (ptr[0] << 4) + 1);
@@ -397,7 +397,7 @@ static void C4BitPlaneWave()
    uint16_t mask1 = 0xc0c0;
    uint16_t mask2 = 0x3f3f;
 
-   int i, j;
+   int32_t i, j;
    for (j = 0; j < 0x10; j++)
    {
       do
@@ -425,7 +425,7 @@ static void C4BitPlaneWave()
 
       do
       {
-         int i;
+         int32_t i;
          int16_t height = -((int8_t)Memory.C4RAM[waveptr + 0xb00]) - 16;
          for (i = 0; i < 40; i++)
          {
@@ -477,7 +477,7 @@ static void C4SprDisintegrate()
          if ((x >> 8) < width && (y >> 8) < height && (y >> 8)*width + (x >> 8) < 0x2000)
          {
             uint8_t pixel = (j & 1) ? (*src >> 4) : *src;
-            int idx = (y >> 11) * width * 4 + (x >> 11) * 32 + ((y >> 8) & 7) * 2;
+            int32_t idx = (y >> 11) * width * 4 + (x >> 11) * 32 + ((y >> 8) & 7) * 2;
             uint8_t mask = 0x80 >> ((x >> 8) & 7);
             if (pixel & 1) Memory.C4RAM[idx] |= mask;
             if (pixel & 2) Memory.C4RAM[idx + 1] |= mask;
@@ -528,7 +528,7 @@ static void S9xC4ProcessSprites()
 
 void S9xSetC4(uint8_t byte, uint16_t Address)
 {
-   int i;
+   int32_t i;
    Memory.C4RAM [Address - 0x6000] = byte;
    if (Address == 0x7f4f)
    {
@@ -613,7 +613,7 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
                          C4CosTable[angle2]) : 0x80000000;
             int16_t y = READ_WORD(Memory.C4RAM + 0x1f83) - READ_WORD(Memory.C4RAM + 0x1f89);
             int16_t left, right;
-            int j;
+            int32_t j;
             for (j = 0; j < 225; j++)
             {
                if (y >= 0)
@@ -681,7 +681,7 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
 
          case 0x40: // Sum
          {
-            int i;
+            int32_t i;
             uint16_t sum = 0;
             for (i = 0; i < 0x800; sum += Memory.C4RAM[i++]);
             WRITE_WORD(Memory.C4RAM + 0x1f80, sum);

@@ -1242,7 +1242,7 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
          case 0x0000:
          {
             int16_t multiplier, multiplicand;
-            int product;
+            int32_t product;
 
             multiplier = DSP4_READ_WORD(0);
             multiplicand = DSP4_READ_WORD(2);
@@ -1311,7 +1311,7 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
             // clear OAM tables
             op06_index = 0;
             op06_offset = 0;
-            int lcv;
+            int32_t lcv;
             for (lcv = 0; lcv < 32; lcv++)
                op06_OAM[lcv] = 0;
             break;
@@ -1329,7 +1329,7 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
          case 0x0006:
          {
             DSP4.out_count = 32;
-            int lcv;
+            int32_t lcv;
             for (lcv = 0; lcv < 32; lcv++)
                DSP4.output[lcv] = op06_OAM[lcv];
          }

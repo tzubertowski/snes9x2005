@@ -102,7 +102,7 @@ static inline void S9xFixCycles()
 static inline void S9xReschedule()
 {
    uint8_t which;
-   long max;
+   int32_t max;
 
    if (CPU.WhichEvent == HBLANK_START_EVENT ||
          CPU.WhichEvent == HTIMER_AFTER_EVENT)
@@ -117,12 +117,12 @@ static inline void S9xReschedule()
    }
 
    if (PPU.HTimerEnabled &&
-         (long) PPU.HTimerPosition < max &&
-         (long) PPU.HTimerPosition > CPU.NextEvent &&
+         (int32_t) PPU.HTimerPosition < max &&
+         (int32_t) PPU.HTimerPosition > CPU.NextEvent &&
          (!PPU.VTimerEnabled ||
-          (PPU.VTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)))
+         (PPU.VTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)))
    {
-      which = (long) PPU.HTimerPosition < Settings.HBlankStart ?
+      which = (int32_t) PPU.HTimerPosition < Settings.HBlankStart ?
               HTIMER_BEFORE_EVENT : HTIMER_AFTER_EVENT;
       max = PPU.HTimerPosition;
    }

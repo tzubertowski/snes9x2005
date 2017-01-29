@@ -14,8 +14,7 @@ void S9xUpdateScreen();
 void RenderLine(uint8_t line);
 void S9xBuildDirectColourMaps();
 
-// External port interface which must be implemented or initialised for each
-// port.
+// External port interface which must be implemented or initialised for each port.
 extern struct SGFX GFX;
 
 bool S9xInitGFX();
@@ -37,7 +36,7 @@ struct SGFX
    uint32_t Pitch;
 
    // Setup in call to S9xInitGFX()
-   int              Delta;
+   int32_t          Delta;
    uint16_t*        X2;
    uint16_t*        ZERO_OR_X2;
    uint16_t*        ZERO;
@@ -118,12 +117,12 @@ typedef struct
 
 struct SLineMatrixData
 {
-   short MatrixA;
-   short MatrixB;
-   short MatrixC;
-   short MatrixD;
-   short CentreX;
-   short CentreY;
+   int16_t MatrixA;
+   int16_t MatrixB;
+   int16_t MatrixC;
+   int16_t MatrixD;
+   int16_t CentreX;
+   int16_t CentreY;
 };
 
 extern uint32_t odd_high [4][16];

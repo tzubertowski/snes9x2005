@@ -94,7 +94,7 @@ void S9xUpdateHTimer()
 void S9xFixColourBrightness()
 {
    IPPU.XB = mul_brightness [PPU.Brightness];
-   int i;
+   int32_t i;
    for (i = 0; i < 256; i++)
    {
       IPPU.Red [i] = IPPU.XB [PPU.CGDATA [i] & 0x1f];
@@ -1195,7 +1195,7 @@ uint8_t S9xGetPPU(uint16_t Address)
          }
          if ((Address & 3) < 2)
          {
-            int r = rand();
+            int32_t r = rand();
             if (r & 2)
             {
                if (r & 4)
@@ -1206,7 +1206,7 @@ uint8_t S9xGetPPU(uint16_t Address)
          }
          else
          {
-            int r = rand();
+            int32_t r = rand();
             if (r & 2)
                return ((r >> 3) & 0xff);
          }
@@ -1282,7 +1282,7 @@ uint8_t S9xGetPPU(uint16_t Address)
 /******************************************************************************/
 void S9xSetCPU(uint8_t byte, uint16_t Address)
 {
-   int d;
+   int32_t d;
 
    if (Address < 0x4200)
    {
@@ -2023,7 +2023,7 @@ uint8_t S9xGetCPU(uint16_t Address)
       case 0x436A:
       case 0x437A:
       {
-         int d = (Address & 0x70) >> 4;
+         int32_t d = (Address & 0x70) >> 4;
          if (IPPU.HDMA & (1 << d))
             return (DMA[d].LineCount);
          return (Memory.FillRAM[Address]);
@@ -2099,7 +2099,7 @@ static void CommonPPUReset()
    PPU.ClipWindow2Inside[4] = PPU.ClipWindow2Inside[5] = true;
 
    PPU.CGFLIP = 0;
-   int c;
+   int32_t c;
    for (c = 0; c < 256; c++)
    {
       IPPU.Red [c] = (c & 7) << 2;
@@ -2111,7 +2111,7 @@ static void CommonPPUReset()
 
    PPU.FirstSprite = 0;
    PPU.LastSprite = 127;
-   int Sprite;
+   int32_t Sprite;
    for (Sprite = 0; Sprite < 128; Sprite++)
    {
       PPU.OBJ[Sprite].HPos = 0;
@@ -2242,12 +2242,12 @@ void S9xResetPPU()
    IPPU.PrevMouseX[0] = IPPU.PrevMouseX[1] = 256 / 2;
    IPPU.PrevMouseY[0] = IPPU.PrevMouseY[1] = 224 / 2;
 
-   int c;
+   int32_t c;
    for (c = 0; c < 0x8000; c += 0x100)
    {
       if (!Settings.SuperFX)
          memset(&Memory.FillRAM [c], c >> 8, 0x100);
-      else if ((unsigned)c < 0x3000 || (unsigned)c >= 0x3300)
+      else if ((uint32_t)c < 0x3000 || (uint32_t)c >= 0x3300)
       {
          /* Don't overwrite SFX pvRegisters at 0x3000-0x32FF,
           * they were set in FxReset.
@@ -2269,7 +2269,7 @@ void S9xSoftResetPPU()
 {
    CommonPPUReset();
 
-   int c;
+   int32_t c;
    for (c = 0; c < 0x8000; c += 0x100)
       memset(&Memory.FillRAM [c], c >> 8, 0x100);
 
@@ -2282,14 +2282,14 @@ void S9xSoftResetPPU()
    Memory.FillRAM[0x4201] = Memory.FillRAM[0x4213] = 0xFF;
 }
 
-void S9xProcessMouse(int which1)
+void S9xProcessMouse(int32_t which1)
 {
-   int x, y;
+   int32_t x, y;
    uint32_t buttons;
 
    if (IPPU.Controller == SNES_MOUSE && S9xReadMousePosition(which1, &x, &y, &buttons))
    {
-      int delta_x, delta_y;
+      int32_t delta_x, delta_y;
 #define MOUSE_SIGNATURE 0x1
       IPPU.Mouse [which1] = MOUSE_SIGNATURE |
                             (PPU.MouseSpeed [which1] << 4) |
@@ -2346,7 +2346,7 @@ void S9xProcessMouse(int which1)
 
 void ProcessSuperScope()
 {
-   int x, y;
+   int32_t x, y;
    uint32_t buttons;
 
    if (IPPU.Controller == SNES_SUPERSCOPE &&
@@ -2436,7 +2436,7 @@ void S9xUpdateJustifiers()
    if (!last_p1)
       justifiers |= 0x1000;
 
-   int x, y;
+   int32_t x, y;
    uint32_t buttons;
 
    if (Memory.FillRAM[0x4201] & 0x80)
@@ -2614,8 +2614,8 @@ void S9xSuperFXExec()
             FxEmulate(~0);
          else
             FxEmulate((Memory.FillRAM [0x3000 + GSU_CLSR] & 1) ? 700 : 350);
-         int GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] |
-                         (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
+         int32_t GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] |
+                             (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
          if ((GSUStatus & (FLG_G | FLG_IRQ)) == FLG_IRQ)
          {
             // Trigger a GSU IRQ.
@@ -2651,7 +2651,7 @@ void REGISTER_2104(uint8_t byte)
 {
    if (PPU.OAMAddr & 0x100)
    {
-      int addr = ((PPU.OAMAddr & 0x10f) << 1) + (PPU.OAMFlip & 1);
+      int32_t addr = ((PPU.OAMAddr & 0x10f) << 1) + (PPU.OAMFlip & 1);
       if (byte != PPU.OAMData [addr])
       {
          FLUSH_REDRAW();
@@ -2700,7 +2700,7 @@ void REGISTER_2104(uint8_t byte)
       uint8_t highbyte = byte;
       PPU.OAMWriteRegister |= byte << 8;
 
-      int addr = (PPU.OAMAddr << 1);
+      int32_t addr = (PPU.OAMAddr << 1);
 
       if (lowbyte != PPU.OAMData [addr] ||
             highbyte != PPU.OAMData [addr + 1])

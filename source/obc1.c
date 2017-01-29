@@ -6,9 +6,9 @@
 
 static uint8_t* OBC1_RAM = NULL;
 
-int OBC1_Address;
-int OBC1_BasePtr;
-int OBC1_Shift;
+int32_t OBC1_Address;
+int32_t OBC1_BasePtr;
+int32_t OBC1_Shift;
 
 uint8_t GetOBC1(uint16_t Address)
 {
@@ -63,8 +63,7 @@ void SetOBC1(uint8_t Byte, uint16_t Address)
 
    case 0x7ff4:
    {
-      unsigned char Temp;
-
+      uint8_t Temp;
       Temp = OBC1_RAM[OBC1_BasePtr + (OBC1_Address >> 2) + 0x200];
       Temp = (Temp & ~(3 << OBC1_Shift)) | ((Byte & 3) << OBC1_Shift);
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address >> 2) + 0x200] = Temp;

@@ -43,7 +43,7 @@ void fx_updateRamBank(uint8_t Byte)
 
 static void fx_readRegisterSpace()
 {
-   int i;
+   int32_t i;
    uint8_t* p;
    static uint32_t avHeight[] = { 128, 160, 192, 256 };
    static uint32_t avMult[] = { 16, 32, 32, 64 };
@@ -81,8 +81,8 @@ static void fx_readRegisterSpace()
 
    /* Set screen pointers */
    GSU.pvScreenBase = &GSU.pvRam[ USEX8(p[GSU_SCBR]) << 10 ];
-   i = (int)(!!(p[GSU_SCMR] & 0x04));
-   i |= ((int)(!!(p[GSU_SCMR] & 0x20))) << 1;
+   i  =  (int32_t)(!!(p[GSU_SCMR] & 0x04));
+   i |= ((int32_t)(!!(p[GSU_SCMR] & 0x20))) << 1;
    GSU.vScreenHeight = GSU.vScreenRealHeight = avHeight[i];
    GSU.vMode = p[GSU_SCMR] & 0x03;
    if (i == 3)
@@ -118,7 +118,7 @@ void fx_computeScreenPointers()
          GSU.vPrevScreenHeight != GSU.vScreenHeight ||
          GSU.vSCBRDirty)
    {
-      int i;
+      int32_t i;
 
       GSU.vSCBRDirty = false;
 
@@ -244,7 +244,7 @@ void fx_computeScreenPointers()
 
 static void fx_writeRegisterSpace()
 {
-   int i;
+   int32_t i;
    uint8_t* p;
 
    p = GSU.pvRegisters;
@@ -277,7 +277,7 @@ static void fx_writeRegisterSpace()
 /* Reset the FxChip */
 void FxReset(struct FxInit_s* psFxInfo)
 {
-   int i;
+   int32_t i;
    static uint32_t(**appfFunction[])(uint32_t) =
    {
       &fx_apfFunctionTable[0]
@@ -384,7 +384,7 @@ static bool fx_checkStartAddress()
 }
 
 /* Execute until the next stop instruction */
-int FxEmulate(uint32_t nInstructions)
+int32_t FxEmulate(uint32_t nInstructions)
 {
    uint32_t vCount;
 
@@ -415,7 +415,7 @@ int FxEmulate(uint32_t nInstructions)
 }
 
 /* Step by step execution */
-int FxStepOver(uint32_t nInstructions)
+int32_t FxStepOver(uint32_t nInstructions)
 {
    uint32_t vCount;
    fx_readRegisterSpace();
@@ -442,12 +442,12 @@ int FxStepOver(uint32_t nInstructions)
 }
 
 /* Errors */
-int FxGetErrorCode()
+int32_t FxGetErrorCode()
 {
    return GSU.vErrorCode;
 }
 
-int FxGetIllegalAddress()
+int32_t FxGetIllegalAddress()
 {
    return GSU.vIllegalAddress;
 }

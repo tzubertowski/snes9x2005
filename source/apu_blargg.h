@@ -7,7 +7,7 @@
 
 #include "snes9x.h"
 
-typedef void (*dsp_copy_func_t)( unsigned char** io, void* state, size_t );
+typedef void (*dsp_copy_func_t)( uint8_t ** io, void* state, size_t );
 
 #define ECHO_HIST_SIZE		8
 #define ECHO_HIST_SIZE_X2	16
@@ -82,17 +82,17 @@ typedef void (*dsp_copy_func_t)( unsigned char** io, void* state, size_t );
 
 typedef struct
 {
-   int      buf [BRR_BUF_SIZE_X2]; // decoded samples (twice the size to simplify wrap handling)
-   int      buf_pos;               // place in buffer where next samples will be decoded
-   int      interp_pos;            // relative fractional position in sample (0x1000 = 1.0)
-   int      brr_addr;              // address of current BRR block
-   int      brr_offset;            // current decoding offset in BRR block
+   int32_t      buf [BRR_BUF_SIZE_X2]; // decoded samples (twice the size to simplify wrap handling)
+   int32_t      buf_pos;               // place in buffer where next samples will be decoded
+   int32_t      interp_pos;            // relative fractional position in sample (0x1000 = 1.0)
+   int32_t      brr_addr;              // address of current BRR block
+   int32_t      brr_offset;            // current decoding offset in BRR block
    uint8_t* regs;                  // pointer to voice's DSP registers
-   int      vbit;                  // bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc.
-   int      kon_delay;             // KON delay/current setup phase
-   int      env_mode;
-   int      env;                   // current envelope level
-   int      hidden_env;            // used by GAIN mode 7, very obscure quirk
+   int32_t      vbit;                  // bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc.
+   int32_t      kon_delay;             // KON delay/current setup phase
+   int32_t      env_mode;
+   int32_t      env;                   // current envelope level
+   int32_t      hidden_env;            // used by GAIN mode 7, very obscure quirk
    uint8_t  t_envx_out;
 } dsp_voice_t;
 
@@ -102,20 +102,20 @@ typedef struct
 
    /* Echo history keeps most recent 8 samples (twice the size to simplify wrap handling) */
 
-   int echo_hist [ECHO_HIST_SIZE_X2] [2];
+   int32_t echo_hist [ECHO_HIST_SIZE_X2] [2];
 
-   int (*echo_hist_pos) [2]; /* &echo_hist [0 to 7] */
+   int32_t (*echo_hist_pos) [2]; /* &echo_hist [0 to 7] */
 
-   int every_other_sample; /* toggles every sample */
-   int kon;                /* KON value when last checked */
-   int noise;
-   int counter;
-   int echo_offset;        /* offset from ESA in echo buffer */
-   int echo_length;        /* number of bytes that echo_offset will stop at */
-   int phase;              /* next clock cycle to run (0-31) */
+   int32_t every_other_sample; /* toggles every sample */
+   int32_t kon;                /* KON value when last checked */
+   int32_t noise;
+   int32_t counter;
+   int32_t echo_offset;        /* offset from ESA in echo buffer */
+   int32_t echo_length;        /* number of bytes that echo_offset will stop at */
+   int32_t phase;              /* next clock cycle to run (0-31) */
 
    /* Hidden registers also written to when main register is written to */
-   int     new_kon;
+   int32_t new_kon;
    uint8_t endx_buf;
    uint8_t envx_buf;
    uint8_t outx_buf;
@@ -123,32 +123,32 @@ typedef struct
    /* Temporary state between clocks */
 
    /* read once per sample */
-   int t_pmon;
-   int t_non;
-   int t_eon;
-   int t_dir;
-   int t_koff;
+   int32_t t_pmon;
+   int32_t t_non;
+   int32_t t_eon;
+   int32_t t_dir;
+   int32_t t_koff;
 
    /* read a few clocks ahead then used */
-   int t_brr_next_addr;
-   int t_adsr0;
-   int t_brr_header;
-   int t_brr_byte;
-   int t_srcn;
-   int t_esa;
-   int t_echo_enabled;
+   int32_t t_brr_next_addr;
+   int32_t t_adsr0;
+   int32_t t_brr_header;
+   int32_t t_brr_byte;
+   int32_t t_srcn;
+   int32_t t_esa;
+   int32_t t_echo_enabled;
 
    /* internal state that is recalculated every sample */
-   int t_dir_addr;
-   int t_pitch;
-   int t_output;
-   int t_looped;
-   int t_echo_ptr;
+   int32_t t_dir_addr;
+   int32_t t_pitch;
+   int32_t t_output;
+   int32_t t_looped;
+   int32_t t_echo_ptr;
 
    /* left/right sums */
-   int t_main_out [2];
-   int t_echo_out [2];
-   int t_echo_in  [2];
+   int32_t t_main_out [2];
+   int32_t t_echo_out [2];
+   int32_t t_echo_in  [2];
 
    dsp_voice_t voices [VOICE_COUNT];
 
@@ -159,16 +159,16 @@ typedef struct
    int16_t* out_begin;
    int16_t  extra [EXTRA_SIZE];
 
-   int     rom_enabled;
-   uint8_t *rom;
-   uint8_t *hi_ram;
+   int32_t  rom_enabled;
+   uint8_t* rom;
+   uint8_t* hi_ram;
 } dsp_state_t;
 
 #if !SPC_NO_COPY_STATE_FUNCS
 
 typedef struct {
    dsp_copy_func_t func;
-   unsigned char** buf;
+   uint8_t** buf;
 } spc_state_copy_t;
 
 #define SPC_COPY( type, state ) state = (type) spc_copier_copy_int(&copier, state, sizeof (type) );
@@ -208,7 +208,7 @@ typedef struct {
 
 #if !SPC_NO_COPY_STATE_FUNCS
    /* Saves/loads state */
-   void spc_copy_state( unsigned char** io, dsp_copy_func_t );
+   void spc_copy_state( uint8_t ** io, dsp_copy_func_t );
 #endif
 
 /* rel_time_t - Time relative to m_spc_time. Speeds up code a bit by eliminating
@@ -217,12 +217,12 @@ typedef struct {
 
 typedef struct
 {
-   int next_time; /* time of next event */
-   int prescaler;
-   int period;
-   int divider;
-   int enabled;
-   int counter;
+   int32_t next_time; /* time of next event */
+   int32_t prescaler;
+   int32_t period;
+   int32_t divider;
+   int32_t enabled;
+   int32_t counter;
 } Timer;
 
 /* Support SNES_MEMORY_APURAM */
@@ -236,30 +236,30 @@ typedef struct
 
    struct
    {
-      int pc;
-      int a;
-      int x;
-      int y;
-      int psw;
-      int sp;
+      int32_t pc;
+      int32_t a;
+      int32_t x;
+      int32_t y;
+      int32_t psw;
+      int32_t sp;
    } cpu_regs;
 
-   int dsp_time;
-   int spc_time;
+   int32_t dsp_time;
+   int32_t spc_time;
 
-   int tempo;
+   int32_t tempo;
 
-   int      extra_clocks;
+   int32_t  extra_clocks;
    int16_t* buf_begin;
    int16_t*	buf_end;
    int16_t* extra_pos;
    int16_t  extra_buf [EXTRA_SIZE];
 
-   int     rom_enabled;
+   int32_t rom_enabled;
    uint8_t rom    [ROM_SIZE];
    uint8_t hi_ram [ROM_SIZE];
 
-   unsigned char cycle_table [256];
+   uint8_t cycle_table [256];
 
    struct
    {
@@ -284,22 +284,22 @@ bool S9xInitAPU (void);
 void S9xDeinitAPU (void);
 void S9xResetAPU (void);
 void S9xSoftResetAPU (void);
-uint8_t S9xAPUReadPort (int port);
-void S9xAPUWritePort (int port, uint8_t byte);
+uint8_t S9xAPUReadPort (int32_t port);
+void S9xAPUWritePort (int32_t port, uint8_t byte);
 void S9xAPUExecute (void);
 void S9xAPUSetReferenceTime (int32_t cpucycles);
-void S9xAPUTimingSetSpeedup (int ticks);
+void S9xAPUTimingSetSpeedup (int32_t ticks);
 void S9xAPUAllowTimeOverflow (bool allow);
-void S9xAPULoadState (uint8_t * block);
+void S9xAPULoadState (const uint8_t * block);
 void S9xAPUSaveState (uint8_t * block);
 
-bool S9xInitSound (int buffer_ms, int lag_ms);
+bool S9xInitSound (int32_t buffer_ms, int32_t lag_ms);
 
 bool S9xSyncSound (void);
-int S9xGetSampleCount (void);
+int32_t S9xGetSampleCount (void);
 void S9xFinalizeSamples (void);
 void S9xClearSamples (void);
-bool S9xMixSamples (int16_t * buffer, unsigned sample_count);
+bool S9xMixSamples (int16_t * buffer, uint32_t sample_count);
 void S9xSetSamplesAvailableCallback (apu_callback);
 
 #endif // APU_BLARGG_H

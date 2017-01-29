@@ -20,18 +20,18 @@ struct FxInit_s
 extern void FxReset(struct FxInit_s* psFxInfo);
 
 /* Execute until the next stop instruction */
-extern int FxEmulate(uint32_t nInstructions);
+extern int32_t FxEmulate(uint32_t nInstructions);
 
 /* Write access to the cache */
 extern void FxCacheWriteAccess(uint16_t vAddress);
 extern void FxFlushCache();   /* Callled when the G flag in SFR is set to zero */
 
 /* Step by step execution */
-extern int FxStepOver(uint32_t nInstructions);
+extern int32_t FxStepOver(uint32_t nInstructions);
 
 /* Errors */
-extern int FxGetErrorCode();
-extern int FxGetIllegalAddress();
+extern int32_t FxGetErrorCode();
+extern int32_t FxGetIllegalAddress();
 
 /* Access to internal registers */
 extern uint32_t FxGetColorRegister();

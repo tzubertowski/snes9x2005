@@ -116,7 +116,7 @@
 
 void S9xSA1MainLoop()
 {
-   int i;
+   int32_t i;
 
    if (SA1.Flags & IRQ_PENDING_FLAG)
    {

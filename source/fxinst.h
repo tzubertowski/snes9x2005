@@ -168,7 +168,7 @@ struct FxRegs_s
    uint32_t vPrevMode;         /* Previous depth */
    uint8_t* pvScreenBase;
    uint8_t* apvScreen[32];     /* Pointer to each of the 32 screen colums */
-   int      x[32];
+   int32_t  x[32];
    uint32_t vScreenHeight;     /* 128, 160, 192 or 256 (could be overriden by cmode) */
    uint32_t vScreenRealHeight; /* 128, 160, 192 or 256 */
    uint32_t vPrevScreenHeight;

@@ -86,7 +86,7 @@ const int16_t ST010_SinTable[256] =
    -0x18f8, -0x15e2, -0x12c8, -0x0fab, -0x0c8b, -0x096a, -0x0647, -0x0324
 };
 
-const unsigned char ST010_ArcTan[32][32] =
+const uint8_t ST010_ArcTan[32][32] =
 {
    {
       0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -267,13 +267,13 @@ void ST010_OP01(int16_t x0, int16_t y0, int16_t* x1, int16_t* y1, int16_t* Quadr
    *Theta = (ST010_ArcTan[*y1][*x1] << 8) ^ *Quadrant;
 }
 
-void ST010_Scale(int16_t Multiplier, int16_t X0, int16_t Y0, int* X1, int* Y1)
+void ST010_Scale(int16_t Multiplier, int16_t X0, int16_t Y0, int32_t* X1, int32_t* Y1)
 {
    *X1 = X0 * Multiplier << 1;
    *Y1 = Y0 * Multiplier << 1;
 }
 
-void ST010_Multiply(int16_t Multiplicand, int16_t Multiplier, int* Product)
+void ST010_Multiply(int16_t Multiplicand, int16_t Multiplier, int32_t* Product)
 {
    *Product = Multiplicand * Multiplier << 1;
 }
@@ -293,7 +293,7 @@ void ST010_SortDrivers(uint16_t Positions, uint16_t Places[32], uint16_t Drivers
       do
       {
          Sorted = true;
-         int i;
+         int32_t i;
          for (i = 0; i < Positions - 1; i++)
             if (Places[i] < Places[i + 1])
             {
@@ -351,7 +351,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 #else
          uint16_t Places[32];
          uint16_t Positions = ST010_WORD(0x0024);
-         int Pos, Offset;
+         int32_t Pos, Offset;
 
          Offset = 0;
 
@@ -392,9 +392,9 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          /* TODO - FIXME */
          ST010_Scale(*(int16_t*)&Memory.SRAM[0x0004], *(int16_t*)&Memory.SRAM[0x0000],
                      *(int16_t*)&Memory.SRAM[0x0002],
-                     (int*)&Memory.SRAM[0x0010], (int*)&Memory.SRAM[0x0014]);
+                     (int32_t*)&Memory.SRAM[0x0010], (int32_t*)&Memory.SRAM[0x0014]);
 #else
-         int x1, y1;
+         int32_t x1, y1;
 
          ST010_Scale(ST010_WORD(0x0004), ST010_WORD(0x0000), ST010_WORD(0x0002), &x1,
                      &y1);
@@ -424,9 +424,9 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
          ST010_Multiply(*(int16_t*)&Memory.SRAM[0x0000], *(int16_t*)&Memory.SRAM[0x0002],
-                        (int*)&Memory.SRAM[0x0010]);
+                        (int32_t*)&Memory.SRAM[0x0010]);
 #else
-         int Product;
+         int32_t Product;
 
          ST010_Multiply(ST010_WORD(0x0000), ST010_WORD(0x0002), &Product);
 
@@ -577,7 +577,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       // calculate AI orientation based on specific guidelines
       case 0x05:
       {
-         int dx, dy;
+         int32_t dx, dy;
          int16_t a1, b1, c1;
          uint16_t o1;
 
