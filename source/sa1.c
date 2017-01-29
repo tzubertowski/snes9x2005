@@ -275,33 +275,33 @@ uint8_t S9xGetSA1(uint32_t address)
 {
    switch (address)
    {
-   case 0x2300:
-      return ((uint8_t)((Memory.FillRAM [0x2209] & 0x5f) |
-                        (CPU.IRQActive & (SA1_IRQ_SOURCE | SA1_DMA_IRQ_SOURCE))));
-   case 0x2301:
-      return ((Memory.FillRAM [0x2200] & 0xf) |
-              (Memory.FillRAM [0x2301] & 0xf0));
-   case 0x2306:
-      return ((uint8_t) SA1.sum);
-   case 0x2307:
-      return ((uint8_t)(SA1.sum >>  8));
-   case 0x2308:
-      return ((uint8_t)(SA1.sum >> 16));
-   case 0x2309:
-      return ((uint8_t)(SA1.sum >> 24));
-   case 0x230a:
-      return ((uint8_t)(SA1.sum >> 32));
-   case 0x230d:
-   {
-      uint8_t byte = Memory.FillRAM [0x230d];
+      case 0x2300:
+         return ((uint8_t)((Memory.FillRAM [0x2209] & 0x5f) |
+                  (CPU.IRQActive & (SA1_IRQ_SOURCE | SA1_DMA_IRQ_SOURCE))));
+      case 0x2301:
+         return ((Memory.FillRAM [0x2200] & 0xf) |
+               (Memory.FillRAM [0x2301] & 0xf0));
+      case 0x2306:
+         return ((uint8_t) SA1.sum);
+      case 0x2307:
+         return ((uint8_t)(SA1.sum >>  8));
+      case 0x2308:
+         return ((uint8_t)(SA1.sum >> 16));
+      case 0x2309:
+         return ((uint8_t)(SA1.sum >> 24));
+      case 0x230a:
+         return ((uint8_t)(SA1.sum >> 32));
+      case 0x230d:
+         {
+            uint8_t byte = Memory.FillRAM [0x230d];
 
-      if (Memory.FillRAM [0x2258] & 0x80)
-         S9xSA1ReadVariableLengthData(true, false);
-      return (byte);
+            if (Memory.FillRAM [0x2258] & 0x80)
+               S9xSA1ReadVariableLengthData(true, false);
+            return (byte);
+         }
    }
-   default:
-      return (Memory.FillRAM [address]);
-   }
+
+   return (Memory.FillRAM [address]);
 }
 
 void S9xSetSA1(uint8_t byte, uint32_t address)
