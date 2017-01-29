@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 extern struct FxRegs_s GSU;
-int gsu_bank [512] = {0};
+int32_t gsu_bank [512] = {0};
 
 /* Set this define if you wish the plot instruction to check for y-pos limits */
 /* (I don't think it's nessecary) */

@@ -172,7 +172,7 @@ double Atan(double x)
 void InitDSP(void)
 {
 #ifdef __OPT__
-   unsigned int i;
+   uint32_t i;
    for (i = 0; i < INCR; i++)
    {
       CosTable2[i] = (cos((double)(2 * PI * i / INCR)));
@@ -349,8 +349,8 @@ int16_t DSP1_Sin(int16_t Angle)
       if (Angle == -32768) return 0;
       return -DSP1_Sin(-Angle);
    }
-   int S = DSP1_SinTable[Angle >> 8] + (DSP1_MulTable[Angle & 0xff] *
-                                        DSP1_SinTable[0x40 + (Angle >> 8)] >> 15);
+   int32_t S = DSP1_SinTable[Angle >> 8] + (DSP1_MulTable[Angle & 0xff] *
+                                            DSP1_SinTable[0x40 + (Angle >> 8)] >> 15);
    if (S > 32767) S = 32767;
    return (int16_t) S;
 }
@@ -362,8 +362,8 @@ int16_t DSP1_Cos(int16_t Angle)
       if (Angle == -32768) return -32768;
       Angle = -Angle;
    }
-   int S = DSP1_SinTable[0x40 + (Angle >> 8)] - (DSP1_MulTable[Angle & 0xff] *
-           DSP1_SinTable[Angle >> 8] >> 15);
+   int32_t S = DSP1_SinTable[0x40 + (Angle >> 8)] - (DSP1_MulTable[Angle & 0xff] *
+               DSP1_SinTable[Angle >> 8] >> 15);
    if (S < -32768) S = -32767;
    return (int16_t) S;
 }
@@ -394,7 +394,7 @@ void DSP1_Normalize(int16_t m, int16_t* Coefficient, int16_t* Exponent)
    *Exponent -= e;
 }
 
-void DSP1_NormalizeDouble(int Product, int16_t* Coefficient, int16_t* Exponent)
+void DSP1_NormalizeDouble(int32_t Product, int16_t* Coefficient, int16_t* Exponent)
 {
    int16_t n = Product & 0x7fff;
    int16_t m = Product >> 15;
@@ -671,8 +671,8 @@ double ObjPX2;
 double ObjPY2;
 double ObjPZ2;
 double DivideOp06;
-int Temp;
-int tanval2;
+int32_t Temp;
+int32_t tanval2;
 
 #ifdef __OPT06__
 void DSPOp06()
@@ -1091,7 +1091,7 @@ int16_t Op08X, Op08Y, Op08Z, Op08Ll, Op08Lh;
 
 void DSPOp08()
 {
-   int Op08Size = (Op08X * Op08X + Op08Y * Op08Y + Op08Z * Op08Z) << 1;
+   int32_t Op08Size = (Op08X * Op08X + Op08Y * Op08Y + Op08Z * Op08Z) << 1;
    Op08Ll = Op08Size & 0xffff;
    Op08Lh = (Op08Size >> 16) & 0xffff;
 
@@ -1121,7 +1121,7 @@ int16_t Op28R;
 
 void DSPOp28()
 {
-   int Radius = Op28X * Op28X + Op28Y * Op28Y + Op28Z * Op28Z;
+   int32_t Radius = Op28X * Op28X + Op28Y * Op28Y + Op28Z * Op28Z;
 
    if (Radius == 0) Op28R = 0;
    else

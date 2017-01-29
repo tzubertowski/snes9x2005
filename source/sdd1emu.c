@@ -18,16 +18,16 @@
 #include "port.h"
 #include "sdd1emu.h"
 
-static int valid_bits;
+static int32_t valid_bits;
 static uint16_t in_stream;
 static uint8_t* in_buf;
 static uint8_t bit_ctr[8];
 static uint8_t context_states[32];
-static int context_MPS[32];
-static int bitplane_type;
-static int high_context_bits;
-static int low_context_bits;
-static int prev_bits[8];
+static int32_t context_MPS[32];
+static int32_t bitplane_type;
+static int32_t high_context_bits;
+static int32_t low_context_bits;
+static int32_t prev_bits[8];
 
 static struct
 {
@@ -84,7 +84,7 @@ static uint8_t run_table[128] =
    113,  49,  81,  17,  97,  33,  65,   1
 };
 
-static inline uint8_t GetCodeword(int bits)
+static inline uint8_t GetCodeword(int32_t bits)
 {
    uint8_t tmp;
 
@@ -108,7 +108,7 @@ static inline uint8_t GetCodeword(int bits)
    return run_table[tmp];
 }
 
-static inline uint8_t GolombGetBit(int code_size)
+static inline uint8_t GolombGetBit(int32_t code_size)
 {
    if (!bit_ctr[code_size]) bit_ctr[code_size] = GetCodeword(code_size);
    bit_ctr[code_size]--;
@@ -159,7 +159,7 @@ static inline uint8_t GetBit(uint8_t cur_bitplane)
    return bit;
 }
 
-void SDD1_decompress(uint8_t* out, uint8_t* in, int len)
+void SDD1_decompress(uint8_t* out, uint8_t* in, int32_t len)
 {
    uint8_t bit, i, plane;
    uint8_t byte1, byte2;

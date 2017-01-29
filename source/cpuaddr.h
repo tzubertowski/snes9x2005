@@ -13,18 +13,18 @@ typedef enum
 } AccessMode;
 
 // The type for a function that can run after the addressing mode is resolved:
-typedef void (*InternalOp)(long);
+typedef void (*InternalOp)(int32_t);
 
 static void Immediate8(AccessMode a, InternalOp op)
 {
-   long Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
+   int32_t Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC++;
    (*op)(Addr);
 }
 
 static void Immediate16(AccessMode a, InternalOp op)
 {
-   long Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
+   int32_t Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC += 2;
    (*op)(Addr);
 }
@@ -32,13 +32,13 @@ static void Immediate16(AccessMode a, InternalOp op)
 static void Relative(AccessMode a, InternalOp op)
 {
    int8_t Int8 = *CPU.PC++;
-   long Addr = ((intptr_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
+   int32_t Addr = ((int32_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
    (*op)(Addr);
 }
 
 static void RelativeLong(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = *(uint16_t*) CPU.PC;
 #else
@@ -52,7 +52,7 @@ static void RelativeLong(AccessMode a, InternalOp op)
 
 static void AbsoluteIndexedIndirect(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = (ICPU.Registers.X.W + * (uint16_t*) CPU.PC) & 0xffff;
 #else
@@ -67,7 +67,7 @@ static void AbsoluteIndexedIndirect(AccessMode a, InternalOp op)
 
 static void AbsoluteIndirectLong(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = *(uint16_t*) CPU.PC;
 #else
@@ -85,7 +85,7 @@ static void AbsoluteIndirectLong(AccessMode a, InternalOp op)
 
 static void AbsoluteIndirect(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = *(uint16_t*) CPU.PC;
 #else
@@ -102,7 +102,7 @@ static void AbsoluteIndirect(AccessMode a, InternalOp op)
 
 static void Absolute(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = *(uint16_t*) CPU.PC + ICPU.ShiftedDB;
 #else
@@ -115,11 +115,11 @@ static void Absolute(AccessMode a, InternalOp op)
 
 static void AbsoluteLong(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = (*(uint32_t*) CPU.PC) & 0xffffff;
 #elif defined FAST_ALIGNED_LSB_WORD_ACCESS
-   if (((intptr_t) CPU.PC & 1) == 0)
+   if (((int32_t) CPU.PC & 1) == 0)
       Addr = (*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16);
    else
       Addr = *CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8);
@@ -134,14 +134,14 @@ static void AbsoluteLong(AccessMode a, InternalOp op)
 static void Direct(AccessMode a, InternalOp op)
 {
    if (a & READ) OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
    (*op)(Addr);
 }
 
 static void DirectIndirectIndexed(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
 
    Addr = S9xGetWord(Addr);
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
@@ -155,7 +155,7 @@ static void DirectIndirectIndexed(AccessMode a, InternalOp op)
 static void DirectIndirectIndexedLong(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
 
    if (a & READ)
       Addr = S9xGetWord(Addr) + ((OpenBus = S9xGetByte(Addr + 2)) << 16) +
@@ -168,7 +168,7 @@ static void DirectIndirectIndexedLong(AccessMode a, InternalOp op)
 static void DirectIndexedIndirect(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W) & 0xffff;
 
    Addr = S9xGetWord(Addr);
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
@@ -179,7 +179,7 @@ static void DirectIndexedIndirect(AccessMode a, InternalOp op)
 static void DirectIndexedX(AccessMode a, InternalOp op)
 {
    if (a & READ) OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W);
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W);
    Addr &= CheckEmulation() ? 0xff : 0xffff;
 
    (*op)(Addr);
@@ -188,14 +188,14 @@ static void DirectIndexedX(AccessMode a, InternalOp op)
 static void DirectIndexedY(AccessMode a, InternalOp op)
 {
    if (a & READ) OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.Y.W);
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.Y.W);
    Addr &= CheckEmulation() ? 0xff : 0xffff;
    (*op)(Addr);
 }
 
 static void AbsoluteIndexedX(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.X.W;
 #else
@@ -211,7 +211,7 @@ static void AbsoluteIndexedX(AccessMode a, InternalOp op)
 
 static void AbsoluteIndexedY(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.Y.W;
 #else
@@ -227,16 +227,14 @@ static void AbsoluteIndexedY(AccessMode a, InternalOp op)
 
 static void AbsoluteLongIndexedX(AccessMode a, InternalOp op)
 {
-   long Addr;
+   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
    Addr = (*(uint32_t*) CPU.PC + ICPU.Registers.X.W) & 0xffffff;
 #elif defined FAST_ALIGNED_LSB_WORD_ACCESS
-   if (((intptr_t) CPU.PC & 1) == 0)
-      Addr = ((*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16) + ICPU.Registers.X.W) &
-             0xFFFFFF;
+   if (((int32_t) CPU.PC & 1) == 0)
+      Addr = ((*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16) + ICPU.Registers.X.W) & 0xFFFFFF;
    else
-      Addr = (*CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8) + ICPU.Registers.X.W) &
-             0xFFFFFF;
+      Addr = (*CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8) + ICPU.Registers.X.W) & 0xFFFFFF;
 #else
    Addr = (*CPU.PC + (*(CPU.PC + 1) << 8) + (*(CPU.PC + 2) << 16) +
            ICPU.Registers.X.W) & 0xffffff;
@@ -249,7 +247,7 @@ static void AbsoluteLongIndexedX(AccessMode a, InternalOp op)
 static void DirectIndirect(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
    Addr = S9xGetWord(Addr);
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
    Addr += ICPU.ShiftedDB;
@@ -259,7 +257,7 @@ static void DirectIndirect(AccessMode a, InternalOp op)
 static void DirectIndirectLong(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
    if (a & READ)
       Addr = S9xGetWord(Addr) + ((OpenBus = S9xGetByte(Addr + 2)) << 16);
    else
@@ -270,14 +268,14 @@ static void DirectIndirectLong(AccessMode a, InternalOp op)
 static void StackRelative(AccessMode a, InternalOp op)
 {
    if (a & READ) OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
    (*op)(Addr);
 }
 
 static void StackRelativeIndirectIndexed(AccessMode a, InternalOp op)
 {
    OpenBus = *CPU.PC;
-   long Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
+   int32_t Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
    Addr = S9xGetWord(Addr);
    if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
    Addr = (Addr + ICPU.ShiftedDB +

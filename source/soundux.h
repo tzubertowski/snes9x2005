@@ -31,8 +31,8 @@ enum { MODE_NONE = SOUND_SILENT, MODE_ADSR, MODE_RELEASE = SOUND_RELEASE,
 
 typedef struct
 {
-   int      playback_rate;
-   int      buffer_size;
+   int32_t  playback_rate;
+   int32_t  buffer_size;
    uint32_t freqbase; // notaz
    bool     mute_sound;
 } SoundStatus;
@@ -41,21 +41,21 @@ SoundStatus so;
 
 typedef struct
 {
-   int      state;
-   int      type;
+   int32_t  state;
+   int32_t  type;
    int16_t  volume_left;
    int16_t  volume_right;
    uint32_t hertz;
    uint32_t frequency;
    uint32_t count;
    bool     loop;
-   int      envx;
+   int32_t  envx;
    int16_t  left_vol_level;
    int16_t  right_vol_level;
    int16_t  envx_target;
    uint32_t env_error;
    uint32_t erate;
-   int      direction;
+   int32_t  direction;
    uint32_t attack_rate;
    uint32_t decay_rate;
    uint32_t sustain_rate;
@@ -70,8 +70,8 @@ typedef struct
    bool     needs_decode;
    uint32_t block_pointer;
    uint32_t sample_pointer;
-   int*     echo_buf_ptr;
-   int      mode;
+   int32_t* echo_buf_ptr;
+   int32_t  mode;
    int32_t  envxx;
    int16_t  next_sample;
    int32_t  interpolate;
@@ -86,52 +86,52 @@ typedef struct
 
 typedef struct
 {
-   int      echo_enable;
-   int      echo_feedback; /* range is -128 .. 127 */
-   int      echo_ptr;
-   int      echo_buffer_size;
-   int      echo_write_enabled;
-   int      echo_channel_enable;
-   int      pitch_mod;
+   int32_t  echo_enable;
+   int32_t  echo_feedback; /* range is -128 .. 127 */
+   int32_t  echo_ptr;
+   int32_t  echo_buffer_size;
+   int32_t  echo_write_enabled;
+   int32_t  echo_channel_enable;
+   int32_t  pitch_mod;
    // Just incase they are needed in the future, for snapshot compatibility.
    uint32_t dummy [3];
    Channel  channels [NUM_CHANNELS];
    int16_t  master_volume [2]; /* range is -128 .. 127 */
    int16_t  echo_volume [2]; /* range is -128 .. 127 */
-   int      noise_hertz;
+   int32_t  noise_hertz;
 } SSoundData;
 
 SSoundData SoundData;
 
-void S9xSetSoundVolume(int channel, int16_t volume_left, int16_t volume_right);
-void S9xSetSoundFrequency(int channel, int hertz);
-void S9xSetSoundHertz(int channel, int hertz);
-void S9xSetSoundType(int channel, int type_of_sound);
+void S9xSetSoundVolume(int32_t channel, int16_t volume_left, int16_t volume_right);
+void S9xSetSoundFrequency(int32_t channel, int32_t hertz);
+void S9xSetSoundHertz(int32_t channel, int32_t hertz);
+void S9xSetSoundType(int32_t channel, int32_t type_of_sound);
 void S9xSetMasterVolume(int16_t master_volume_left, int16_t master_volume_right);
 void S9xSetEchoVolume(int16_t echo_volume_left, int16_t echo_volume_right);
-void S9xSetEnvelopeHeight(int channel, int height);
-void S9xSetSoundADSR(int channel, int attack, int decay, int sustain, int sustain_level, int release);
-void S9xSetSoundKeyOff(int channel);
-void S9xSetSoundDecayMode(int channel);
-void S9xSetSoundAttachMode(int channel);
+void S9xSetEnvelopeHeight(int32_t channel, int32_t height);
+void S9xSetSoundADSR(int32_t channel, int32_t attack, int32_t decay, int32_t sustain, int32_t sustain_level, int32_t release);
+void S9xSetSoundKeyOff(int32_t channel);
+void S9xSetSoundDecayMode(int32_t channel);
+void S9xSetSoundAttachMode(int32_t channel);
 void S9xSoundStartEnvelope(Channel*);
-void S9xSetEchoFeedback(int echo_feedback);
+void S9xSetEchoFeedback(int32_t echo_feedback);
 void S9xSetEchoEnable(uint8_t byte);
-void S9xSetEchoDelay(int byte);
+void S9xSetEchoDelay(int32_t byte);
 void S9xSetEchoWriteEnable(uint8_t byte);
-void S9xSetFilterCoefficient(int tap, int value);
+void S9xSetFilterCoefficient(int32_t tap, int32_t value);
 void S9xSetFrequencyModulationEnable(uint8_t byte);
-void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction, int target, unsigned int mode);
-bool S9xSetSoundMode(int channel, int mode);
+void S9xSetEnvelopeRate(int32_t channel, uint32_t rate, int32_t direction, int32_t target, uint32_t  mode);
+bool S9xSetSoundMode(int32_t channel, int32_t mode);
 void S9xResetSound(bool full);
 void S9xFixSoundAfterSnapshotLoad();
-void S9xPlaybackSoundSetting(int channel);
-void S9xPlaySample(int channel);
-void S9xFixEnvelope(int channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2);
-void S9xStartSample(int channel);
+void S9xPlaybackSoundSetting(int32_t channel);
+void S9xPlaySample(int32_t channel);
+void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2);
+void S9xStartSample(int32_t channel);
 
-void S9xMixSamples(uint16_t* buffer, int sample_count);
-bool S9xOpenSoundDevice(int, bool, int);
+void S9xMixSamples(int16_t* buffer, int32_t sample_count);
+bool S9xOpenSoundDevice(int32_t, bool, int32_t);
 void S9xSetPlaybackRate(uint32_t rate);
 #endif
 

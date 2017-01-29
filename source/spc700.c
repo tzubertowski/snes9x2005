@@ -158,11 +158,11 @@ APUSetZN8 ((uint8_t) Int16);
 
 #define Relative()\
     Int8 = OP1;\
-    Int16 = (intptr_t) (IAPU.PC + 2 - IAPU.RAM) + Int8;
+    Int16 = (int16_t) (IAPU.PC + 2 - IAPU.RAM) + Int8;
 
 #define Relative2()\
     Int8 = OP2;\
-    Int16 = (intptr_t) (IAPU.PC + 3 - IAPU.RAM) + Int8;
+    Int16 = (int16_t) (IAPU.PC + 3 - IAPU.RAM) + Int8;
 
 #ifdef FAST_LSB_WORD_ACCESS
 #define IndexedXIndirect()\

@@ -109,7 +109,7 @@ unsigned retro_api_version()
    return RETRO_API_VERSION;
 }
 
-void S9xMessage(int type, int number, const char* message)
+void S9xMessage(int32_t type, int32_t number, const char* message)
 {
 #define MAX_MESSAGE_LEN (36 * 3)
 
@@ -146,22 +146,21 @@ void S9xDeinitDisplay(void)
 
 void S9xInitDisplay(void)
 {
-   int h = IMAGE_HEIGHT;
-   int safety = 32;
+   int32_t h = IMAGE_HEIGHT;
+   int32_t safety = 32;
 
    GFX.Pitch = IMAGE_WIDTH * 2;
 #ifdef DS2_DMA
-   GFX.Screen_buffer = (unsigned char*) AlignedMalloc(GFX.Pitch * h + safety, 32,
-                       &PtrAdj.GFXScreen);
+   GFX.Screen_buffer = (uint8_t *) AlignedMalloc(GFX.Pitch * h + safety, 32, &PtrAdj.GFXScreen);
 #elif defined(_3DS)
    safety = 0x80;
-   GFX.Screen_buffer = (unsigned char*) linearMemAlign(GFX.Pitch * h + safety, 0x80);
+   GFX.Screen_buffer = (uint8_t *) linearMemAlign(GFX.Pitch * h + safety, 0x80);
 #else
-   GFX.Screen_buffer = (unsigned char*) malloc(GFX.Pitch * h + safety);
+   GFX.Screen_buffer = (uint8_t *) malloc(GFX.Pitch * h + safety);
 #endif
-   GFX.SubScreen_buffer = (unsigned char*) malloc(GFX.Pitch * h + safety);
-   GFX.ZBuffer_buffer = (unsigned char*) malloc((GFX.Pitch >> 1) * h + safety);
-   GFX.SubZBuffer_buffer = (unsigned char*) malloc((GFX.Pitch >> 1) * h + safety);
+   GFX.SubScreen_buffer = (uint8_t *) malloc(GFX.Pitch * h + safety);
+   GFX.ZBuffer_buffer = (uint8_t *) malloc((GFX.Pitch >> 1) * h + safety);
+   GFX.SubZBuffer_buffer = (uint8_t *) malloc((GFX.Pitch >> 1) * h + safety);
 
    GFX.Screen = GFX.Screen_buffer + safety;
    GFX.SubScreen = GFX.SubScreen_buffer + safety;
@@ -333,15 +332,7 @@ void retro_init(void)
    S9xInitDisplay();
    S9xInitGFX();
 #ifdef USE_BLARGG_APU
-   //very slow devices will still pop
-   
-   //this needs to be applied to all snes9x cores
-   
-   //increasing the buffer size does not cause extra lag(tested with 1000ms buffer)
-   //bool8 S9xInitSound (int buffer_ms, int lag_ms)
-   
-   S9xInitSound(1000, 0);//just give it a 1 second buffer
-   
+   S9xInitSound(1000, 0); //just give it a 1 second buffer
    S9xSetSamplesAvailableCallback(S9xAudioCallback);
 #else
    S9xInitSound();
@@ -364,7 +355,7 @@ void retro_deinit(void)
 #endif
 }
 
-uint32_t S9xReadJoypad(int port)
+uint32_t S9xReadJoypad(int32_t port)
 {
    static const uint32_t snes_lut[] =
    {
@@ -382,7 +373,7 @@ uint32_t S9xReadJoypad(int port)
       SNES_TR_MASK
    };
 
-   int i;
+   int32_t i;
    uint32_t joypad = 0;
 
    for (i = RETRO_DEVICE_ID_JOYPAD_B; i <= RETRO_DEVICE_ID_JOYPAD_R; i++)
@@ -436,9 +427,9 @@ void retro_run(void)
 
    if (samples_to_play > 512)
    {
-      S9xMixSamples((void*)audio_buf, ((int)samples_to_play) * 2);
-      audio_batch_cb(audio_buf, (int)samples_to_play);
-      samples_to_play -= (int)samples_to_play;
+      S9xMixSamples(audio_buf, ((int32_t)samples_to_play) * 2);
+      audio_batch_cb(audio_buf, (int32_t)samples_to_play);
+      samples_to_play -= (int32_t)samples_to_play;
    }
 #endif
 
@@ -492,12 +483,12 @@ void retro_run(void)
 #endif
 }
 
-bool S9xReadMousePosition(int which1, int* x, int* y, uint32_t* buttons)
+bool S9xReadMousePosition(int32_t which1, int32_t* x, int32_t* y, uint32_t* buttons)
 {
    return (false);
 }
 
-bool S9xReadSuperScopePosition(int* x, int* y, uint32_t* buttons)
+bool S9xReadSuperScopePosition(int32_t* x, int32_t* y, uint32_t* buttons)
 {
    return (true);
 }
@@ -620,19 +611,10 @@ size_t retro_serialize_size(void)
 
 bool retro_serialize(void* data, size_t size)
 {
-   int i;
+   int32_t i;
 
    S9xUpdateRTC();
    S9xSRTCPreSaveState();
-#ifndef USE_BLARGG_APU
-   for (i = 0; i < 8; i++)
-   {
-      SoundData.channels[i].previous16[0] = (int16_t)
-                                            SoundData.channels[i].previous[0];
-      SoundData.channels[i].previous16[1] = (int16_t)
-                                            SoundData.channels[i].previous[1];
-   }
-#endif
    uint8_t* buffer = data;
    memcpy(buffer, &CPU, sizeof(CPU));
    buffer += sizeof(CPU);
@@ -684,7 +666,7 @@ bool retro_unserialize(const void* data, size_t size)
    S9xReset();
 #ifndef USE_BLARGG_APU
    uint8_t* IAPU_RAM_current = IAPU.RAM;
-   uintptr_t IAPU_RAM_offset;
+   uint32_t IAPU_RAM_offset;
 #endif
    memcpy(&CPU, buffer, sizeof(CPU));
    buffer += sizeof(CPU);
@@ -929,12 +911,12 @@ void* retro_get_memory_data(unsigned type)
 
 size_t retro_get_memory_size(unsigned type)
 {
-   unsigned size;
+   uint32_t size;
 
    switch(type)
    {
       case RETRO_MEMORY_SAVE_RAM:
-         size = (unsigned) (Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0);
+         size = (uint32_t) (Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0);
          if (size > 0x20000)
             size = 0x20000;
          break;

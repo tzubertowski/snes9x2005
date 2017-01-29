@@ -35,7 +35,7 @@ static uint8_t FilterTapDefinitionBitfield;
 extern uint32_t Z;
 extern int32_t Loop [16];
 
-extern long FilterValues[4][2];
+extern int32_t FilterValues[4][2];
 extern int32_t NoiseFreq [32];
 uint32_t AttackRate [16] =
 {
@@ -92,13 +92,13 @@ void DecodeBlockAsm(int8_t*, int16_t*, int32_t*, int32_t*);
 #define LAST_SAMPLE 0xffffff
 #define JUST_PLAYED_LAST_SAMPLE(c) ((c)->sample_pointer >= LAST_SAMPLE)
 
-static inline uint8_t* S9xGetSampleAddress(int sample_number)
+static inline uint8_t* S9xGetSampleAddress(int32_t sample_number)
 {
    uint32_t addr = (((APU.DSP[APU_DIR] << 8) + (sample_number << 2)) & 0xffff);
    return (IAPU.RAM + addr);
 }
 
-void S9xAPUSetEndOfSample(int i, Channel* ch)
+void S9xAPUSetEndOfSample(int32_t i, Channel* ch)
 {
    ch->state = SOUND_SILENT;
    ch->mode = MODE_NONE;
@@ -108,12 +108,12 @@ void S9xAPUSetEndOfSample(int i, Channel* ch)
    APU.KeyedChannels &= ~(1 << i);
 }
 
-void S9xAPUSetEndX(int ch)
+void S9xAPUSetEndX(int32_t ch)
 {
    APU.DSP [APU_ENDX] |= 1 << ch;
 }
 
-void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target, unsigned int mode)
+void S9xSetEnvRate(Channel* ch, uint32_t rate, int32_t direction, int32_t target, uint32_t  mode)
 {
    ch->envx_target = target;
 
@@ -153,12 +153,12 @@ void S9xSetEnvRate(Channel* ch, uint32_t rate, int direction, int target, unsign
    }
 }
 
-void S9xSetEnvelopeRate(int channel, uint32_t rate, int direction, int target, unsigned int mode)
+void S9xSetEnvelopeRate(int32_t channel, uint32_t rate, int32_t direction, int32_t target, uint32_t  mode)
 {
    S9xSetEnvRate(&SoundData.channels [channel], rate, direction, target, mode);
 }
 
-void S9xSetSoundVolume(int channel, int16_t volume_left, int16_t volume_right)
+void S9xSetSoundVolume(int32_t channel, int16_t volume_left, int16_t volume_right)
 {
    Channel* ch = &SoundData.channels[channel];
    ch->volume_left = volume_left;
@@ -196,7 +196,7 @@ void S9xSetEchoEnable(uint8_t byte)
    }
 
    SoundData.echo_enable = byte;
-   int i;
+   int32_t i;
    for (i = 0; i < NUM_CHANNELS; i++)
    {
       if (byte & (1 << i))
@@ -206,13 +206,13 @@ void S9xSetEchoEnable(uint8_t byte)
    }
 }
 
-void S9xSetEchoFeedback(int feedback)
+void S9xSetEchoFeedback(int32_t feedback)
 {
    CLIP8(feedback);
    SoundData.echo_feedback = feedback;
 }
 
-void S9xSetEchoDelay(int delay)
+void S9xSetEchoDelay(int32_t delay)
 {
    SoundData.echo_buffer_size = (512 * delay * so.playback_rate) >> 15;
    SoundData.echo_buffer_size <<= 1;
@@ -234,7 +234,7 @@ void S9xSetFrequencyModulationEnable(uint8_t byte)
    SoundData.pitch_mod = byte & 0xFE;
 }
 
-void S9xSetSoundKeyOff(int channel)
+void S9xSetSoundKeyOff(int32_t channel)
 {
    Channel* ch = &SoundData.channels[channel];
 
@@ -251,17 +251,17 @@ void S9xFixSoundAfterSnapshotLoad()
    SoundData.echo_write_enabled = !(APU.DSP [APU_FLG] & 0x20);
    SoundData.echo_channel_enable = APU.DSP [APU_EON];
    S9xSetEchoDelay(APU.DSP [APU_EDL] & 0xf);
-   S9xSetEchoFeedback((signed char) APU.DSP [APU_EFB]);
+   S9xSetEchoFeedback((int8_t) APU.DSP [APU_EFB]);
 
-   S9xSetFilterCoefficient(0, (signed char) APU.DSP [APU_C0]);
-   S9xSetFilterCoefficient(1, (signed char) APU.DSP [APU_C1]);
-   S9xSetFilterCoefficient(2, (signed char) APU.DSP [APU_C2]);
-   S9xSetFilterCoefficient(3, (signed char) APU.DSP [APU_C3]);
-   S9xSetFilterCoefficient(4, (signed char) APU.DSP [APU_C4]);
-   S9xSetFilterCoefficient(5, (signed char) APU.DSP [APU_C5]);
-   S9xSetFilterCoefficient(6, (signed char) APU.DSP [APU_C6]);
-   S9xSetFilterCoefficient(7, (signed char) APU.DSP [APU_C7]);
-   int i;
+   S9xSetFilterCoefficient(0, (int8_t) APU.DSP [APU_C0]);
+   S9xSetFilterCoefficient(1, (int8_t) APU.DSP [APU_C1]);
+   S9xSetFilterCoefficient(2, (int8_t) APU.DSP [APU_C2]);
+   S9xSetFilterCoefficient(3, (int8_t) APU.DSP [APU_C3]);
+   S9xSetFilterCoefficient(4, (int8_t) APU.DSP [APU_C4]);
+   S9xSetFilterCoefficient(5, (int8_t) APU.DSP [APU_C5]);
+   S9xSetFilterCoefficient(6, (int8_t) APU.DSP [APU_C6]);
+   S9xSetFilterCoefficient(7, (int8_t) APU.DSP [APU_C7]);
+   int32_t i;
    for (i = 0; i < 8; i++)
    {
       SoundData.channels[i].needs_decode = true;
@@ -270,7 +270,7 @@ void S9xFixSoundAfterSnapshotLoad()
    }
 }
 
-void S9xSetFilterCoefficient(int tap, int value)
+void S9xSetFilterCoefficient(int32_t tap, int32_t value)
 {
    FilterTaps [tap & 7] = value;
    if (value == 0 || (tap == 0 && value == 127))
@@ -279,11 +279,11 @@ void S9xSetFilterCoefficient(int tap, int value)
       FilterTapDefinitionBitfield |= 1 << (tap & 7);
 }
 
-void S9xSetSoundADSR(int channel, int attack_ind, int decay_ind, int sustain_ind, int sustain_level, int release_rate)
+void S9xSetSoundADSR(int32_t channel, int32_t attack_ind, int32_t decay_ind, int32_t sustain_ind, int32_t sustain_level, int32_t release_rate)
 {
-   int attack_rate  = AttackRate [attack_ind];
-   int decay_rate   = DecayRate [decay_ind];
-   int sustain_rate = SustainRate [sustain_ind];
+   int32_t attack_rate  = AttackRate [attack_ind];
+   int32_t decay_rate   = DecayRate [decay_ind];
+   int32_t sustain_rate = SustainRate [sustain_ind];
 
    // Hack for ROMs that use a very short attack rate, key on a
    // channel, then switch to decay mode. e.g. Final Fantasy II.
@@ -315,7 +315,7 @@ void S9xSetSoundADSR(int channel, int attack_ind, int decay_ind, int sustain_ind
    }
 }
 
-void S9xSetEnvelopeHeight(int channel, int level)
+void S9xSetEnvelopeHeight(int32_t channel, int32_t level)
 {
    Channel* ch = &SoundData.channels[channel];
 
@@ -329,7 +329,7 @@ void S9xSetEnvelopeHeight(int channel, int level)
       S9xAPUSetEndOfSample(channel, ch);
 }
 
-int S9xGetEnvelopeHeight(int channel)
+int32_t S9xGetEnvelopeHeight(int32_t channel)
 {
    if ((Settings.SoundEnvelopeHeightReading ||
          SNESGameFixes.SoundEnvelopeHeightReading2) &&
@@ -345,20 +345,20 @@ int S9xGetEnvelopeHeight(int channel)
    return (0);
 }
 
-void S9xSetSoundFrequency(int channel, int hertz) // hertz [0~64K<<1]
+void S9xSetSoundFrequency(int32_t channel, int32_t hertz) // hertz [0~64K<<1]
 {
    if (SoundData.channels[channel].type == SOUND_NOISE)
       hertz = NoiseFreq [APU.DSP [APU_FLG] & 0x1f];
    SoundData.channels[channel].frequency = (hertz * so.freqbase) >> 11;
 }
 
-void S9xSetSoundHertz(int channel, int hertz)
+void S9xSetSoundHertz(int32_t channel, int32_t hertz)
 {
    SoundData.channels[channel].hertz = hertz;
    S9xSetSoundFrequency(channel, hertz);
 }
 
-void S9xSetSoundType(int channel, int type_of_sound)
+void S9xSetSoundType(int32_t channel, int32_t type_of_sound)
 {
    SoundData.channels[channel].type = type_of_sound;
 }
@@ -367,8 +367,8 @@ void DecodeBlock(Channel* ch)
 {
    int32_t out;
    uint8_t filter;
-   unsigned char shift;
-   signed char sample1, sample2;
+   uint8_t shift;
+   int8_t sample1, sample2;
 
    if (ch->block_pointer >= 0x10000 - 9)
    {
@@ -385,7 +385,7 @@ void DecodeBlock(Channel* ch)
       ch->loop = (filter & 2) != 0;
 
    int16_t* raw = ch->block = ch->decoded;
-   unsigned int i;
+   uint32_t i;
 
    compressed++;
 
@@ -463,11 +463,11 @@ void DecodeBlock(Channel* ch)
    ch->block_pointer += 9;
 }
 
-static inline void MixStereo(int sample_count)
+static inline void MixStereo(int32_t sample_count)
 {
    static int32_t wave[SOUND_BUFFER_SIZE];
 
-   int pitch_mod = SoundData.pitch_mod & ~APU.DSP[APU_NON];
+   int32_t pitch_mod = SoundData.pitch_mod & ~APU.DSP[APU_NON];
 
    uint32_t J;
    for (J = 0; J < NUM_CHANNELS; J++)
@@ -498,7 +498,7 @@ static inline void MixStereo(int sample_count)
 
          if (Settings.InterpolatedSound && freq0 < FIXED_POINT && !mod)
             ch->interpolate = ((ch->next_sample - ch->sample) *
-                               (long) freq0) / (long) FIXED_POINT;
+                               (int32_t) freq0) / (int32_t) FIXED_POINT;
       }
       VL = (ch->sample * ch-> left_vol_level) / 128;
       VR = (ch->sample * ch->right_vol_level) / 128;
@@ -703,9 +703,9 @@ static inline void MixStereo(int sample_count)
                if (Settings.InterpolatedSound && freq < FIXED_POINT && !mod)
                {
                   ch->interpolate = ((ch->next_sample - ch->sample) *
-                                     (long) freq) / (long) FIXED_POINT;
+                                     (int32_t) freq) / (int32_t) FIXED_POINT;
                   ch->sample = (int16_t)(ch->sample + (((ch->next_sample - ch->sample) *
-                                                      (long)(ch->count)) / (long) FIXED_POINT));
+                                                      (int32_t)(ch->count)) / (int32_t) FIXED_POINT));
                }
                else
                   ch->interpolate = 0;
@@ -713,7 +713,7 @@ static inline void MixStereo(int sample_count)
             else
             {
                // Snes9x 1.53's SPC_DSP.cpp, by blargg
-               int feedback = (noise_gen << 13) ^ (noise_gen << 14);
+               int32_t feedback = (noise_gen << 13) ^ (noise_gen << 14);
                noise_gen = (feedback & 0x4000) ^ (noise_gen >> 1);
                ch->sample = (noise_gen << 17) >> 17;
                ch->interpolate = 0;
@@ -752,10 +752,10 @@ stereo_exit:
    }
 }
 
-void S9xMixSamples(uint16_t* buffer, int sample_count)
+void S9xMixSamples(int16_t* buffer, int32_t sample_count)
 {
-   int J;
-   int I;
+   int32_t J;
+   int32_t I;
 
    if (SoundData.echo_enable)
       memset(EchoBuffer, 0, sample_count * sizeof(EchoBuffer [0]));
@@ -771,7 +771,7 @@ void S9xMixSamples(uint16_t* buffer, int sample_count)
          // ... but no filter defined.
          for (J = 0; J < sample_count; J++)
          {
-            int E = Echo [SoundData.echo_ptr];
+            int32_t E = Echo [SoundData.echo_ptr];
             Echo[SoundData.echo_ptr++] = (E * SoundData.echo_feedback) / 128 + EchoBuffer [J];
 
             if (SoundData.echo_ptr >= SoundData.echo_buffer_size)
@@ -788,7 +788,7 @@ void S9xMixSamples(uint16_t* buffer, int sample_count)
          for (J = 0; J < sample_count; J++)
          {
             Loop [(Z - 0) & 15] = Echo [SoundData.echo_ptr];
-            int                                     E =  Loop [(Z -  0) & 15] * FilterTaps [0];
+            int32_t                                 E =  Loop [(Z -  0) & 15] * FilterTaps [0];
             if (FilterTapDefinitionBitfield & 0x02) E += Loop [(Z -  2) & 15] * FilterTaps [1];
             if (FilterTapDefinitionBitfield & 0x04) E += Loop [(Z -  4) & 15] * FilterTaps [2];
             if (FilterTapDefinitionBitfield & 0x08) E += Loop [(Z -  6) & 15] * FilterTaps [3];
@@ -824,7 +824,7 @@ void S9xMixSamples(uint16_t* buffer, int sample_count)
 
 void S9xResetSound(bool full)
 {
-   int i;
+   int32_t i;
    for (i = 0; i < 8; i++)
    {
       SoundData.channels[i].state = SOUND_SILENT;
@@ -893,12 +893,12 @@ void S9xSetPlaybackRate(uint32_t playback_rate)
       // notaz: calculate a value (let's call it freqbase) to simplify channel freq calculations later.
       so.freqbase = (FIXED_POINT << 11) / (playback_rate * 33 / 32);
       // now precalculate env rates for S9xSetEnvRate
-      static int steps [] =
+      static int32_t steps [] =
       {
          0, 64, 619, 619, 128, 1, 64, 55, 64, 619
       };
 
-      int i, u;
+      int32_t i, u;
 
       for (u = 0 ; u < 10 ; u++)
       {
@@ -922,7 +922,7 @@ void S9xSetPlaybackRate(uint32_t playback_rate)
    }
 
    S9xSetEchoDelay(APU.DSP [APU_EDL] & 0xf);
-   int i;
+   int32_t i;
    for (i = 0; i < 8; i++)
       S9xSetSoundFrequency(i, SoundData.channels [i].hertz);
 }
@@ -934,7 +934,7 @@ bool S9xInitSound()
    return (1);
 }
 
-bool S9xSetSoundMode(int channel, int mode)
+bool S9xSetSoundMode(int32_t channel, int32_t mode)
 {
    Channel* ch = &SoundData.channels[channel];
 
@@ -971,7 +971,7 @@ bool S9xSetSoundMode(int channel, int mode)
    return (false);
 }
 
-void S9xPlaySample(int channel)
+void S9xPlaySample(int32_t channel)
 {
    Channel* ch = &SoundData.channels[channel];
 

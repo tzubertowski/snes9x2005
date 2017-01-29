@@ -56,27 +56,27 @@ typedef struct
    bool            InterlaceSprites;
    bool            DoubleWidthPixels;
    bool            HalfWidthPixels;
-   int             RenderedScreenHeight;
-   int             RenderedScreenWidth;
+   int32_t         RenderedScreenHeight;
+   int32_t         RenderedScreenWidth;
    uint32_t        Red [256];
    uint32_t        Green [256];
    uint32_t        Blue [256];
    uint8_t*        XB;
    uint16_t        ScreenColors [256];
-   int             PreviousLine;
-   int             CurrentLine;
-   int             Controller;
+   int32_t         PreviousLine;
+   int32_t         CurrentLine;
+   int32_t         Controller;
    uint32_t        Joypads[5];
    uint32_t        SuperScope;
    uint32_t        Mouse[2];
-   int             PrevMouseX[2];
-   int             PrevMouseY[2];
+   int32_t         PrevMouseX[2];
+   int32_t         PrevMouseY[2];
    struct ClipData Clip [2];
 } InternalPPU;
 
 struct SOBJ
 {
-   short    HPos;
+   int16_t  HPos;
    uint16_t VPos;
    uint16_t Name;
    uint8_t  VFlip;
@@ -132,12 +132,12 @@ typedef struct
    uint8_t VBeamFlip;
    uint8_t HVBeamCounterLatched;
 
-   short   MatrixA;
-   short   MatrixB;
-   short   MatrixC;
-   short   MatrixD;
-   short   CentreX;
-   short   CentreY;
+   int16_t MatrixA;
+   int16_t MatrixB;
+   int16_t MatrixC;
+   int16_t MatrixD;
+   int16_t CentreX;
+   int16_t CentreY;
    uint8_t Joypad1ButtonReadPos;
    uint8_t Joypad2ButtonReadPos;
 
@@ -159,7 +159,7 @@ typedef struct
    uint8_t  OAMData [512 + 32];
    bool     VTimerEnabled;
    bool     HTimerEnabled;
-   short    HTimerPosition;
+   int16_t  HTimerPosition;
    uint8_t  Mosaic;
    bool     BGMosaic [4];
    bool     Mode7HFlip;
@@ -223,7 +223,7 @@ void S9xResetPPU();
 void S9xSoftResetPPU();
 void S9xFixColourBrightness();
 void S9xUpdateJoypads();
-void S9xProcessMouse(int which1);
+void S9xProcessMouse(int32_t which1);
 void S9xSuperFXExec();
 
 void S9xSetPPU(uint8_t Byte, uint16_t Address);

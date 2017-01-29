@@ -172,7 +172,7 @@
        pixel = PIXEL; \
        for (l = LineCount; l != 0; l--, sp += GFX.PPL, Depth += GFX.PPL) \
        { \
-      int z; \
+      int32_t z; \
       for (z = Pixels - 1; z >= 0; z--) \
           if (GFX.Z1 > Depth [z]) \
           { \
@@ -191,7 +191,7 @@
        pixel = PIXEL; \
        for (l = LineCount; l != 0; l--, sp += GFX.PPL, Depth += GFX.PPL) \
        { \
-      int z; \
+      int32_t z; \
       for (z = Pixels - 1; z >= 0; z--) \
           if (GFX.Z1 > Depth [z]) \
           { \
@@ -217,7 +217,7 @@
        pixel = PIXEL; \
        for (l = LineCount; l != 0; l--, sp += GFX.PPL, Depth += GFX.PPL) \
        { \
-      int z; \
+      int32_t z; \
       for (z = Pixels - 2; z >= 0; z -= 2) \
           if (GFX.Z1 > Depth [z]) \
           { \
@@ -236,7 +236,7 @@
        pixel = PIXEL; \
        for (l = LineCount; l != 0; l--, sp += GFX.PPL, Depth += GFX.PPL) \
        { \
-      int z; \
+      int32_t z; \
       for (z = Pixels - 2; z >= 0; z -= 2) \
           if (GFX.Z1 > Depth [z]) \
           { \

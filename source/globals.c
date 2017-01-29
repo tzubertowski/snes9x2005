@@ -41,7 +41,7 @@ SnesModel* Model = &M1SNES;
 
 uint8_t* C4RAM = NULL;
 
-long OpAddress = 0;
+int32_t OpAddress = 0;
 
 CMemory Memory;
 
@@ -97,7 +97,7 @@ uint16_t SignExtend [2] =
 };
 
 //modified per anomie Mode 5 findings
-int HDMA_ModeByteCounts [8] =
+int32_t HDMA_ModeByteCounts [8] =
 {
    1, 2, 2, 4, 4, 4, 2, 4
 };
@@ -163,7 +163,7 @@ uint8_t BGSizes [2] =
 };
 uint16_t DirectColourMaps [8][256];
 
-long FilterValues[4][2] =
+int32_t FilterValues[4][2] =
 {
    {0, 0},
    {240, 0},

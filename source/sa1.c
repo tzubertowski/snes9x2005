@@ -65,7 +65,7 @@ void S9xSA1Reset()
 
 void S9xSA1SetBWRAMMemMap(uint8_t val)
 {
-   int c;
+   int32_t c;
 
    if (val & 0x80)
    {
@@ -147,15 +147,15 @@ uint16_t S9xSA1GetWord(uint32_t address)
 
 void S9xSA1SetByte(uint8_t byte, uint32_t address)
 {
-   uint8_t* Setaddress = SA1.WriteMap [(address >> MEMMAP_SHIFT) & MEMMAP_MASK];
+   uint8_t* SetAddress = SA1.WriteMap [(address >> MEMMAP_SHIFT) & MEMMAP_MASK];
 
-   if (Setaddress >= (uint8_t*) MAP_LAST)
+   if (SetAddress >= (uint8_t*) MAP_LAST)
    {
-      *(Setaddress + (address & 0xffff)) = byte;
+      *(SetAddress + (address & 0xffff)) = byte;
       return;
    }
 
-   switch ((intptr_t) Setaddress)
+   switch ((intptr_t) SetAddress)
    {
    case MAP_PPU:
       S9xSetSA1(byte, address & 0xffff);
@@ -248,10 +248,10 @@ void S9xSA1SetPCBase(uint32_t address)
 
 void S9xSetSA1MemMap(uint32_t which1, uint8_t map)
 {
-   int c;
-   int i;
-   int start = which1 * 0x100 + 0xc00;
-   int start2 = which1 * 0x200;
+   int32_t c;
+   int32_t i;
+   int32_t start = which1 * 0x100 + 0xc00;
+   int32_t start2 = which1 * 0x200;
 
    if (which1 >= 2)
       start2 += 0x400;
@@ -508,18 +508,18 @@ static void S9xSA1CharConv2()
 {
    uint32_t dest = Memory.FillRAM [0x2235] | (Memory.FillRAM [0x2236] << 8);
    uint32_t offset = (SA1.in_char_dma & 7) ? 0 : 1;
-   int depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 :
-               (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
-   int bytes_per_char = 8 * depth;
+   int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 :
+                   (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
+   int32_t bytes_per_char = 8 * depth;
    uint8_t* p = &Memory.FillRAM [0x3000] + dest + offset * bytes_per_char;
    uint8_t* q = &Memory.ROM [MAX_ROM_SIZE - 0x10000] + offset * 64;
 
    if (depth == 8)
    {
-      int l;
+      int32_t l;
       for (l = 0; l < 8; l++, q += 8)
       {
-         int b;
+         int32_t b;
          for (b = 0; b < 8; b++)
          {
             uint8_t r = *(q + b);

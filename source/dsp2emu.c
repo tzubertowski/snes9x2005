@@ -3,9 +3,9 @@
 uint16_t DSP2Op09Word1 = 0;
 uint16_t DSP2Op09Word2 = 0;
 bool DSP2Op05HasLen = false;
-int DSP2Op05Len = 0;
+int32_t DSP2Op05Len = 0;
 bool DSP2Op06HasLen = false;
-int DSP2Op06Len = 0;
+int32_t DSP2Op06Len = 0;
 uint8_t DSP2Op05Transparent = 0;
 
 void DSP2_Op05()
@@ -36,12 +36,12 @@ void DSP2_Op05()
    // size = 0.  I don't think it's worth implementing this quirk unless it's
    // proven necessary.
 
-   int n;
-   unsigned char c1;
-   unsigned char c2;
-   unsigned char* p1 = DSP1.parameters;
-   unsigned char* p2 = &DSP1.parameters[DSP2Op05Len];
-   unsigned char* p3 = DSP1.output;
+   int32_t n;
+   uint8_t c1;
+   uint8_t c2;
+   uint8_t* p1 = DSP1.parameters;
+   uint8_t* p2 = &DSP1.parameters[DSP2Op05Len];
+   uint8_t* p3 = DSP1.output;
 
    color = DSP2Op05Transparent & 0x0f;
 
@@ -59,11 +59,11 @@ void DSP2_Op01()
    // Op01 size is always 32 bytes input and output.
    // The hardware does strange things if you vary the size.
 
-   int j;
-   unsigned char c0, c1, c2, c3;
-   unsigned char* p1 = DSP1.parameters;
-   unsigned char* p2a = DSP1.output;
-   unsigned char* p2b = &DSP1.output[16]; // halfway
+   int32_t j;
+   uint8_t c0, c1, c2, c3;
+   uint8_t* p1 = DSP1.parameters;
+   uint8_t* p2a = DSP1.output;
+   uint8_t* p2b = &DSP1.output[16]; // halfway
 
    // Process 8 blocks of 4 bytes each
 
@@ -120,15 +120,15 @@ void DSP2_Op06()
    //    size
    //    bitmap
 
-   int   i, j;
+   int32_t i, j;
 
    for (i = 0, j = DSP2Op06Len - 1; i < DSP2Op06Len; i++, j--)
       DSP1.output[j] = (DSP1.parameters[i] << 4) | (DSP1.parameters[i] >> 4);
 }
 
 bool DSP2Op0DHasLen = false;
-int DSP2Op0DOutLen = 0;
-int DSP2Op0DInLen = 0;
+int32_t DSP2Op0DOutLen = 0;
+int32_t DSP2Op0DInLen = 0;
 
 #ifndef DSP2_BIT_ACCURRATE_CODE
 
@@ -138,13 +138,13 @@ void DSP2_Op0D()
 {
    // (Modified) Overload's algorithm - use this unless doing hardware testing
 
-   int i;
+   int32_t i;
 
    for(i = 0 ; i < DSP2Op0DOutLen ; i++)
    {
-      int j = i << 1;
-      int pixel_offset_low = ((j * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
-      int pixel_offset_high = (((j + 1) * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
+      int32_t j = i << 1;
+      int32_t pixel_offset_low = ((j * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
+      int32_t pixel_offset_high = (((j + 1) * DSP2Op0DInLen) / DSP2Op0DOutLen) >> 1;
       uint8_t pixel_low = DSP1.parameters[pixel_offset_low] >> 4;
       uint8_t pixel_high = DSP1.parameters[pixel_offset_high] & 0x0f;
       DSP1.output[i] = (pixel_low << 4) | pixel_high;
@@ -170,9 +170,9 @@ void DSP2_Op0D()
    // If it does we can adjust the parameters and code to work with it
 
 
-   uint32_t multiplier;   // Any size int >= 32-bits
-   uint32_t pixloc;    // match size of multiplier
-   int   i, j;
+   uint32_t multiplier;
+   uint32_t pixloc;
+   int32_t i, j;
    uint8_t pixelarray[512];
 
    if (DSP2Op0DInLen <= DSP2Op0DOutLen)

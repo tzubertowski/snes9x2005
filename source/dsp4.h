@@ -4,8 +4,8 @@
 #define _DSP4_H_
 
 // debug
-int block;                       // current block number
-extern int c;
+int32_t block;                       // current block number
+extern int32_t c;
 
 // op control
 int8_t DSP4_Logic;              // controls op flow

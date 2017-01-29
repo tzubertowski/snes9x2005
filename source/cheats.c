@@ -9,9 +9,9 @@
 #include "cheats.h"
 #include "memmap.h"
 
-static bool S9xAllHex(const char* code, int len)
+static bool S9xAllHex(const char* code, int32_t len)
 {
-   int i;
+   int32_t i;
    for (i = 0; i < len; i++)
       if ((code [i] < '0' || code [i] > '9') &&
             (code [i] < 'a' || code [i] > 'f') &&
@@ -46,12 +46,12 @@ const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram,
    if (sscanf(tmp, "%x", address) != 1)
       return ("Invalid Gold Finger code.");
 
-   int i;
+   int32_t i;
    for (i = 0; i < 3; i++)
    {
       strncpy(tmp, code + 5 + i * 2, 2);
       tmp [2] = 0;
-      int byte;
+      int32_t byte;
       if (sscanf(tmp, "%x", &byte) != 1)
          break;
       bytes [i] = (uint8_t) byte;
@@ -76,12 +76,12 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
    static char* real_hex  = "0123456789ABCDEF";
    static char* genie_hex = "DF4709156BC8A23E";
 
-   int i;
+   int32_t i;
    for (i = 2; i < 10; i++)
    {
       if (islower(new_code [i]))
          new_code [i] = toupper(new_code [i]);
-      int j;
+      int32_t j;
       for (j = 0; j < 16; j++)
       {
          if (new_code [i] == genie_hex [j])
@@ -115,9 +115,9 @@ void S9xStartCheatSearch(SCheatData* d)
    memmove(d->CSRAM, d->SRAM, 0x10000);
    // memmove may be required: Source is usually a different malloc, but could be pointed to d->CIRAM [Neb]
    memmove(d->CIRAM, &d->FillRAM [0x3000], 0x2000);
-   memset((char*) d->WRAM_BITS, 0xff, 0x20000 >> 3);
-   memset((char*) d->SRAM_BITS, 0xff, 0x10000 >> 3);
-   memset((char*) d->IRAM_BITS, 0xff, 0x2000 >> 3);
+   memset(d->WRAM_BITS, 0xff, 0x20000 >> 3);
+   memset(d->SRAM_BITS, 0xff, 0x10000 >> 3);
+   memset(d->IRAM_BITS, 0xff, 0x2000 >> 3);
 }
 
 #define BIT_CLEAR(a,v) \
@@ -152,7 +152,7 @@ void S9xStartCheatSearch(SCheatData* d)
 void S9xSearchForChange(SCheatData* d, S9xCheatComparisonType cmp,
                         S9xCheatDataSize size, bool is_signed, bool update)
 {
-   int l;
+   int32_t l;
 
    switch (size)
    {
@@ -171,7 +171,7 @@ void S9xSearchForChange(SCheatData* d, S9xCheatComparisonType cmp,
       break;
    }
 
-   int i;
+   int32_t i;
    if (is_signed)
    {
       for (i = 0; i < 0x20000 - l; i++)
@@ -254,7 +254,7 @@ void S9xSearchForValue(SCheatData* d, S9xCheatComparisonType cmp,
                        S9xCheatDataSize size, uint32_t value,
                        bool is_signed, bool update)
 {
-   int l;
+   int32_t l;
 
    switch (size)
    {
@@ -273,7 +273,7 @@ void S9xSearchForValue(SCheatData* d, S9xCheatComparisonType cmp,
       break;
    }
 
-   int i;
+   int32_t i;
 
    if (is_signed)
    {
@@ -355,7 +355,7 @@ void S9xSearchForValue(SCheatData* d, S9xCheatComparisonType cmp,
 
 void S9xOutputCheatSearchResults(SCheatData* d)
 {
-   int i;
+   int32_t i;
    for (i = 0; i < 0x20000; i++)
    {
       if (TEST_BIT(d->WRAM_BITS, i))

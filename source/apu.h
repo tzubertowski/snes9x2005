@@ -65,8 +65,6 @@ void S9xResetAPU(void);
 bool S9xInitAPU();
 void S9xDeinitAPU();
 void S9xDecacheSamples();
-int S9xTraceAPU();
-int S9xAPUOPrint(char* buffer, uint16_t Address);
 void S9xSetAPUControl(uint8_t byte);
 void S9xSetAPUDSP(uint8_t byte);
 uint8_t S9xGetAPUDSP();

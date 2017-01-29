@@ -40,10 +40,6 @@ details. You should have received a copy of the GNU Lesser General Public
 License along with this module; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
-#if INT_MAX < 0x7FFFFFFF
-   #error "Requires that int type have at least 32 bits"
-#endif
-
 /* if ( io < -32768 ) io = -32768; */
 /* if ( io >  32767 ) io =  32767; */
 #define CLAMP16( io )\
@@ -114,9 +110,9 @@ static int16_t gauss [512] =
 
 /* Gaussian interpolation */
 
-static INLINE int dsp_interpolate( dsp_voice_t *v )
+static INLINE int32_t dsp_interpolate( dsp_voice_t *v )
 {
-   int offset, out, *in;
+   int32_t offset, out, *in;
    int16_t *fwd, *rev;
 
    /* Make pointers into gaussian based on fractional position between samples */
@@ -141,7 +137,7 @@ static INLINE int dsp_interpolate( dsp_voice_t *v )
 /* 30720 =  2048 * 5 * 3 */
 #define SIMPLE_COUNTER_RANGE 30720
 
-static unsigned const counter_rates [32] =
+static uint32_t const counter_rates [32] =
 {
    SIMPLE_COUNTER_RANGE + 1, /* never fires */
           2048, 1536,
@@ -158,7 +154,7 @@ static unsigned const counter_rates [32] =
             1
 };
 
-static unsigned const counter_offsets [32] =
+static uint32_t const counter_offsets [32] =
 {
      1, 0, 1040,
    536, 0, 1040,
@@ -178,13 +174,13 @@ static unsigned const counter_offsets [32] =
    if ( --dsp_m.counter < 0 ) \
       dsp_m.counter = SIMPLE_COUNTER_RANGE - 1;
 
-#define READ_COUNTER(rate) (((unsigned) dsp_m.counter + counter_offsets [rate]) % counter_rates [rate])
+#define READ_COUNTER(rate) (((uint32_t) dsp_m.counter + counter_offsets [rate]) % counter_rates [rate])
 
 /* Envelope */
 
 static INLINE void dsp_run_envelope( dsp_voice_t* const v )
 {
-   int env, rate, env_data;
+   int32_t env, rate, env_data;
 
    env = v->env;
    env_data = v->regs[V_ADSR1];
@@ -207,7 +203,7 @@ static INLINE void dsp_run_envelope( dsp_voice_t* const v )
    }
    else /* GAIN */
    {
-      int mode;
+      int32_t mode;
       env_data = v->regs[V_GAIN];
       mode = env_data >> 5;
       if ( mode < 4 ) /* direct */
@@ -230,7 +226,7 @@ static INLINE void dsp_run_envelope( dsp_voice_t* const v )
          else /* 6,7: linear increase */
          {
             env += 0x20;
-            if ( mode > 6 && (unsigned) v->hidden_env >= 0x600 )
+            if ( mode > 6 && (uint32_t) v->hidden_env >= 0x600 )
                env += 0x8 - 0x20; /* 7: two-slope linear increase */
          }
       }
@@ -243,7 +239,7 @@ static INLINE void dsp_run_envelope( dsp_voice_t* const v )
    v->hidden_env = env;
 
    /* unsigned cast because linear decrease going negative also triggers this */
-   if ( (unsigned) env > 0x7FF )
+   if ( (uint32_t) env > 0x7FF )
    {
       env = (env < 0 ? 0 : 0x7FF);
       if ( v->env_mode == ENV_ATTACK )
@@ -258,7 +254,7 @@ static INLINE void dsp_run_envelope( dsp_voice_t* const v )
 
 static INLINE void dsp_decode_brr( dsp_voice_t* v )
 {
-   int nybbles, *pos, *end, header;
+   int32_t nybbles, *pos, *end, header;
 
    /* Arrange the four input nybbles in 0xABCD order for easy decoding */
    nybbles = dsp_m.t_brr_byte * 0x100 + dsp_m.ram [(v->brr_addr + v->brr_offset + 1) & 0xFFFF];
@@ -274,7 +270,7 @@ static INLINE void dsp_decode_brr( dsp_voice_t* v )
    /* Decode four samples */
    for ( end = pos + 4; pos < end; pos++, nybbles <<= 4 )
    {
-      int filter, p1, p2, s, shift;
+      int32_t filter, p1, p2, s, shift;
       /* Extract nybble and sign-extend */
       s = (int16_t) nybbles >> 12;
 
@@ -344,7 +340,7 @@ static INLINE void dsp_misc_30 (void)
    /* Noise */
    if ( !READ_COUNTER( dsp_m.regs[R_FLG] & 0x1F ) )
    {
-      int feedback = (dsp_m.noise << 13) ^ (dsp_m.noise << 14);
+      int32_t feedback = (dsp_m.noise << 13) ^ (dsp_m.noise << 14);
       dsp_m.noise = (feedback & 0x4000) ^ (dsp_m.noise >> 1);
    }
 }
@@ -386,7 +382,7 @@ static INLINE void dsp_voice_V3b( dsp_voice_t* const v )
 
 static void dsp_voice_V3c( dsp_voice_t* const v )
 {
-   int output;
+   int32_t output;
 
    /* Pitch modulation using previous voice's output */
    if ( dsp_m.t_pmon & v->vbit )
@@ -450,7 +446,7 @@ static void dsp_voice_V3c( dsp_voice_t* const v )
    /* Run envelope for next sample */
    if ( !v->kon_delay )
    {
-      int env = v->env;
+      int32_t env = v->env;
       if ( v->env_mode == ENV_RELEASE ) /* 60% */
       {
          if ( (env -= 0x8) < 0 )
@@ -464,9 +460,9 @@ static void dsp_voice_V3c( dsp_voice_t* const v )
    }
 }
 
-static INLINE void dsp_voice_output( dsp_voice_t const* v, int ch )
+static INLINE void dsp_voice_output( dsp_voice_t const* v, int32_t ch )
 {
-   int amp;
+   int32_t amp;
 
    /* Apply left/right volume */
    amp = (dsp_m.t_output * (int8_t) VREG(v->regs,VOLL + ch)) >> 7;
@@ -517,7 +513,7 @@ static INLINE void dsp_voice_V4( dsp_voice_t* const v )
 
 static INLINE void dsp_voice_V5( dsp_voice_t* const v )
 {
-   int endx_buf;
+   int32_t endx_buf;
    /* Output right */
    dsp_voice_output( v, 1 );
 
@@ -601,7 +597,7 @@ static void dsp_voice_V9_V6_V3( dsp_voice_t* const v )
 
 #define ECHO_READ(ch) \
 { \
-   int s; \
+   int32_t s; \
    if ( dsp_m.t_echo_ptr >= 0xffc0 && dsp_m.rom_enabled ) \
       s = GET_LE16SA( &dsp_m.hi_ram [dsp_m.t_echo_ptr + ch * 2 - 0xffc0] ); \
    else \
@@ -612,7 +608,7 @@ static void dsp_voice_V9_V6_V3( dsp_voice_t* const v )
 
 static INLINE void dsp_echo_22 (void)
 {
-   int l, r;
+   int32_t l, r;
 
    if ( ++dsp_m.echo_hist_pos >= &dsp_m.echo_hist [ECHO_HIST_SIZE] )
       dsp_m.echo_hist_pos = dsp_m.echo_hist;
@@ -630,7 +626,7 @@ static INLINE void dsp_echo_22 (void)
 
 static INLINE void dsp_echo_23 (void)
 {
-   int l, r;
+   int32_t l, r;
 
    l = (((dsp_m.echo_hist_pos [1 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 1 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [2 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 2 * 0x10]) >> 6);
    r = (((dsp_m.echo_hist_pos [1 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 1 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [2 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 2 * 0x10]) >> 6);
@@ -643,7 +639,7 @@ static INLINE void dsp_echo_23 (void)
 
 static INLINE void dsp_echo_24 (void)
 {
-   int l, r;
+   int32_t l, r;
 
    l = (((dsp_m.echo_hist_pos [3 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 3 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [4 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 4 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [5 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 5 * 0x10]) >> 6);
    r = (((dsp_m.echo_hist_pos [3 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 3 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [4 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 4 * 0x10]) >> 6) + (((dsp_m.echo_hist_pos [5 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 5 * 0x10]) >> 6);
@@ -654,8 +650,8 @@ static INLINE void dsp_echo_24 (void)
 
 static INLINE void dsp_echo_25 (void)
 {
-   int l = dsp_m.t_echo_in [0] + (((dsp_m.echo_hist_pos [6 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
-   int r = dsp_m.t_echo_in [1] + (((dsp_m.echo_hist_pos [6 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
+   int32_t l = dsp_m.t_echo_in [0] + (((dsp_m.echo_hist_pos [6 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
+   int32_t r = dsp_m.t_echo_in [1] + (((dsp_m.echo_hist_pos [6 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
 
    l = (int16_t) l;
    r = (int16_t) r;
@@ -680,7 +676,7 @@ static INLINE void dsp_echo_25 (void)
 
 static INLINE void dsp_echo_26 (void)
 {
-   int l, r;
+   int32_t l, r;
 
    ECHO_OUTPUT(dsp_m.t_main_out[0], 0 );
 
@@ -696,7 +692,7 @@ static INLINE void dsp_echo_26 (void)
 
 static INLINE void dsp_echo_27 (void)
 {
-   int l, r;
+   int32_t l, r;
    int16_t *out;
 
    l = dsp_m.t_main_out [0];
@@ -771,9 +767,9 @@ V(V9_V6_V3,2) -> V(V9,2) V(V6,3) V(V3,4) */
 /* Runs DSP for specified number of clocks (~1024000 per second). Every 32 clocks
    a pair of samples is be generated. */
 
-static void dsp_run( int clocks_remain )
+static void dsp_run( int32_t clocks_remain )
 {
-   int phase;
+   int32_t phase;
 
    phase = dsp_m.phase;
    dsp_m.phase = (phase + clocks_remain) & 31;
@@ -939,7 +935,7 @@ loop:
 /* Sets destination for output samples. If out is NULL or out_size is 0,
    doesn't generate any. */
 
-static void dsp_set_output( int16_t * out, int size )
+static void dsp_set_output( int16_t * out, int32_t size )
 {
    if ( !out )
    {
@@ -968,7 +964,7 @@ static void dsp_soft_reset_common (void)
 
 static void dsp_reset (void)
 {
-   int i;
+   int32_t i;
 
    uint8_t const initial_regs [REGISTER_COUNT] =
    {
@@ -1029,7 +1025,7 @@ static void spc_copier_copy(spc_state_copy_t * copier, void* state, size_t size 
    copier->func(copier->buf, state, size );
 }
 
-static int spc_copier_copy_int(spc_state_copy_t * copier, int state, int size )
+static int32_t spc_copier_copy_int(spc_state_copy_t * copier, int32_t state, int32_t size )
 {
    uint8_t s [2];
    SET_LE16( s, state );
@@ -1039,16 +1035,16 @@ static int spc_copier_copy_int(spc_state_copy_t * copier, int state, int size )
 
 static void spc_copier_extra(spc_state_copy_t * copier)
 {
-   int n = 0;
+   int32_t n = 0;
    n = (uint8_t) spc_copier_copy_int(copier, n, sizeof (uint8_t) );
 
    if ( n > 0 )
    {
-      char temp [64];
+      int8_t temp [64];
       memset( temp, 0, sizeof(temp));
       do
       {
-         int size_n = sizeof(temp);
+         int32_t size_n = sizeof(temp);
          if ( size_n > n )
             size_n = n;
          n -= size_n;
@@ -1060,9 +1056,9 @@ static void spc_copier_extra(spc_state_copy_t * copier)
 
 /* Saves/loads exact emulator state */
 
-static void dsp_copy_state( unsigned char** io, dsp_copy_func_t copy )
+static void dsp_copy_state( uint8_t ** io, dsp_copy_func_t copy )
 {
-   int i, j;
+   int32_t i, j;
 
    spc_state_copy_t copier;
    copier.func = copy;
@@ -1083,7 +1079,7 @@ static void dsp_copy_state( unsigned char** io, dsp_copy_func_t copy )
       /* BRR buffer */
       for ( j = 0; j < BRR_BUF_SIZE; j++ )
       {
-         int s;
+         int32_t s;
 
          s = v->buf [j];
          SPC_COPY(  int16_t, s );
@@ -1098,7 +1094,7 @@ static void dsp_copy_state( unsigned char** io, dsp_copy_func_t copy )
       SPC_COPY(  uint8_t, v->brr_offset );
       SPC_COPY(  uint8_t, v->kon_delay );
       {
-         int m;
+         int32_t m;
 
          m = v->env_mode;
          SPC_COPY(  uint8_t, m );
@@ -1112,7 +1108,7 @@ static void dsp_copy_state( unsigned char** io, dsp_copy_func_t copy )
    /* Echo history */
    for ( i = 0; i < ECHO_HIST_SIZE; i++ )
    {
-      int s, s2;
+      int32_t s, s2;
 
       s = dsp_m.echo_hist_pos [i] [0];
       s2 = dsp_m.echo_hist_pos [i] [1];
@@ -1181,7 +1177,7 @@ static void dsp_copy_state( unsigned char** io, dsp_copy_func_t copy )
 ***********************************************************************************/
 
 static spc_state_t m;
-static signed char reg_times [256];
+static int8_t reg_times [256];
 static bool allow_time_overflow;
 
 /* Copyright (C) 2004-2007 Shay Green. This module is free software; you
@@ -1203,16 +1199,16 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 #define TIMER_DIV( t, n ) ((n) >> t->prescaler)
 #define TIMER_MUL( t, n ) ((n) << t->prescaler)
 
-static Timer* spc_run_timer_( Timer* t, int time )
+static Timer* spc_run_timer_( Timer* t, int32_t time )
 {
-   int elapsed;
+   int32_t elapsed;
 
    elapsed = TIMER_DIV( t, time - t->next_time ) + 1;
    t->next_time += TIMER_MUL( t, elapsed );
 
    if ( t->enabled )
    {
-      int remain, divider, over, n;
+      int32_t remain, divider, over, n;
 
       remain = IF_0_THEN_256( t->period - t->divider );
       divider = t->divider + elapsed;
@@ -1230,7 +1226,7 @@ static Timer* spc_run_timer_( Timer* t, int time )
 
 /* ROM */
 
-void spc_enable_rom( int enable )
+void spc_enable_rom( int32_t enable )
 {
    if ( m.rom_enabled != enable )
    {
@@ -1248,18 +1244,18 @@ void spc_enable_rom( int enable )
 #define MAX_REG_TIME 29
 
 #define RUN_DSP( time, offset ) \
-   int count = (time) - (offset) - m.dsp_time; \
+   int32_t count = (time) - (offset) - m.dsp_time; \
    if ( count >= 0 ) \
    { \
-      int clock_count; \
+      int32_t clock_count; \
       clock_count = (count & ~(CLOCKS_PER_SAMPLE - 1)) + CLOCKS_PER_SAMPLE; \
       m.dsp_time += clock_count; \
       dsp_run( clock_count ); \
    }
 
-static INLINE void spc_dsp_write( int data, int time )
+static INLINE void spc_dsp_write( int32_t data, int32_t time )
 {
-   int addr;
+   int32_t addr;
 
    /* Writes DSP registers. */
    addr = m.smp_regs[0][R_DSPADDR];
@@ -1295,12 +1291,12 @@ static INLINE void spc_dsp_write( int data, int time )
    so often-used functionality can be optimized better by compiler */
 
 /* If write isn't preceded by read, data has this added to it
-   int const no_read_before_write = 0x2000; */
+   int32_t const no_read_before_write = 0x2000; */
 
 #define NO_READ_BEFORE_WRITE			8192
 #define NO_READ_BEFORE_WRITE_DIVIDED_BY_TWO	4096
 
-static void spc_cpu_write_smp_reg_( int data, int time, int addr )
+static void spc_cpu_write_smp_reg_( int32_t data, int32_t time, int32_t addr )
 {
    switch ( addr )
    {
@@ -1308,7 +1304,7 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
       case R_T1TARGET:
       case R_T2TARGET:
          {
-            int period;
+            int32_t period;
             Timer *t;
 
             t = &m.timers [addr - R_T0TARGET];
@@ -1345,7 +1341,7 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
 
       case R_CONTROL:
              {
-               int i;
+               int32_t i;
                 /* port clears */
                 if ( data & 0x10 )
                 {
@@ -1363,7 +1359,7 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
                    for ( i = 0; i < TIMER_COUNT; i++ )
                    {
                       Timer* t = &m.timers [i];
-                      int enabled = data >> i & 1;
+                      int32_t enabled = data >> i & 1;
                       if ( t->enabled != enabled )
                       {
                          if ( time >= t->next_time )
@@ -1383,11 +1379,9 @@ static void spc_cpu_write_smp_reg_( int data, int time, int addr )
    }
 }
 
-static int const bits_in_int = CHAR_BIT * sizeof (int);
-
-static void spc_cpu_write( int data, uint16_t addr, int time )
+static void spc_cpu_write( int32_t data, uint16_t addr, int32_t time )
 {
-   int reg;
+   int32_t reg;
    /* RAM */
    m.ram.ram[addr] = (uint8_t) data;
    reg = addr - 0xF0;
@@ -1402,7 +1396,7 @@ static void spc_cpu_write( int data, uint16_t addr, int time )
             if ( reg != 2 && reg != 4 && reg != 5 && reg != 6 && reg != 7 )
             TODO: this is a bit on the fragile side */
 
-         if ( ((~0x2F00 << (bits_in_int - 16)) << reg) < 0 ) /* 36% */
+         if ( ((~0x2F00 << 16) << reg) < 0 ) /* 36% */
          {
             if ( reg == R_DSPDATA ) /* 99% */
             {
@@ -1430,9 +1424,9 @@ static void spc_cpu_write( int data, uint16_t addr, int time )
 
 /* CPU read */
 
-static int spc_cpu_read( uint16_t addr, int time )
+static int32_t spc_cpu_read( uint16_t addr, int32_t time )
 {
-   int result, reg;
+   int32_t result, reg;
 
    /* RAM */
    result = m.ram.ram[addr];
@@ -1441,12 +1435,12 @@ static int spc_cpu_read( uint16_t addr, int time )
    if ( reg >= 0 ) /* 40% */
    {
       reg -= 0x10;
-      if ( (unsigned) reg >= 0xFF00 ) /* 21% */
+      if ( (uint32_t) reg >= 0xFF00 ) /* 21% */
       {
          reg += 0x10 - R_T0OUT;
 
          /* Timers */
-         if ( (unsigned) reg < TIMER_COUNT ) /* 90% */
+         if ( (uint32_t) reg < TIMER_COUNT ) /* 90% */
          {
             Timer* t = &m.timers [reg];
             if ( time >= t->next_time )
@@ -1457,16 +1451,16 @@ static int spc_cpu_read( uint16_t addr, int time )
          /* Other registers */
          else /* 10% */
          {
-            int reg_tmp;
+            int32_t reg_tmp;
 
             reg_tmp = reg + R_T0OUT;
             result = m.smp_regs[1][reg_tmp];
             reg_tmp -= R_DSPADDR;
             /* DSP addr and data */
-            if ( (unsigned) reg_tmp <= 1 ) /* 4% 0xF2 and 0xF3 */
+            if ( (uint32_t) reg_tmp <= 1 ) /* 4% 0xF2 and 0xF3 */
             {
                result = m.smp_regs[0][R_DSPADDR];
-               if ( (unsigned) reg_tmp == 1 )
+               if ( (uint32_t) reg_tmp == 1 )
                {
                   RUN_DSP( time, reg_times [m.smp_regs[0][R_DSPADDR] & 0x7F] );
 
@@ -1490,11 +1484,11 @@ static int spc_cpu_read( uint16_t addr, int time )
 
 #define CPU_READ_TIMER( time, offset, addr_, out )\
 {\
-   int adj_time, dp_addr, ti; \
+   int32_t adj_time, dp_addr, ti; \
    adj_time = time + offset;\
    dp_addr = addr_;\
    ti = dp_addr - (R_T0OUT + 0xF0);\
-   if ( (unsigned) ti < TIMER_COUNT )\
+   if ( (uint32_t) ti < TIMER_COUNT )\
    {\
       Timer* t = &m.timers [ti];\
       if ( adj_time >= t->next_time )\
@@ -1504,19 +1498,19 @@ static int spc_cpu_read( uint16_t addr, int time )
    }\
    else\
    {\
-      int i, reg; \
+      int32_t i, reg; \
       out = ram [dp_addr];\
       i = dp_addr - 0xF0;\
-      if ( (unsigned) i < 0x10 )\
+      if ( (uint32_t) i < 0x10 )\
       { \
          reg = i;  \
          out = m.smp_regs[1][reg]; \
          reg -= R_DSPADDR; \
          /* DSP addr and data */ \
-         if ( (unsigned) reg <= 1 ) /* 4% 0xF2 and 0xF3 */ \
+         if ( (uint32_t) reg <= 1 ) /* 4% 0xF2 and 0xF3 */ \
          { \
             out = m.smp_regs[0][R_DSPADDR]; \
-            if ( (unsigned) reg == 1 ) \
+            if ( (uint32_t) reg == 1 ) \
             { \
                RUN_DSP( adj_time, reg_times [m.smp_regs[0][R_DSPADDR] & 0x7F] ); \
                out = dsp_m.regs[m.smp_regs[0][R_DSPADDR] & 0x7F ]; /* 0xF3 */ \
@@ -1530,9 +1524,9 @@ static int spc_cpu_read( uint16_t addr, int time )
 #define SPC_CPU_READ( time, addr )		spc_cpu_read((addr), rel_time + time )
 #define SPC_CPU_WRITE( time, addr, data )	spc_cpu_write((data), (addr), rel_time + time )
 
-static unsigned spc_CPU_mem_bit( uint8_t const* pc, int rel_time )
+static uint32_t spc_CPU_mem_bit( uint8_t const* pc, int32_t rel_time )
 {
-   unsigned addr, t;
+   uint32_t addr, t;
 
    addr = GET_LE16( pc );
    t = SPC_CPU_READ( 0, addr & 0x1FFF ) >> (addr >> 13);
@@ -1577,11 +1571,11 @@ static unsigned spc_CPU_mem_bit( uint8_t const* pc, int rel_time )
    nz  = (in << 4 & 0x800) | (~in & Z02);\
 }
 
-static uint8_t* spc_run_until_( int end_time )
+static uint8_t* spc_run_until_( int32_t end_time )
 {
-   int dp, nz, c, psw, a, x, y;
+   int32_t dp, nz, c, psw, a, x, y;
    uint8_t *ram, *pc, *sp;
-   int rel_time = m.spc_time - end_time;
+   int32_t rel_time = m.spc_time - end_time;
    m.spc_time = end_time;
    m.dsp_time += rel_time;
    m.timers [0].next_time += rel_time;
@@ -1607,7 +1601,7 @@ inc_pc_loop:
    pc++;
 loop:
    {
-      unsigned opcode, data;
+      uint32_t opcode, data;
 
       opcode = *pc;
 
@@ -1642,7 +1636,7 @@ loop:
 
          case 0x3F:
                { /* CALL */
-                  int old_addr;
+                  int32_t old_addr;
                   old_addr = GET_PC() + 2;
                   SET_PC( GET_LE16( pc ) );
                   PUSH16( old_addr );
@@ -1660,26 +1654,26 @@ loop:
                goto loop;
 
          case 0xFA:{ /* MOV dp,dp */
-                 int temp;
+                 int32_t temp;
                  READ_DP_TIMER( -2, data, temp );
                  data = temp + NO_READ_BEFORE_WRITE ;
               }
               /* fall through */
          case 0x8F:
               { /* MOV dp,#imm */
-                 int i, temp;
+                 int32_t i, temp;
                  temp = READ_PC( pc + 1 );
                  pc += 2;
 
                  i = dp + temp;
                  ram [i] = (uint8_t) data;
                  i -= 0xF0;
-                 if ( (unsigned) i < 0x10 ) /* 76% */
+                 if ( (uint32_t) i < 0x10 ) /* 76% */
                  {
                     m.smp_regs[0][i] = (uint8_t) data;
 
                     /* Registers other than $F2 and $F4-$F7 */
-                    if ( ((~0x2F00 << (bits_in_int - 16)) << i) < 0 ) /* 12% */
+                    if ( ((~0x2F00 << 16) << i) < 0 ) /* 12% */
                     {
                        if ( i == R_DSPDATA ) /* 99% */
                        {
@@ -1697,13 +1691,13 @@ loop:
          case 0xC4: /* MOV dp,a */
               ++pc;
               {
-                 int i;
+                 int32_t i;
                  i = dp + data;
                  ram [i] = (uint8_t) a;
                  i -= 0xF0;
-                 if ( (unsigned) i < 0x10 ) /* 39% */
+                 if ( (uint32_t) i < 0x10 ) /* 39% */
                  {
-                    unsigned sel;
+                    uint32_t sel;
                     sel = i - 2;
                     m.smp_regs[0][i] = (uint8_t) a;
 
@@ -1766,7 +1760,7 @@ loop:
          case 0xBF:
               {
                  /* MOV A,(X)+ */
-                 int temp;
+                 int32_t temp;
                  temp = x + dp;
                  x = (uint8_t) (x + 1);
                  a = nz = SPC_CPU_READ( -1, temp );
@@ -1803,7 +1797,7 @@ loop:
 
          case 0xEC:
               { /* MOV Y,abs */
-                 int temp;
+                 int32_t temp;
                  temp = GET_LE16( pc );
                  pc += 2;
                  READ_TIMER( 0, temp, y = nz );
@@ -1822,7 +1816,7 @@ loop:
               goto inc_pc_loop;
 
               {
-                 int temp;
+                 int32_t temp;
                  case 0xCC: /* MOV abs,Y */
                  temp = y;
                  goto mov_abs_temp;
@@ -1891,7 +1885,7 @@ mov_abs_temp:
          case op: /* imm */\
                  nz = a func##= data;\
               goto inc_pc_loop;\
-              {   unsigned addr;\
+              {   uint32_t addr;\
                  case op + 0x11: /* X,Y */\
                            data = READ_DP( -2, y );\
                  addr = x + dp;\
@@ -1969,7 +1963,7 @@ cmp_y_addr:
               goto inc_pc_loop;
 
               {
-                 int addr;
+                 int32_t addr;
                  case 0xB9: /* SBC (x),(y) */
                  case 0x99: /* ADC (x),(y) */
                  pc--; /* compensate for inc later */
@@ -1996,7 +1990,7 @@ adc_addr:
                  addr = -1; /* A */
                  nz = a;
 adc_data: {
-        int flags;
+        int32_t flags;
         if ( opcode >= 0xA0 ) /* SBC */
            data ^= 0xFF;
 
@@ -2066,7 +2060,7 @@ inc_abs:
               c = 0;
          case 0x3C:
               {/* ROL A */
-                 int temp;
+                 int32_t temp;
                  temp = c >> 8 & 1;
                  c = a << 1;
                  nz = c | temp;
@@ -2113,7 +2107,7 @@ rol_mem:
               data = GET_LE16( pc );
               pc++;
 ror_mem: {
-       int temp = SPC_CPU_READ( -1, data );
+       int32_t temp = SPC_CPU_READ( -1, data );
        nz = (c >> 1 & 0x80) | (temp >> 1);
        c = temp << 8;
        SPC_CPU_WRITE( 0, data, nz );
@@ -2142,7 +2136,7 @@ ror_mem: {
 
          case 0x3A: /* INCW dp */
          case 0x1A:{/* DECW dp */
-                 int temp;
+                 int32_t temp;
                  /* low byte */
                  data += dp;
                  temp = SPC_CPU_READ( -3, data );
@@ -2162,7 +2156,7 @@ ror_mem: {
          case 0x7A: /* ADDW YA,dp */
          case 0x9A:
               {/* SUBW YA,dp */
-                 int lo, hi, result, flags;
+                 int32_t lo, hi, result, flags;
                  lo = READ_DP( -2, data );
                  hi = READ_DP( 0, (uint8_t) (data + 1) );
 
@@ -2190,7 +2184,7 @@ ror_mem: {
 
          case 0x5A:
               { /* CMPW YA,dp */
-                 int temp;
+                 int32_t temp;
                  temp = a - READ_DP( -1, data );
                  nz = ((temp >> 1) | temp) & 0x7F;
                  temp = y + (temp >> 8);
@@ -2204,7 +2198,7 @@ ror_mem: {
                /* 10. MULTIPLICATION & DIVISON COMMANDS */
 
          case 0xCF: { /* MUL YA */
-                  unsigned temp = y * a;
+                  uint32_t temp = y * a;
                   a = (uint8_t) temp;
                   nz = ((temp >> 1) | temp) & 0x7F;
                   y = temp >> 8;
@@ -2214,7 +2208,7 @@ ror_mem: {
 
          case 0x9E: /* DIV YA,X */
                {
-                  unsigned ya = y * 0x100 + a;
+                  uint32_t ya = y * 0x100 + a;
 
                   psw &= ~(H08 | V40);
 
@@ -2328,14 +2322,14 @@ ror_mem: {
                                        data = (uint8_t) (data + x);
                                        /* fall through */
          case 0x2E:{ /* CBNE dp,rel */
-                 int temp;
+                 int32_t temp;
                  /* 61% from timer */
                  READ_DP_TIMER( -4, data, temp );
                  CBRANCH( temp != a )
               }
 
          case 0x6E: { /* DBNZ dp,rel */
-                  unsigned temp = READ_DP( -4, data ) - 1;
+                  uint32_t temp = READ_DP( -4, data ) - 1;
                   WRITE_DP( -3, (uint8_t) data, /*(uint8_t)*/ temp + NO_READ_BEFORE_WRITE  );
                   CBRANCH( temp )
                }
@@ -2354,8 +2348,8 @@ ror_mem: {
                   /* 13. SUB-ROUTINE CALL RETURN COMMANDS */
 
          case 0x0F:{/* BRK */
-                 int temp;
-                 int ret_addr = GET_PC();
+                 int32_t temp;
+                 int32_t ret_addr = GET_PC();
                  SET_PC( READ_PROG16( 0xFFDE ) ); /* vector address verified */
                  PUSH16( ret_addr );
                  GET_PSW( temp );
@@ -2365,7 +2359,7 @@ ror_mem: {
               }
 
          case 0x4F:{/* PCALL offset */
-                 int ret_addr = GET_PC() + 1;
+                 int32_t ret_addr = GET_PC() + 1;
                  SET_PC( 0xFF00 | data );
                  PUSH16( ret_addr );
                  goto loop;
@@ -2387,7 +2381,7 @@ ror_mem: {
          case 0xD1:
          case 0xE1:
          case 0xF1: {
-                  int ret_addr = GET_PC();
+                  int32_t ret_addr = GET_PC();
                   SET_PC( READ_PROG16( 0xFFDE - (opcode >> 3) ) );
                   PUSH16( ret_addr );
                   goto loop;
@@ -2396,7 +2390,7 @@ ror_mem: {
                /* 14. STACK OPERATION COMMANDS */
 
                {
-                  int temp;
+                  int32_t temp;
                   case 0x7F: /* RET1 */
                   temp = *sp;
                   SET_PC( GET_LE16( sp + 1 ) );
@@ -2410,7 +2404,7 @@ set_psw:
                }
 
          case 0x0D: { /* PUSH PSW */
-                  int temp;
+                  int32_t temp;
                   GET_PSW( temp );
                   PUSH( temp );
                   goto loop;
@@ -2459,7 +2453,7 @@ set_psw:
          case 0xD2:
          case 0xF2:
                {
-                  int bit, mask;
+                  int32_t bit, mask;
                   bit = 1 << (opcode >> 5);
                   mask = ~bit;
                   if ( opcode & 0x10 )
@@ -2474,7 +2468,7 @@ set_psw:
                data = GET_LE16( pc );
                pc += 2;
                {
-                  unsigned temp = SPC_CPU_READ( -2, data );
+                  uint32_t temp = SPC_CPU_READ( -2, data );
                   nz = (uint8_t) (a - temp);
                   temp &= ~a;
                   if ( opcode == 0x0E )
@@ -2512,7 +2506,7 @@ set_psw:
                data = GET_LE16( pc );
                pc += 2;
                {
-                  unsigned temp = SPC_CPU_READ( -1, data & 0x1FFF );
+                  uint32_t temp = SPC_CPU_READ( -1, data & 0x1FFF );
                   temp ^= 1 << (data >> 13);
                   SPC_CPU_WRITE( 0, data & 0x1FFF, temp );
                }
@@ -2522,7 +2516,7 @@ set_psw:
                data = GET_LE16( pc );
                pc += 2;
                {
-                  unsigned temp, bit;
+                  uint32_t temp, bit;
                   temp = SPC_CPU_READ( -2, data & 0x1FFF );
                   bit = data >> 13;
                   temp = (temp & ~(1 << bit)) | ((c >> 8 & 1) << bit);
@@ -2577,7 +2571,7 @@ set_psw:
          case 0xFF:
                { /* STOP */
                   /* handle PC wrap-around */
-                  unsigned addr = GET_PC() - 1;
+                  uint32_t addr = GET_PC() - 1;
                   if ( addr >= 0x10000 )
                   {
                      addr &= 0xFFFF;
@@ -2604,7 +2598,7 @@ stop:
    m.cpu_regs.x  = ( uint8_t) x;
    m.cpu_regs.y  = ( uint8_t) y;
    {
-      int temp;
+      int32_t temp;
       GET_PSW( temp );
       m.cpu_regs.psw = (uint8_t) temp;
    }
@@ -2618,9 +2612,9 @@ stop:
 
 /* Runs SPC to end_time and starts a new time frame at 0 */
 
-static void spc_end_frame( int end_time )
+static void spc_end_frame( int32_t end_time )
 {
-   int i;
+   int32_t i;
    /* Catch CPU up to as close to end as possible. If final instruction
       would exceed end, does NOT execute it and leaves m.spc_time < end. */
 
@@ -2690,9 +2684,9 @@ static void spc_reset_buffer(void)
 
 /* Sets tempo, where tempo_unit = normal, tempo_unit / 2 = half speed, etc. */
 
-static void spc_set_tempo( int t )
+static void spc_set_tempo( int32_t t )
 {
-   int timer2_shift, other_shift;
+   int32_t timer2_shift, other_shift;
    m.tempo = t;
    timer2_shift = 4; /* 64 kHz */
    other_shift  = 3; /*  8 kHz */
@@ -2702,9 +2696,9 @@ static void spc_set_tempo( int t )
    m.timers [0].prescaler = timer2_shift + other_shift;
 }
 
-static void spc_reset_common( int timer_counter_init )
+static void spc_reset_common( int32_t timer_counter_init )
 {
-   int i;
+   int32_t i;
    for ( i = 0; i < TIMER_COUNT; i++ )
       m.smp_regs[1][R_T0OUT + i] = timer_counter_init;
 
@@ -2795,9 +2789,9 @@ static void spc_soft_reset (void)
 }
 
 #if !SPC_NO_COPY_STATE_FUNCS
-void spc_copy_state( unsigned char** io, dsp_copy_func_t copy )
+void spc_copy_state( uint8_t ** io, dsp_copy_func_t copy )
 {
-   int i;
+   int32_t i;
    spc_state_copy_t copier;
    copier.func = copy;
    copier.buf = io;
@@ -2875,20 +2869,20 @@ void spc_copy_state( unsigned char** io, dsp_copy_func_t copy )
 
 static apu_callback	sa_callback     = NULL;
 
-static bool		sound_in_sync   = true;
+static bool			sound_in_sync   = true;
 
-static int		buffer_size;
-static int		lag_master      = 0;
-static int		lag             = 0;
+static int32_t		buffer_size;
+static int32_t		lag_master      = 0;
+static int32_t		lag             = 0;
 
-static int16_t		*landing_buffer = NULL;
+static int16_t*		landing_buffer = NULL;
 
-static bool		resampler      = false;
+static bool			resampler      = false;
 
 static int32_t		reference_time;
 static uint32_t		spc_remainder;
 
-static int		timing_hack_denominator = TEMPO_UNIT;
+static int32_t		timing_hack_denominator = TEMPO_UNIT;
 /* Set these to NTSC for now. Will change to PAL in S9xAPUTimingSetSpeedup
    if necessary on game load. */
 static uint32_t		ratio_numerator = APU_NUMERATOR_NTSC;
@@ -2897,13 +2891,13 @@ static uint32_t		ratio_denominator = APU_DENOMINATOR_NTSC;
 /***********************************************************************************
    RESAMPLER
 ************************************************************************************/
-static int rb_size;
-static int rb_buffer_size;
-static int rb_start;
-static unsigned char *rb_buffer;
+static int32_t  rb_size;
+static int32_t  rb_buffer_size;
+static int32_t  rb_start;
+static uint8_t* rb_buffer;
 static uint32_t r_step;
 static uint32_t r_frac;
-static int    r_left[4], r_right[4];
+static int32_t  r_left[4], r_right[4];
 
 #define SPACE_EMPTY() (rb_buffer_size - rb_size)
 #define SPACE_FILLED() (rb_size)
@@ -2949,9 +2943,9 @@ static void resampler_time_ratio(double ratio)
    resampler_clear();
 }
 
-static void resampler_read(int16_t *data, int num_samples)
+static void resampler_read(int16_t *data, int32_t num_samples)
 {
-   int i_position, o_position, consumed;
+   int32_t i_position, o_position, consumed;
    int16_t *internal_buffer;
 
    i_position = rb_start >> 1;
@@ -2961,8 +2955,8 @@ static void resampler_read(int16_t *data, int num_samples)
 
    while (o_position < num_samples && consumed < rb_buffer_size)
    {
-      int s_left, s_right, max_samples;
-      int hermite_val;
+      int32_t s_left, s_right, max_samples;
+      int32_t hermite_val;
 
       s_left = internal_buffer[i_position];
       s_right = internal_buffer[i_position + 1];
@@ -3007,12 +3001,12 @@ static void resampler_read(int16_t *data, int num_samples)
       rb_start -= rb_buffer_size;
 }
 
-static void resampler_new(int num_samples)
+static void resampler_new(int32_t num_samples)
 {
-   int new_size = num_samples << 1;
+   int32_t new_size = num_samples << 1;
 
    rb_buffer_size = new_size;
-   rb_buffer = (unsigned char*)malloc(rb_buffer_size);
+   rb_buffer = (uint8_t *)malloc(rb_buffer_size);
    memset (rb_buffer, 0, rb_buffer_size);
 
    rb_size = 0;
@@ -3020,17 +3014,17 @@ static void resampler_new(int num_samples)
    resampler_clear();
 }
 
-static INLINE bool resampler_push(int16_t *src, int num_samples)
+static INLINE bool resampler_push(int16_t *src, int32_t num_samples)
 {
-   int bytes, end, first_write_size;
-   unsigned char *src_ring;
+   int32_t bytes, end, first_write_size;
+   uint8_t  *src_ring;
 
    bytes = num_samples << 1;
    if (MAX_WRITE() < num_samples || SPACE_EMPTY() < bytes)
       return false;
 
    /* Ring buffer push */
-   src_ring = (unsigned char*)src;
+   src_ring = (uint8_t *)src;
    end = (rb_start + rb_size) % rb_buffer_size;
    first_write_size = RESAMPLER_MIN(bytes, rb_buffer_size - end);
 
@@ -3044,11 +3038,11 @@ static INLINE bool resampler_push(int16_t *src, int num_samples)
    return true;
 }
 
-static INLINE void resampler_resize (int num_samples)
+static INLINE void resampler_resize (int32_t num_samples)
 {
    free(rb_buffer);
    rb_buffer_size = rb_size;
-   rb_buffer = (unsigned char*)malloc(rb_buffer_size);
+   rb_buffer = (uint8_t *)malloc(rb_buffer_size);
    memset (rb_buffer, 0, rb_buffer_size);
 
    rb_size = 0;
@@ -3059,7 +3053,7 @@ static INLINE void resampler_resize (int num_samples)
    APU
  ***********************************************************************************/
 
-bool S9xMixSamples (int16_t *buffer, unsigned sample_count)
+bool S9xMixSamples (int16_t *buffer, uint32_t sample_count)
 {
    if (AVAIL() >= (sample_count + lag))
    {
@@ -3079,14 +3073,14 @@ bool S9xMixSamples (int16_t *buffer, unsigned sample_count)
    return (true);
 }
 
-int S9xGetSampleCount (void)
+int32_t S9xGetSampleCount (void)
 {
    return AVAIL();
 }
 
 /* Sets destination for output samples */
 
-static void spc_set_output( int16_t* out, int size )
+static void spc_set_output( int16_t* out, int32_t size )
 {
    int16_t *out_end, *in;
 
@@ -3163,11 +3157,11 @@ static void UpdatePlaybackRate (void)
    resampler_time_ratio(time_ratio);
 }
 
-bool S9xInitSound (int buffer_ms, int lag_ms)
+bool S9xInitSound (int32_t buffer_ms, int32_t lag_ms)
 {
    /*	buffer_ms : buffer size given in millisecond
       lag_ms    : allowable time-lag given in millisecond */
-   int sample_count, lag_sample_count;
+   int32_t sample_count, lag_sample_count;
 
    sample_count     = buffer_ms * 32000 / 1000;
    lag_sample_count = lag_ms    * 32000 / 1000;
@@ -3213,7 +3207,7 @@ bool S9xInitSound (int buffer_ms, int lag_ms)
 }
 
 /* Must be called once before using */
-static unsigned char cycle_table [128] =
+static uint8_t  cycle_table [128] =
 {/*   01   23   45   67   89   AB   CD   EF */
    0x28,0x47,0x34,0x36,0x26,0x54,0x54,0x68, /* 0 */
    0x48,0x47,0x45,0x56,0x55,0x65,0x22,0x46, /* 1 */
@@ -3233,7 +3227,7 @@ static unsigned char cycle_table [128] =
    0x48,0x47,0x45,0x56,0x34,0x54,0x22,0x60, /* F */
 };
 
-static signed char const reg_times_ [256] =
+static int8_t const reg_times_ [256] =
 {
    -1,  0,-11,-10,-15,-11, -2, -2,  4,  3, 14, 14, 26, 26, 14, 22,
    2,  3,  0,  1,-12,  0,  1,  1,  7,  6, 14, 14, 27, 14, 14, 23,
@@ -3256,7 +3250,7 @@ static signed char const reg_times_ [256] =
 
 bool S9xInitAPU (void)
 {
-   int i;
+   int32_t i;
 
    uint8_t APUROM[64] =
    {
@@ -3285,7 +3279,7 @@ bool S9xInitAPU (void)
    /* unpack cycle table */
    for ( i = 0; i < 128; i++ )
    {
-      int n;
+      int32_t n;
       n = cycle_table [i];
       m.cycle_table [i * 2 + 0] = n >> 4;
       m.cycle_table [i * 2 + 1] = n & 0x0F;
@@ -3329,11 +3323,11 @@ void S9xDeinitAPU (void)
 
 /* Emulated port read at specified time */
 
-uint8_t S9xAPUReadPort (int port)	{ return ((uint8_t) spc_run_until_(S9X_APU_GET_CLOCK(CPU.Cycles))[port]); }
+uint8_t S9xAPUReadPort (int32_t port)	{ return ((uint8_t) spc_run_until_(S9X_APU_GET_CLOCK(CPU.Cycles))[port]); }
 
 /* Emulated port write at specified time */
 
-void S9xAPUWritePort (int port, uint8_t byte)
+void S9xAPUWritePort (int32_t port, uint8_t byte)
 {
    spc_run_until_( S9X_APU_GET_CLOCK(CPU.Cycles) ) [0x10 + port] = byte;
    m.ram.ram [0xF4 + port] = byte;
@@ -3356,7 +3350,7 @@ void S9xAPUExecute (void)
       sa_callback();
 }
 
-void S9xAPUTimingSetSpeedup (int ticks)
+void S9xAPUTimingSetSpeedup (int32_t ticks)
 {
    if (ticks != 0)
       printf("APU speedup hack: %d\n", ticks);
@@ -3434,14 +3428,12 @@ void S9xAPUSaveState (uint8_t *block)
 }
 
 #if defined(ANDROID) || defined(__QNX__)
-void __attribute__((optimize(0))) S9xAPULoadState (uint8_t *block)
+void __attribute__((optimize(0))) S9xAPULoadState (const uint8_t *block)
 #else
-void S9xAPULoadState (uint8_t *block)
+void S9xAPULoadState (const uint8_t *block)
 #endif
 {
-   uint8_t *ptr;
-
-   ptr = block;
+   uint8_t *ptr = (uint8_t*) block;
 
    S9xResetAPU();
 

@@ -115,12 +115,12 @@ typedef struct
    uint8_t* PCAtOpcodeStart;
    uint8_t* WaitAddress;
    uint32_t WaitCounter;
-   long     Cycles;
-   long     NextEvent;
-   long     V_Counter;
-   long     MemSpeed;
-   long     MemSpeedx2;
-   long     FastROMSpeed;
+   long     Cycles;       // For savestate compatibility can't change to int32_t
+   long     NextEvent;    // For savestate compatibility can't change to int32_t
+   long     V_Counter;    // For savestate compatibility can't change to int32_t
+   long     MemSpeed;     // For savestate compatibility can't change to int32_t
+   long     MemSpeedx2;   // For savestate compatibility can't change to int32_t
+   long     FastROMSpeed; // For savestate compatibility can't change to int32_t
    uint32_t AutoSaveTimer;
    bool     SRAMModified;
    uint32_t NMITriggerPoint;
@@ -142,9 +142,9 @@ typedef struct
    bool    APUEnabled;
    bool    Shutdown;
    uint8_t SoundSkipMethod;
-   long    H_Max;
-   long    HBlankStart;
-   long    CyclesPercentage;
+   int32_t H_Max;
+   int32_t HBlankStart;
+   int32_t CyclesPercentage;
    bool    DisableIRQ;
    bool    Paused;
    bool    ForcedPause;
@@ -213,18 +213,18 @@ typedef struct
 #ifdef USE_BLARGG_APU
    uint32_t SoundInputRate;
 #endif
-   bool TraceSoundDSP;
-   bool EightBitConsoleSound;  // due to caching, this needs S9xSetEightBitConsoleSound()
-   int  SoundBufferSize;
-   int  SoundMixInterval;
-   bool SoundEnvelopeHeightReading;
-   bool DisableSoundEcho;
-   bool DisableMasterVolume;
-   bool SoundSync;
-   bool InterpolatedSound;
-   bool ThreadSound;
-   bool Mute;
-   bool NextAPUEnabled;
+   bool    TraceSoundDSP;
+   bool    EightBitConsoleSound;  // due to caching, this needs S9xSetEightBitConsoleSound()
+   int32_t SoundBufferSize;
+   int32_t SoundMixInterval;
+   bool    SoundEnvelopeHeightReading;
+   bool    DisableSoundEcho;
+   bool    DisableMasterVolume;
+   bool    SoundSync;
+   bool    InterpolatedSound;
+   bool    ThreadSound;
+   bool    Mute;
+   bool    NextAPUEnabled;
 
    /* Graphics options */
    bool Transparency;
@@ -257,8 +257,8 @@ typedef struct
    bool     TakeScreenshot;
    int8_t   StretchScreenshots;
    uint16_t DisplayColor;
-   int      SoundDriver;
-   int      AIDOShmId;
+   int32_t  SoundDriver;
+   int32_t  AIDOShmId;
    bool     NoPatch;
    bool     ForceInterleaveGD24;
 } SSettings;
@@ -278,7 +278,7 @@ extern SCPUState CPU;
 extern SSNESGameFixes SNESGameFixes;
 extern char String [513];
 
-void S9xMessage(int type, int number, const char* message);
+void S9xMessage(int32_t type, int32_t number, const char* message);
 
 void S9xSetPause(uint32_t mask);
 void S9xClearPause(uint32_t mask);
