@@ -53,7 +53,8 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 
 #include <libretro.h>
 
-#define MIN(A,B) ((A) < (B) ? (A) : (B))
-#define MAX(A,B) ((A) > (B) ? (A) : (B))
+#define ABS(X)   ((X) <  0  ? -(X) : (X))
+#define MIN(A,B) ((A) < (B) ?  (A) : (B))
+#define MAX(A,B) ((A) > (B) ?  (A) : (B))
 
 #endif

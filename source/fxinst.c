@@ -10,10 +10,6 @@
 extern struct FxRegs_s GSU;
 int32_t gsu_bank [512] = {0};
 
-/* Set this define if you wish the plot instruction to check for y-pos limits */
-/* (I don't think it's nessecary) */
-#define CHECK_LIMITS
-
 /* Codes used:
  *
  * rn   = a GSU register (r0-r15)
@@ -583,9 +579,6 @@ static void fx_plot_2bit()
    CLRFLAGS;
    R1++;
 
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
    if (GSU.vPlotOptionReg & 0x02)
       c = (x ^ y) & 1 ? (uint8_t)(GSU.vColorReg >> 4) : (uint8_t)GSU.vColorReg;
    else
@@ -611,9 +604,6 @@ static void fx_rpix_2bit()
 
    R15++;
    CLRFLAGS;
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
 
    a = GSU.apvScreen[y >> 3] + GSU.x[x >> 3] + ((y & 7) << 1);
    v = 128 >> (x & 7);
@@ -636,9 +626,6 @@ static void fx_plot_4bit()
    CLRFLAGS;
    R1++;
 
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
    if (GSU.vPlotOptionReg & 0x02)
       c = (x ^ y) & 1 ? (uint8_t)(GSU.vColorReg >> 4) : (uint8_t)GSU.vColorReg;
    else
@@ -670,10 +657,6 @@ static void fx_rpix_4bit()
    R15++;
    CLRFLAGS;
 
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
-
    a = GSU.apvScreen[y >> 3] + GSU.x[x >> 3] + ((y & 7) << 1);
    v = 128 >> (x & 7);
 
@@ -697,9 +680,6 @@ static void fx_plot_8bit()
    CLRFLAGS;
    R1++;
 
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
    c = (uint8_t)GSU.vColorReg;
    if (!(GSU.vPlotOptionReg & 0x10))
    {
@@ -739,9 +719,6 @@ static void fx_rpix_8bit()
    R15++;
    CLRFLAGS;
 
-#ifdef CHECK_LIMITS
-   if (y >= GSU.vScreenHeight) return;
-#endif
    a = GSU.apvScreen[y >> 3] + GSU.x[x >> 3] + ((y & 7) << 1);
    v = 128 >> (x & 7);
 
@@ -759,15 +736,9 @@ static void fx_rpix_8bit()
 }
 
 /* 4o - plot - plot pixel with R1,R2 as x,y and the color register as the color */
-static void fx_plot_obj()
-{
-   printf("ERROR fx_plot_obj called\n");
-}
-
 /* 4c(ALT1) - rpix - read color of the pixel with R1,R2 as x,y */
-static void fx_rpix_obj()
+static void fx_obj_func()
 {
-   printf("ERROR fx_rpix_obj called\n");
 }
 
 /* 4d - swap - swap upper and lower byte of a register */
@@ -3238,7 +3209,7 @@ static void fx_sm_r15()
 
 /*** GSU executions functions ***/
 
-static uint32_t fx_run(uint32_t nInstructions)
+uint32_t fx_run(uint32_t nInstructions)
 {
    GSU.vCounter = nInstructions;
    READR14;
@@ -3247,70 +3218,15 @@ static uint32_t fx_run(uint32_t nInstructions)
    return (nInstructions - GSU.vInstCount);
 }
 
-static uint32_t fx_run_to_breakpoint(uint32_t nInstructions)
-{
-   uint32_t vCounter = 0;
-   while (TF(G) && vCounter < nInstructions)
-   {
-      vCounter++;
-      FX_STEP;
-      if (USEX16(R15) == GSU.vBreakPoint)
-      {
-         GSU.vErrorCode = FX_BREAKPOINT;
-         break;
-      }
-   }
-   return vCounter;
-}
-
-static uint32_t fx_step_over(uint32_t nInstructions)
-{
-   uint32_t vCounter = 0;
-   while (TF(G) && vCounter < nInstructions)
-   {
-      vCounter++;
-      FX_STEP;
-      if (USEX16(R15) == GSU.vBreakPoint)
-      {
-         GSU.vErrorCode = FX_BREAKPOINT;
-         break;
-      }
-      if (USEX16(R15) == GSU.vStepPoint)
-         break;
-   }
-   return vCounter;
-}
-
-#ifdef FX_FUNCTION_TABLE
-uint32_t(*FX_FUNCTION_TABLE[])(uint32_t) =
-#else
-uint32_t(*fx_apfFunctionTable[])(uint32_t) =
-#endif
-{
-   &fx_run,
-   &fx_run_to_breakpoint,
-   &fx_step_over,
-};
-
 /*** Special table for the different plot configurations ***/
-
-#ifdef FX_PLOT_TABLE
-void (*FX_PLOT_TABLE[])() =
-#else
 void (*fx_apfPlotTable[])() =
-#endif
 {
-   &fx_plot_2bit,    &fx_plot_4bit,   &fx_plot_4bit, &fx_plot_8bit, &fx_plot_obj,
-   &fx_rpix_2bit,    &fx_rpix_4bit,    &fx_rpix_4bit,   &fx_rpix_8bit, &fx_rpix_obj,
+   &fx_plot_2bit,    &fx_plot_4bit,   &fx_plot_4bit, &fx_plot_8bit, &fx_obj_func,
+   &fx_rpix_2bit,    &fx_rpix_4bit,    &fx_rpix_4bit,   &fx_rpix_8bit, &fx_obj_func,
 };
 
 /*** Opcode table ***/
-
-#ifdef FX_OPCODE_TABLE
-void (*FX_OPCODE_TABLE[])() =
-#else
 void (*fx_apfOpcodeTable[])() =
-#endif
 {
    /*
     * ALT0 Table

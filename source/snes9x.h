@@ -9,11 +9,8 @@
 
 #include <libretro.h>
 
-extern int cprintf(const char* fmt, ...);
-
 #include "port.h"
 #include "65c816.h"
-#include "messages.h"
 
 #define ROM_NAME_LEN 23
 
@@ -196,18 +193,18 @@ typedef struct
    bool     SRTC;
    uint32_t ControllerOption;
 
-   bool ShutdownMaster;
-   bool MultiPlayer5Master;
-   bool SuperScopeMaster;
-   bool MouseMaster;
-   bool SuperFX;
-   bool DSP1Master;
-   bool SA1;
-   bool C4;
-   bool SDD1;
-   bool SPC7110;
-   bool SPC7110RTC;
-   bool OBC1;
+   bool    ShutdownMaster;
+   bool    MultiPlayer5Master;
+   bool    SuperScopeMaster;
+   bool    MouseMaster;
+   bool    SuperFX;
+   bool    DSP1Master;
+   bool    SA1;
+   bool    C4;
+   bool    SDD1;
+   bool    SPC7110;
+   bool    SPC7110RTC;
+   bool    OBC1;
    /* Sound options */
    uint32_t SoundPlaybackRate;
 #ifdef USE_BLARGG_APU
@@ -247,7 +244,6 @@ typedef struct
    bool     StarfoxHack;
    bool     WinterGold;
    bool     BS; /* Japanese Satellite System games. */
-   bool     DaffyDuck;
    uint8_t  APURAMInitialValue;
    bool     SampleCatchup;
    bool     JustifierMaster;
@@ -265,11 +261,9 @@ typedef struct
 
 typedef struct
 {
-   uint8_t alienVSpredetorFix;
    uint8_t APU_OutPorts_ReturnValueFix;
    uint8_t SoundEnvelopeHeightReading2;
    uint8_t SRAMInitialValue;
-   uint8_t Uniracers;
    bool    EchoOnlyOutput;
 } SSNESGameFixes;
 
@@ -278,7 +272,7 @@ extern SCPUState CPU;
 extern SSNESGameFixes SNESGameFixes;
 extern char String [513];
 
-void S9xMessage(int32_t type, int32_t number, const char* message);
+void S9xMessage(const char* message);
 
 void S9xSetPause(uint32_t mask);
 void S9xClearPause(uint32_t mask);

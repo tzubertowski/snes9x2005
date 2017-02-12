@@ -9,10 +9,6 @@
 /* The FxChip Emulator's internal variables */
 struct FxRegs_s GSU; // This will be initialized when loading a ROM
 
-uint32_t(**fx_ppfFunctionTable)(uint32_t) = 0;
-void (**fx_ppfPlotTable)() = 0;
-void (**fx_ppfOpcodeTable)() = 0;
-
 void FxCacheWriteAccess(uint16_t vAddress)
 {
    if ((vAddress & 0x00f) == 0x00f)
@@ -99,10 +95,10 @@ static void fx_readRegisterSpace()
    GSU.pfPlot = fx_apfPlotTable[GSU.vMode];
    GSU.pfRpix = fx_apfPlotTable[GSU.vMode + 5];
 
-   fx_ppfOpcodeTable[0x04c] = GSU.pfPlot;
-   fx_ppfOpcodeTable[0x14c] = GSU.pfRpix;
-   fx_ppfOpcodeTable[0x24c] = GSU.pfPlot;
-   fx_ppfOpcodeTable[0x34c] = GSU.pfRpix;
+   fx_apfOpcodeTable[0x04c] = GSU.pfPlot;
+   fx_apfOpcodeTable[0x14c] = GSU.pfRpix;
+   fx_apfOpcodeTable[0x24c] = GSU.pfPlot;
+   fx_apfOpcodeTable[0x34c] = GSU.pfRpix;
 
    fx_computeScreenPointers();
 }
@@ -277,27 +273,8 @@ static void fx_writeRegisterSpace()
 /* Reset the FxChip */
 void FxReset(struct FxInit_s* psFxInfo)
 {
-   int32_t i;
-   static uint32_t(**appfFunction[])(uint32_t) =
-   {
-      &fx_apfFunctionTable[0]
-   };
-   static void (**appfPlot[])() =
-   {
-      &fx_apfPlotTable[0]
-   };
-   static void (**appfOpcode[])() =
-   {
-      &fx_apfOpcodeTable[0]
-   };
-
-   /* Get function pointers for the current emulation mode */
-   fx_ppfFunctionTable = appfFunction[psFxInfo->vFlags & 0x3];
-   fx_ppfPlotTable = appfPlot[psFxInfo->vFlags & 0x3];
-   fx_ppfOpcodeTable = appfOpcode[psFxInfo->vFlags & 0x3];
-
    /* Clear all internal variables */
-   memset((uint8_t*)&GSU, 0, sizeof(struct FxRegs_s));
+   memset((uint8_t*) &GSU, 0, sizeof(struct FxRegs_s));
 
    /* Set default registers */
    GSU.pvSreg = GSU.pvDreg = &R0;
@@ -322,6 +299,7 @@ void FxReset(struct FxInit_s* psFxInfo)
    GSU.pvRegisters[0x3b] = 0;
 
    /* Make ROM bank table */
+   int32_t i;
    for (i = 0; i < 256; i++)
    {
       uint32_t b = i & 0x7f;
@@ -360,13 +338,10 @@ void FxReset(struct FxInit_s* psFxInfo)
 static bool fx_checkStartAddress()
 {
    /* Check if we start inside the cache */
-   if (GSU.bCacheActive && R15 >= GSU.vCacheBaseReg
-         && R15 < (GSU.vCacheBaseReg + 512))
+   if (GSU.bCacheActive && R15 >= GSU.vCacheBaseReg && R15 < (GSU.vCacheBaseReg + 512))
       return true;
 
    /*  Check if we're in an unused area */
-   if (GSU.vPrgBankReg < 0x40 && R15 < 0x8000)
-      return false;
    if (GSU.vPrgBankReg >= 0x60 && GSU.vPrgBankReg <= 0x6f)
       return false;
    if (GSU.vPrgBankReg >= 0x74)
@@ -402,39 +377,12 @@ int32_t FxEmulate(uint32_t nInstructions)
    /* Execute GSU session */
    CF(IRQ);
 
-   vCount = fx_ppfFunctionTable[FX_FUNCTION_RUN](nInstructions);
+   vCount = fx_run(nInstructions);
 
    /* Store GSU registers */
    fx_writeRegisterSpace();
 
    /* Check for error code */
-   if (GSU.vErrorCode)
-      return GSU.vErrorCode;
-   else
-      return vCount;
-}
-
-/* Step by step execution */
-int32_t FxStepOver(uint32_t nInstructions)
-{
-   uint32_t vCount;
-   fx_readRegisterSpace();
-
-   /* Check if the start address is valid */
-   if (!fx_checkStartAddress())
-   {
-      CF(G);
-      return 0;
-   }
-
-   if (PIPE >= 0xf0)
-      GSU.vStepPoint = USEX16(R15 + 3);
-   else if ((PIPE >= 0x05 && PIPE <= 0x0f) || (PIPE >= 0xa0 && PIPE <= 0xaf))
-      GSU.vStepPoint = USEX16(R15 + 2);
-   else
-      GSU.vStepPoint = USEX16(R15 + 1);
-   vCount = fx_ppfFunctionTable[FX_FUNCTION_STEP_OVER](nInstructions);
-   fx_writeRegisterSpace();
    if (GSU.vErrorCode)
       return GSU.vErrorCode;
    else

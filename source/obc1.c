@@ -16,16 +16,12 @@ uint8_t GetOBC1(uint16_t Address)
    {
    case 0x7ff0:
       return OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2)];
-
    case 0x7ff1:
       return OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 1];
-
    case 0x7ff2:
       return OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 2];
-
    case 0x7ff3:
       return OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 3];
-
    case 0x7ff4:
       return OBC1_RAM[OBC1_BasePtr + (OBC1_Address >> 2) + 0x200];
    }
@@ -38,29 +34,17 @@ void SetOBC1(uint8_t Byte, uint16_t Address)
    switch (Address)
    {
    case 0x7ff0:
-   {
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2)] = Byte;
       break;
-   }
-
    case 0x7ff1:
-   {
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 1] = Byte;
       break;
-   }
-
    case 0x7ff2:
-   {
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 2] = Byte;
       break;
-   }
-
    case 0x7ff3:
-   {
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address << 2) + 3] = Byte;
       break;
-   }
-
    case 0x7ff4:
    {
       uint8_t Temp;
@@ -69,7 +53,6 @@ void SetOBC1(uint8_t Byte, uint16_t Address)
       OBC1_RAM[OBC1_BasePtr + (OBC1_Address >> 2) + 0x200] = Temp;
       break;
    }
-
    case 0x7ff5:
    {
       if (Byte & 1)
@@ -80,14 +63,12 @@ void SetOBC1(uint8_t Byte, uint16_t Address)
       OBC1_RAM[0x1ff5] = Byte;
       break;
    }
-
    case 0x7ff6:
    {
       OBC1_Address = Byte & 0x7f;
       OBC1_Shift = (Byte & 3) << 1;
       break;
    }
-
    default:
       OBC1_RAM[Address & 0x1fff] = Byte;
       break;

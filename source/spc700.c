@@ -2465,7 +2465,7 @@ void ApuFB()
 #include "apumem.h"
 #endif
 
-void (*S9xApuOpcodes[256])(void) =
+void (*S9xApuOpcodes[256])() =
 {
    Apu00, Apu01, Apu02, Apu03, Apu04, Apu05, Apu06, Apu07,
    Apu08, Apu09, Apu0A, Apu0B, Apu0C, Apu0D, Apu0E, Apu0F,

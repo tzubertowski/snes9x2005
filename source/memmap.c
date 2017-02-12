@@ -31,10 +31,6 @@
 #include "fxemu.h"
 extern struct FxInit_s SuperFX;
 
-#ifndef SET_UI_COLOR
-#define SET_UI_COLOR(r,g,b) ;
-#endif
-
 static int32_t retry_count = 0;
 static uint8_t bytes0x2000 [0x2000];
 int32_t is_bsx(uint8_t*);
@@ -103,12 +99,6 @@ const uint32_t crc32Table[256] =
 
 void S9xDeinterleaveType1(int32_t TotalFileSize, uint8_t* base)
 {
-   if (Settings.DisplayColor == 0xffff)
-   {
-      Settings.DisplayColor = BUILD_PIXEL(0, 31, 0);
-      SET_UI_COLOR(0, 255, 0);
-   }
-
    int32_t i;
    int32_t nblocks = TotalFileSize >> 16;
    uint8_t blocks [256];
@@ -151,12 +141,6 @@ void S9xDeinterleaveGD24(int32_t TotalFileSize, uint8_t* base)
 {
    if (TotalFileSize != 0x300000)
       return;
-
-   if (Settings.DisplayColor == 0xffff)
-   {
-      Settings.DisplayColor = BUILD_PIXEL(0, 31, 31);
-      SET_UI_COLOR(0, 255, 255);
-   }
 
    // DS2 DMA notes: base may or may not be 32-byte aligned
    uint8_t* tmp = (uint8_t*) malloc(0x80000);
@@ -684,20 +668,6 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
    }
    while (more && (ROMFile = fopen(fname, "rb")) != NULL);
 
-
-
-   if (Memory.HeaderCount == 0)
-      S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
-   else
-   {
-      if (Memory.HeaderCount == 1)
-         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
-                    "Found ROM file header (and ignored it).");
-      else
-         S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
-                    "Found multiple ROM file headers (and ignored them).");
-   }
-
    return TotalFileSize;
 }
 #endif
@@ -735,9 +705,6 @@ bool LoadROM(
    retry_count = 0;
 
 again:
-   Settings.DisplayColor = 0xffff;
-   SET_UI_COLOR(255, 255, 255);
-
 #ifdef LOAD_FROM_MEMORY_TEST
    strncpy(Memory.ROMFilename, game->path, sizeof(Memory.ROMFilename));
 
@@ -748,17 +715,12 @@ again:
 
    if ((((game->size & 0x1FFF) == 0x200) && !Settings.ForceNoHeader) || Settings.ForceHeader)
    {
-      S9xMessage(S9X_INFO, S9X_HEADERS_INFO,
-                 "Found ROM file header (and ignored it).");
       TotalFileSize -= 0x200;
       src      += 0x200;
       Memory.HeaderCount = 1;
 
    }
-   else
-   {
-      S9xMessage(S9X_INFO, S9X_HEADERS_INFO, "No ROM file header found.");
-   }
+
    if (TotalFileSize > MAX_ROM_SIZE)
       return false;
 
@@ -777,25 +739,6 @@ again:
    {
       Memory.ROM[0x7FD5] = 0x31;
       Memory.ROM[0x7FD6] = 0x02;
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-      S9xMessage(S9X_ERROR, S9X_ROM_CONFUSING_FORMAT_INFO, "Warning! Hacked Dump!");
-   }
-
-   if ((strncmp("HONKAKUHA IGO GOSEI", (char*)&Memory.ROM[0xFFC0], 19) == 0) && (Memory.ROM[0xFFD5] != 0x31))
-   {
-      Memory.ROM[0xFFD5] = 0x31;
-      Memory.ROM[0xFFD6] = 0x02;
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-      S9xMessage(S9X_ERROR, S9X_ROM_CONFUSING_FORMAT_INFO, "Warning! Hacked Dump!");
-   }
-
-   if ((Memory.ROM[0x7FD5] == 0x42) && (Memory.ROM[0x7FD6] == 0x13) && (strncmp("METAL COMBAT", (char*)&Memory.ROM[0x7FC0], 12) == 0))
-   {
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-      S9xMessage(S9X_ERROR, S9X_ROM_CONFUSING_FORMAT_INFO, "Warning! Hacked Dump!");
    }
 
 #ifndef NO_SPEEDHACKS
@@ -854,8 +797,6 @@ again:
       memmove(Memory.ROM, Memory.ROM + 512, TotalFileSize - 512);
 #endif
       TotalFileSize -= 512;
-      S9xMessage(S9X_INFO, S9X_HEADER_WARNING,
-                 "Try specifying the -nhd command line option if the game doesn't work\n");
    }
 
    Memory.CalculatedSize = TotalFileSize & ~0x1FFF; // round down to lower 0x2000
@@ -869,17 +810,10 @@ again:
    //If both vectors are invalid, it's type 1 LoROM
 
    if (Memory.ExtendedFormat == NOPE &&
-      ((Memory.ROM[0x7FFC] | (Memory.ROM[0x7FFD] << 8)) < 0x8000) &&
-      ((Memory.ROM[0xFFFC] | (Memory.ROM[0xFFFD] << 8)) < 0x8000))
-   {
-      if (Settings.DisplayColor == 0xffff)
-      {
-         Settings.DisplayColor = BUILD_PIXEL(0, 31, 0);
-         SET_UI_COLOR(0, 255, 0);
-      }
-      if (!Settings.ForceInterleaved)
-         S9xDeinterleaveType1(TotalFileSize, Memory.ROM);
-   }
+       ((Memory.ROM[0x7FFC] | (Memory.ROM[0x7FFD] << 8)) < 0x8000) &&
+       ((Memory.ROM[0xFFFC] | (Memory.ROM[0xFFFD] << 8)) < 0x8000) &&
+       !Settings.ForceInterleaved)
+      S9xDeinterleaveType1(TotalFileSize, Memory.ROM);
 
    //CalculatedSize is now set, so rescore
    hi_score = ScoreHiROM(false, 0);
@@ -972,8 +906,6 @@ again:
    if (!Settings.ForceNotInterleaved && Interleaved)
    {
       CPU.TriedInterleavedMode2 = true;
-      S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO,
-                 "ROM image is in interleaved format - converting...");
 
       if (Tales)
       {
@@ -1003,11 +935,6 @@ again:
       }
       else
       {
-         if (Settings.DisplayColor == 0xffff)
-         {
-            Settings.DisplayColor = BUILD_PIXEL(0, 31, 0);
-            SET_UI_COLOR(0, 255, 0);
-         }
          bool t = Memory.LoROM;
 
          Memory.LoROM = Memory.HiROM;
@@ -1024,8 +951,6 @@ again:
       {
          if (retry_count == 0)
          {
-            S9xMessage(S9X_INFO, S9X_ROM_CONFUSING_FORMAT_INFO,
-                       "ROM lied about its type! Trying again.");
             Settings.ForceNotInterleaved = true;
             Settings.ForceInterleaved = false;
             retry_count++;
@@ -1058,15 +983,6 @@ void S9xDeinterleaveMode2(void)
 
 void S9xDeinterleaveType2(bool reset)
 {
-   if (Settings.DisplayColor == 0xffff || Settings.DisplayColor == BUILD_PIXEL(0, 31, 0))
-   {
-      Settings.DisplayColor = BUILD_PIXEL(31, 14, 6);
-      SET_UI_COLOR(255, 119, 25);
-
-   }
-   S9xMessage(S9X_INFO, S9X_ROM_INTERLEAVED_INFO,
-              "ROM image is in interleaved format - converting...");
-
    int32_t nblocks = Memory.CalculatedSize >> 16;
    int32_t step = 64;
 
@@ -1426,20 +1342,7 @@ void InitROM(bool Interleaved)
       *p = 0;
    }
 
-   {
-      Memory.SRAMMask = Memory.SRAMSize ?
-                        ((1 << (Memory.SRAMSize + 3)) * 128) - 1 : 0;
-   }
-   if ((Memory.ROMChecksum + Memory.ROMComplementChecksum != 0xffff) ||
-        Memory.ROMChecksum != Memory.CalculatedChecksum ||
-        ((uint32_t)Memory.CalculatedSize > (uint32_t)(((1 << (Memory.ROMSize - 7)) * 128) * 1024)))
-   {
-      if (Settings.DisplayColor == 0xffff || Settings.DisplayColor != BUILD_PIXEL(31, 0, 0))
-      {
-         Settings.DisplayColor = BUILD_PIXEL(31, 31, 0);
-         SET_UI_COLOR(255, 255, 0);
-      }
-   }
+   Memory.SRAMMask = Memory.SRAMSize ? ((1 << (Memory.SRAMSize + 3)) * 128) - 1 : 0;
 
 #ifndef USE_BLARGG_APU
    IAPU.OneCycle = ONE_APU_CYCLE;
@@ -1470,7 +1373,7 @@ void InitROM(bool Interleaved)
            Memory.CompanyId,
            Memory.ROMCRC32);
 
-   S9xMessage(S9X_INFO, S9X_ROM_INFO, String);
+   S9xMessage(String);
    Settings.ForceHeader = Settings.ForceHiROM = Settings.ForceLoROM =
                           Settings.ForceInterleaved = Settings.ForceNoHeader =
                           Settings.ForceNotInterleaved =
@@ -1969,15 +1872,6 @@ void HiROMMap()
 
    mask[0] = (Memory.CalculatedSize / 0x10000) - 1;
 
-   if (Settings.ForceSA1 ||
-         (!Settings.ForceNoSA1 && (Memory.ROMSpeed & ~0x10) == 0x23 &&
-          (Memory.ROMType & 0xf) > 3 && (Memory.ROMType & 0xf0) == 0x30))
-   {
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-   }
-
-
    int32_t x;
    bool foundZeros;
    bool pastZeros;
@@ -2097,15 +1991,6 @@ void TalesROMMap(bool Interleaved)
 {
    int32_t c;
    int32_t i;
-
-   if (Interleaved)
-   {
-      if (Settings.DisplayColor == 0xffff)
-      {
-         Settings.DisplayColor = BUILD_PIXEL(0, 31, 0);
-         SET_UI_COLOR(0, 255, 0);
-      }
-   }
    uint32_t OFFSET0 = 0x400000;
    uint32_t OFFSET1 = 0x400000;
    uint32_t OFFSET2 = 0x000000;
@@ -2168,15 +2053,6 @@ void TalesROMMap(bool Interleaved)
          Memory.BlockIsROM [i + 0x408] = true;
          Memory.BlockIsROM [i + 0xc00] = true;
          Memory.BlockIsROM [i + 0xc08] = true;
-      }
-   }
-
-   if ((strncmp("TALES", (char*)Memory.Map[8] + 0xFFC0, 5) == 0))
-   {
-      if (*(Memory.Map[8] + 0xFFDE) == *(Memory.Map[0x808] + 0xFFDE))
-      {
-         Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-         SET_UI_COLOR(255, 0, 0);
       }
    }
 
@@ -2975,15 +2851,6 @@ void ApplyROMFixes()
    [14:25:27] <@Nach>     case 0x340f23e5: //Donkey Kong Country 3 (U) copier hack - handled
    */
 
-   if (Memory.ROMCRC32 == 0x6810aa95 || Memory.ROMCRC32 == 0x340f23e5 || Memory.ROMCRC32 == 0x77fd806a ||
-       strncmp(Memory.ROMName, "HIGHWAY BATTLE 2", 16) == 0 ||
-       (strcmp(Memory.ROMName, "FX SKIING NINTENDO 96") == 0
-       && Memory.ROM[0x7FDA] == 0))
-   {
-      Settings.DisplayColor = BUILD_PIXEL(31, 0, 0);
-      SET_UI_COLOR(255, 0, 0);
-   }
-
    //Ambiguous chip function pointer assignments
 
    //DSP switching:
@@ -3173,23 +3040,10 @@ void ApplyROMFixes()
          strcmp(Memory.ROMName, "King Arthurs World") == 0)
       SNESGameFixes.EchoOnlyOutput = true;
 
-   Settings.DaffyDuck = (strcmp(Memory.ROMName, "DAFFY DUCK: MARV MISS") == 0) ||
-                        (strcmp(Memory.ROMName, "ROBOCOP VS THE TERMIN") == 0) ||
-                        (strcmp(Memory.ROMName, "ROBOCOP VS TERMINATOR") == 0);
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
 
    //OAM hacks because we don't fully understand the
    //behavior of the SNES.
-
-   //Totally wacky display...
-   //seems to need a disproven behavior, so
-   //we're definitely overlooking some other bug?
-   if (strncmp(Memory.ROMName, "UNIRACERS", 9) == 0)
-      SNESGameFixes.Uniracers = true;
-
-   //is this even useful now?
-   if (strcmp(Memory.ROMName, "ALIENS vs. PREDATOR") == 0)
-      SNESGameFixes.alienVSpredetorFix = true;
 
    if (strcmp(Memory.ROMName, "\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0") == 0 ||   //Super Famista
        strcmp(Memory.ROMName, "\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0 2") == 0 ||  //Super Famista 2

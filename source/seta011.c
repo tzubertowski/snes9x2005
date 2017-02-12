@@ -66,17 +66,9 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
             ST011.in_count = 4;
             break;
          case 0x04:
-            ST011.in_count = 0;
-            break;
          case 0x05:
-            ST011.in_count = 0;
-            break;
          case 0x06:
-            ST011.in_count = 0;
-            break;
          case 0x07:
-            ST011.in_count = 0;
-            break;
          case 0x0E:
             ST011.in_count = 0;
             break;
@@ -107,13 +99,11 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
          int32_t lcv;
          for (lcv = 0; lcv < 9; lcv++)
             memcpy(board[lcv], ST011.parameters + lcv * 10, 9 * 1);
+         break;
       }
-      break;
-
       // unknown
       case 0x02:
          break;
-
       // unknown
       case 0x04:
       case 0x05:
@@ -121,14 +111,12 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
          // outputs
          Memory.SRAM[0x12C] = 0x00;
          Memory.SRAM[0x12E] = 0x00;
+         break;
       }
-      break;
-
       // unknown
       case 0x06:
       case 0x07:
          break;
-
       // unknown
       case 0x0E:
       {

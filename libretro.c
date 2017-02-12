@@ -109,9 +109,9 @@ unsigned retro_api_version()
    return RETRO_API_VERSION;
 }
 
-void S9xMessage(int32_t type, int32_t number, const char* message)
+void S9xMessage(const char* message)
 {
-#define MAX_MESSAGE_LEN (36 * 3)
+   #define MAX_MESSAGE_LEN (36 * 3)
 
    static char buffer [MAX_MESSAGE_LEN + 1];
 

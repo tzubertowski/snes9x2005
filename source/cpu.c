@@ -7,14 +7,13 @@
 #include "cpuexec.h"
 #include "apu.h"
 #include "dma.h"
+#include "fxemu.h"
 #include "sa1.h"
 #include "cheats.h"
 #include "srtc.h"
 #include "sdd1.h"
 #include "spc7110.h"
 #include "obc1.h"
-
-#include "fxemu.h"
 
 extern struct FxInit_s SuperFX;
 
@@ -27,11 +26,11 @@ void S9xResetSuperFX()
 void S9xResetCPU()
 {
    ICPU.Registers.PB = 0;
-   ICPU.Registers.PC = S9xGetWord(0xFFFC);
+   ICPU.Registers.PC = S9xGetWord(0xfffc);
    ICPU.Registers.D.W = 0;
    ICPU.Registers.DB = 0;
    ICPU.Registers.SH = 1;
-   ICPU.Registers.SL = 0xFF;
+   ICPU.Registers.SL = 0xff;
    ICPU.Registers.XH = 0;
    ICPU.Registers.YH = 0;
    ICPU.Registers.P.W = 0;
@@ -52,13 +51,12 @@ void S9xResetCPU()
    CPU.PCBase = NULL;
    CPU.PCAtOpcodeStart = NULL;
    CPU.WaitAddress = NULL;
-   CPU.WaitCounter = 0;
-   CPU.Cycles = 0;
+   CPU.WaitCounter = 1;
+   CPU.Cycles = 188; // This is the cycle count just after the jump to the Reset Vector.
    CPU.NextEvent = Settings.HBlankStart;
    CPU.V_Counter = 0;
    CPU.MemSpeed = SLOW_ONE_CYCLE;
    CPU.MemSpeedx2 = SLOW_ONE_CYCLE * 2;
-   CPU.FastROMSpeed = SLOW_ONE_CYCLE;
    CPU.AutoSaveTimer = 0;
    CPU.SRAMModified = false;
    CPU.BRKTriggered = false;
@@ -72,7 +70,7 @@ void S9xResetCPU()
    S9xUnpackStatus();
 }
 
-static void CommonS9xReset(void)
+static void CommonS9xReset()
 {
    if (Settings.SuperFX)
       S9xResetSuperFX();
@@ -101,14 +99,14 @@ static void CommonS9xReset(void)
 #endif
 }
 
-void S9xReset(void)
+void S9xReset()
 {
    CommonS9xReset();
    S9xResetPPU();
    memset(Memory.RAM, 0x55, 0x20000);
 }
 
-void S9xSoftReset(void)
+void S9xSoftReset()
 {
    CommonS9xReset();
    S9xSoftResetPPU();

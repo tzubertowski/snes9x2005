@@ -77,7 +77,6 @@ void S9xResetAPU()
    for (i = 0; i < 3; i++)
    {
       APU.TimerEnabled [i] = false;
-      APU.TimerValueWritten [i] = 0;
       APU.TimerTarget [i] = 0;
       APU.Timer [i] = 0;
    }
@@ -388,9 +387,9 @@ void S9xSetAPUControl(uint8_t byte)
       if ((APU.TimerTarget [2] = IAPU.RAM [0xfc]) == 0)
          APU.TimerTarget [2] = 0x100;
    }
-   APU.TimerEnabled [0] = byte & 1;
-   APU.TimerEnabled [1] = (byte & 2) >> 1;
-   APU.TimerEnabled [2] = (byte & 4) >> 2;
+   APU.TimerEnabled [0] = (bool) (byte & 1);
+   APU.TimerEnabled [1] = (bool) (byte & 2);
+   APU.TimerEnabled [2] = (bool) (byte & 4);
 
    if (byte & 0x10)
       IAPU.RAM [0xF4] = IAPU.RAM [0xF5] = 0;

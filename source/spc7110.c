@@ -40,9 +40,9 @@ char* osd_GetPackDir();
 uint16_t cacheMegs = 5;
 
 //using function pointers to initialize cache management
-void (*CleanUp7110)(void) = NULL;
+void (*CleanUp7110)() = NULL;
 void (*LoadUp7110)(char*) = &SPC7110Load;
-void (*Copy7110)(void) = NULL;
+void (*Copy7110)() = NULL;
 
 //size and offset of the pack data
 //offset and size of reads from pack
@@ -143,8 +143,7 @@ void S9xSpc7110Init()
 void MovePackData()
 {
    //log the last entry
-   Data7110* log = &
-                   (decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
+   Data7110* log = &(decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
    if ((log->used_len + log->used_offset) < (decompack->last_offset +
          (uint16_t)s7r.bank50Internal))
    {
@@ -238,11 +237,9 @@ void ReadPackData()
       return;
    }
 
-   if (table_age_2 == 0 && table_age_3 == 0 && table_age_4 == 0
-         && table_age_5 == 0)
+   if (table_age_2 == 0 && table_age_3 == 0 && table_age_4 == 0 && table_age_5 == 0)
       table_age_2 = table_age_3 = table_age_4 = table_age_5 = MAX_TABLES;
-   Data7110* log = &
-                   (decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
+   Data7110* log = &(decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
    if ((log->used_len + log->used_offset) < (decompack->last_offset +
          (uint16_t)s7r.bank50Internal))
    {
@@ -292,8 +289,7 @@ void ReadPackData()
          fclose(fp);
          return;
       }
-      if (i != table_age_2 && i != table_age_3 && i != table_age_4
-            && i != table_age_5)
+      if (i != table_age_2 && i != table_age_3 && i != table_age_4 && i != table_age_5)
       {
          if (table_age_5 != MAX_TABLES && decompack->binfiles[table_age_5])
          {
@@ -511,7 +507,6 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    case 0x480C:
       s7r.reg480C ^= 0x80;
       return s7r.reg480C ^ 0x80;
-
    //Data access port
    //reads from the data ROM (anywhere over the first 8 mbits
    //behavior is complex, will document later,
@@ -764,7 +759,6 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    //divisor high
    case 0x4827:
       return s7r.reg4827;
-
    //result lowest
    case 0x4828:
       return s7r.reg4828;
@@ -1125,11 +1119,9 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       else
       {
-         uint32_t mul;
          uint16_t m1 = (uint16_t)((s7r.reg4824) | (s7r.reg4825 << 8));
          uint16_t m2 = (uint16_t)((s7r.reg4820) | (s7r.reg4821 << 8));
-
-         mul = m1 * m2;
+         uint32_t mul = m1 * m2;
          s7r.reg4828 = (uint8_t)(mul & 0x000000FF);
          s7r.reg4829 = (uint8_t)((mul & 0x0000FF00) >> 8);
          s7r.reg482A = (uint8_t)((mul & 0x00FF0000) >> 16);
@@ -1403,8 +1395,7 @@ void  S9xUpdateRTC()
    // Keep track of game time by computing the number of seconds that pass on the system
    // clock and adding the same number of seconds to the RTC clock structure.
 
-   if (rtc_f9.init && 0 == (rtc_f9.reg[0x0D] & 0x01)
-         && 0 == (rtc_f9.reg[0x0F] & 0x03))
+   if (rtc_f9.init && 0 == (rtc_f9.reg[0x0D] & 0x01) && 0 == (rtc_f9.reg[0x0F] & 0x03))
    {
       cur_systime = time(NULL);
 
@@ -1583,7 +1574,6 @@ bool Load7110Index(char* filename)
       decompack->tableEnts[i].location[index].size = size;
       decompack->tableEnts[i].location[index].used_len = 0;
       decompack->tableEnts[i].location[index].used_offset = 0;
-
    }
    fclose(fp);
    return true;
@@ -1604,8 +1594,7 @@ void SPC7110Load(char* dirname)
    memset(decompack, 0, sizeof(Pack7110));
 
 #if !defined(_XBOX) && !defined(VITA)
-   if (-1 == chdir(dirname))
-      S9xMessage(0, 0, "Graphics Pack not found!");
+   chdir(dirname);
 #endif
 
 #ifndef _XBOX
@@ -1661,8 +1650,7 @@ void SPC7110Open(char* dirname)
    memset(decompack, 0, sizeof(Pack7110));
 
 #if !defined(_XBOX) && !defined(VITA)
-   if (-1 == chdir(dirname))
-      S9xMessage(0, 0, "Graphics Pack not found!");
+   chdir(dirname);
 #endif
 
 #ifndef _XBOX
@@ -1701,9 +1689,7 @@ void SPC7110Grab(char* dirname)
 
    memset(decompack, 0, sizeof(Pack7110));
 #if !defined(_XBOX) && !defined(VITA)
-
-   if (-1 == chdir(dirname))
-      S9xMessage(0, 0, "Graphics Pack not found!");
+   chdir(dirname);
 #endif
 
 #ifndef _XBOX

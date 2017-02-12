@@ -226,7 +226,7 @@ typedef struct
 } Timer;
 
 /* Support SNES_MEMORY_APURAM */
-uint8_t *spc_apuram (void);
+uint8_t* spc_apuram();
 
 typedef struct
 {
@@ -276,31 +276,31 @@ typedef struct
 /* Number of samples written to output since last set */
 #define SPC_SAMPLE_COUNT() ((m.extra_clocks >> 5) * 2)
 
-typedef void (*apu_callback)(void);
+typedef void (*apu_callback)();
 
 #define SPC_SAVE_STATE_BLOCK_SIZE	(STATE_SIZE + 8)
 
-bool S9xInitAPU (void);
-void S9xDeinitAPU (void);
-void S9xResetAPU (void);
-void S9xSoftResetAPU (void);
-uint8_t S9xAPUReadPort (int32_t port);
-void S9xAPUWritePort (int32_t port, uint8_t byte);
-void S9xAPUExecute (void);
-void S9xAPUSetReferenceTime (int32_t cpucycles);
-void S9xAPUTimingSetSpeedup (int32_t ticks);
-void S9xAPUAllowTimeOverflow (bool allow);
-void S9xAPULoadState (const uint8_t * block);
-void S9xAPUSaveState (uint8_t * block);
+bool S9xInitAPU();
+void S9xDeinitAPU();
+void S9xResetAPU();
+void S9xSoftResetAPU();
+uint8_t S9xAPUReadPort(int32_t port);
+void S9xAPUWritePort(int32_t port, uint8_t byte);
+void S9xAPUExecute();
+void S9xAPUSetReferenceTime(int32_t cpucycles);
+void S9xAPUTimingSetSpeedup(int32_t ticks);
+void S9xAPUAllowTimeOverflow(bool allow);
+void S9xAPULoadState(const uint8_t * block);
+void S9xAPUSaveState(uint8_t * block);
 
-bool S9xInitSound (int32_t buffer_ms, int32_t lag_ms);
+bool S9xInitSound(int32_t buffer_ms, int32_t lag_ms);
 
-bool S9xSyncSound (void);
-int32_t S9xGetSampleCount (void);
-void S9xFinalizeSamples (void);
-void S9xClearSamples (void);
-bool S9xMixSamples (int16_t * buffer, uint32_t sample_count);
-void S9xSetSamplesAvailableCallback (apu_callback);
+bool S9xSyncSound();
+int32_t S9xGetSampleCount();
+void S9xFinalizeSamples();
+void S9xClearSamples();
+bool S9xMixSamples(int16_t * buffer, uint32_t sample_count);
+void S9xSetSamplesAvailableCallback(apu_callback);
 
 #endif // APU_BLARGG_H
 

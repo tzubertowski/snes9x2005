@@ -6,9 +6,9 @@
 typedef struct
 {
 #ifdef __WIN32__
-   void (__cdecl* S9xOpcode)(void);
+   void (__cdecl* S9xOpcode)();
 #else
-   void (*S9xOpcode)(void);
+   void (*S9xOpcode)();
 #endif
 } SOpcodes;
 
@@ -41,9 +41,9 @@ typedef struct
    uint32_t   FrameAdvanceCount;
 } SICPU;
 
-void S9xMainLoop(void);
-void S9xReset(void);
-void S9xSoftReset(void);
+void S9xMainLoop();
+void S9xReset();
+void S9xSoftReset();
 void S9xDoHBlankProcessing_SFX();
 void S9xDoHBlankProcessing_NoSFX();
 void S9xClearIRQ(uint32_t);
@@ -68,8 +68,7 @@ static inline void S9xUnpackStatus()
 static inline void S9xPackStatus()
 {
    ICPU.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
-   ICPU.Registers.PL |= ICPU._Carry | ((ICPU._Zero == 0) << 1) |
-                        (ICPU._Negative & 0x80) | (ICPU._Overflow << 6);
+   ICPU.Registers.PL |= ICPU._Carry | ((ICPU._Zero == 0) << 1) | (ICPU._Negative & 0x80) | (ICPU._Overflow << 6);
 }
 
 static inline void CLEAR_IRQ_SOURCE(uint32_t M)
@@ -104,8 +103,7 @@ static inline void S9xReschedule()
    uint8_t which;
    int32_t max;
 
-   if (CPU.WhichEvent == HBLANK_START_EVENT ||
-         CPU.WhichEvent == HTIMER_AFTER_EVENT)
+   if (CPU.WhichEvent == HBLANK_START_EVENT || CPU.WhichEvent == HTIMER_AFTER_EVENT)
    {
       which = HBLANK_END_EVENT;
       max = Settings.H_Max;

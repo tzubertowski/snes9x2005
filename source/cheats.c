@@ -34,8 +34,7 @@ const char* S9xProActionReplayToRaw(const char* code, uint32_t* address,
    return (NULL);
 }
 
-const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram,
-                               uint8_t* num_bytes, uint8_t bytes[3])
+const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, uint8_t* num_bytes, uint8_t bytes[3])
 {
    char tmp [15];
    if (strlen(code) != 14)
@@ -65,8 +64,7 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
 {
    char new_code [12];
 
-   if (strlen(code) != 9 || *(code + 4) != '-' || !S9xAllHex(code, 4) ||
-         !S9xAllHex(code + 5, 4))
+   if (strlen(code) != 9 || *(code + 4) != '-' || !S9xAllHex(code, 4) || !S9xAllHex(code + 5, 4))
       return ("Invalid Game Genie(tm) code - should be 'xxxx-xxxx'.");
 
    strcpy(new_code, "0x");
@@ -104,7 +102,7 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
               ((data & 0x0f0000) >> 12) +
               ((data & 0x0003c0) >>  6);
 
-   return (NULL);
+   return NULL;
 }
 
 void S9xStartCheatSearch(SCheatData* d)

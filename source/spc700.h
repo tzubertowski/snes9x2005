@@ -49,17 +49,14 @@
 
 typedef union
 {
+   struct
+   {
 #ifdef MSB_FIRST
-   struct
-   {
       uint8_t Y, A;
-   } B;
 #else
-   struct
-   {
       uint8_t A, Y;
-   } B;
 #endif
+   } B;
 
    uint16_t W;
 } YAndA;
@@ -75,11 +72,6 @@ typedef struct
 
 // Needed by ILLUSION OF GAIA
 #define ONE_APU_CYCLE 21
-
-// Needed by all games written by the software company called Human
-#define ONE_APU_CYCLE_HUMAN 21
-
-// 1.953us := 1.024065.54MHz
 
 #ifdef SPCTOOL
 int32_t ESPC(int32_t);
@@ -105,8 +97,8 @@ int32_t ESPC(int32_t);
 #define APU_EXECUTE() \
 if (IAPU.APUExecuting) \
 {\
-    while (APU.Cycles <= CPU.Cycles) \
-   APU_EXECUTE1(); \
+   while (APU.Cycles <= CPU.Cycles) \
+      APU_EXECUTE1(); \
 }
 #endif
 

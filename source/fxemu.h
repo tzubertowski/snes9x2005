@@ -26,9 +26,6 @@ extern int32_t FxEmulate(uint32_t nInstructions);
 extern void FxCacheWriteAccess(uint16_t vAddress);
 extern void FxFlushCache();   /* Callled when the G flag in SFR is set to zero */
 
-/* Step by step execution */
-extern int32_t FxStepOver(uint32_t nInstructions);
-
 /* Errors */
 extern int32_t FxGetErrorCode();
 extern int32_t FxGetIllegalAddress();
@@ -43,7 +40,7 @@ extern uint32_t FxGetDestinationRegisterIndex();
 extern uint8_t FxPipe();
 
 /* SCBR write seen.  We need to update our cached screen pointers */
-extern void fx_dirtySCBR(void);
+extern void fx_dirtySCBR();
 
 /* Update RamBankReg and RAM Bank pointer */
 extern void fx_updateRamBank(uint8_t Byte);

@@ -336,7 +336,6 @@ bool S9xInitGFX()
    // then the value is zero, otherwise multiply the value by 2. Used by
    // the color subtraction code.
 
-#if defined(OLD_COLOUR_BLENDING)
    for (r = 0; r <= MAX_RED; r++)
    {
       uint32_t r2 = r;
@@ -362,49 +361,10 @@ bool S9xInitGFX()
                b2 = (b2 << 1) & MAX_BLUE;
 
             GFX.ZERO_OR_X2 [BUILD_PIXEL2(r, g, b)] = BUILD_PIXEL2(r2, g2, b2);
-            GFX.ZERO_OR_X2 [BUILD_PIXEL2(r, g, b) & ~ALPHA_BITS_MASK] = BUILD_PIXEL2(r2, g2,
-                  b2);
+            GFX.ZERO_OR_X2 [BUILD_PIXEL2(r, g, b) & ~ALPHA_BITS_MASK] = BUILD_PIXEL2(MAX(1, r2), MAX(1, g2), MAX(1, b2));
          }
       }
    }
-#else
-   for (r = 0; r <= MAX_RED; r++)
-   {
-      uint32_t r2 = r;
-      if ((r2 & 0x10) == 0)
-         r2 = 0;
-      else
-         r2 = (r2 << 1) & MAX_RED;
-
-      if (r2 == 0)
-         r2 = 1;
-      for (g = 0; g <= MAX_GREEN; g++)
-      {
-         uint32_t g2 = g;
-         if ((g2 & GREEN_HI_BIT) == 0)
-            g2 = 0;
-         else
-            g2 = (g2 << 1) & MAX_GREEN;
-
-         if (g2 == 0)
-            g2 = 1;
-         for (b = 0; b <= MAX_BLUE; b++)
-         {
-            uint32_t b2 = b;
-            if ((b2 & 0x10) == 0)
-               b2 = 0;
-            else
-               b2 = (b2 << 1) & MAX_BLUE;
-
-            if (b2 == 0)
-               b2 = 1;
-            GFX.ZERO_OR_X2 [BUILD_PIXEL2(r, g, b)] = BUILD_PIXEL2(r2, g2, b2);
-            GFX.ZERO_OR_X2 [BUILD_PIXEL2(r, g, b) & ~ALPHA_BITS_MASK] = BUILD_PIXEL2(r2, g2,
-                  b2);
-         }
-      }
-   }
-#endif
 
    // Build a lookup table that if the top bit of the color value is zero
    // then the value is zero, otherwise its just the value.
@@ -439,7 +399,7 @@ bool S9xInitGFX()
    return (true);
 }
 
-void S9xDeinitGFX(void)
+void S9xDeinitGFX()
 {
    // Free any memory allocated in S9xInitGFX
    if (GFX.X2)
@@ -495,8 +455,7 @@ void S9xStartScreenRefresh()
 
       if (PPU.BGMode == 5 || PPU.BGMode == 6)
          IPPU.Interlace = (Memory.FillRAM[0x2133] & 1);
-      if (Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6
-                                    || IPPU.Interlace))
+      if (Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
       {
          IPPU.RenderedScreenWidth = 512;
          IPPU.DoubleWidthPixels = true;
@@ -519,8 +478,7 @@ void S9xStartScreenRefresh()
             GFX.PPLx2 = GFX.PPL << 1;
          }
       }
-      else if (!Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6
-                                          || IPPU.Interlace))
+      else if (!Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
       {
          IPPU.RenderedScreenWidth = 256;
          IPPU.DoubleWidthPixels = false;
@@ -1495,19 +1453,13 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                // hardware limitation that the offsets cannot be set
                // for the tile at the left-hand edge of the screen.
                VOffset = LineData [Y].BG[bg].VOffset;
-
-               //MKendora; use temp var to reduce memory accesses
                HOffset = LineHOffset;
-               //End MK
-
                left_hand_edge = false;
             }
             else
-
             {
                // All subsequent offset tile data is shifted left by one,
                // hence the - 1 below.
-
                Quot2 = ((HOff + Left - 1) & OffsetMask) >> 3;
 
                if (Quot2 > 31)
@@ -1520,11 +1472,7 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                if (BGMode == 4)
                {
                   VOffset = LineData [Y].BG[bg].VOffset;
-
-                  //MKendora; use temp var to reduce memory accesses
                   HOffset = LineHOffset;
-                  //end MK
-
                   if ((HCellOffset & OffsetEnableMask))
                   {
                      if (HCellOffset & 0x8000)
@@ -1638,8 +1586,7 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
 
             Left += Count;
             TotalCount += Count;
-            s += (IPPU.HalfWidthPixels ? (Offset + Count) >> 1 : (Offset + Count)) *
-                 GFX.PixSize;
+            s += (IPPU.HalfWidthPixels ? (Offset + Count) >> 1 : (Offset + Count)) * GFX.PixSize;
             MaxCount = 8;
          }
       }
@@ -1765,8 +1712,7 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
                continue;
          }
 
-         uint32_t s = (IPPU.HalfWidthPixels ? Left >> 1 : Left) * GFX.PixSize + Y *
-                    GFX.PPL;
+         uint32_t s = (IPPU.HalfWidthPixels ? Left >> 1 : Left) * GFX.PixSize + Y * GFX.PPL;
          uint32_t HPos = (HOffset + Left * GFX.PixSize) & 0x3ff;
 
          uint32_t Quot = HPos >> 3;
@@ -1985,7 +1931,6 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
    {
       DrawBackgroundMosaic(BGMode, bg, Z1, Z2);
       return;
-
    }
    switch (BGMode)
    {
@@ -3108,7 +3053,7 @@ static void RenderScreen(uint8_t* Screen, bool sub, bool force_no_add, uint8_t D
    }
 }
 
-void S9xUpdateScreen(void)
+void S9xUpdateScreen()
 {
    int32_t x2 = 1;
 
@@ -3542,13 +3487,13 @@ void S9xUpdateScreen(void)
          } // --if (SUB_OR_ADD(5))
          else
          {
+            uint32_t y;
             // Subscreen not being added to back
             uint32_t back = IPPU.ScreenColors [0] | (IPPU.ScreenColors [0] << 16);
             pClip = &IPPU.Clip [0];
 
             if (pClip->Count [5])
             {
-               uint32_t y;
                for (y = starty; y <= endy; y++)
                {
                   uint32_t b;
@@ -3573,7 +3518,6 @@ void S9xUpdateScreen(void)
             }
             else
             {
-               uint32_t y;
                for (y = starty; y <= endy; y++)
                {
                   uint16_t* p = (uint16_t*)(GFX.Screen + y * GFX.Pitch2);

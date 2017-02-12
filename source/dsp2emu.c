@@ -130,13 +130,11 @@ bool DSP2Op0DHasLen = false;
 int32_t DSP2Op0DOutLen = 0;
 int32_t DSP2Op0DInLen = 0;
 
-#ifndef DSP2_BIT_ACCURRATE_CODE
-
 // Scale bitmap based on input length out output length
 
 void DSP2_Op0D()
 {
-   // (Modified) Overload's algorithm - use this unless doing hardware testing
+   // (Modified) Overload's algorithm
 
    int32_t i;
 
@@ -150,51 +148,3 @@ void DSP2_Op0D()
       DSP1.output[i] = (pixel_low << 4) | pixel_high;
    }
 }
-
-#else
-
-void DSP2_Op0D()
-{
-   // Bit accurate hardware algorithm - uses fixed point math
-   // This should match the DSP2 Op0D output exactly
-   // I wouldn't recommend using this unless you're doing hardware debug.
-   // In some situations it has small visual artifacts that
-   // are not readily apparent on a TV screen but show up clearly
-   // on a monitor.  Use Overload's scaling instead.
-   // This is for hardware verification testing.
-   //
-   // One note:  the HW can do odd byte scaling but since we divide
-   // by two to get the count of bytes this won't work well for
-   // odd byte scaling (in any of the current algorithm implementations).
-   // So far I haven't seen Dungeon Master use it.
-   // If it does we can adjust the parameters and code to work with it
-
-
-   uint32_t multiplier;
-   uint32_t pixloc;
-   int32_t i, j;
-   uint8_t pixelarray[512];
-
-   if (DSP2Op0DInLen <= DSP2Op0DOutLen)
-      multiplier = 0x10000;   // In our self defined fixed point 0x10000 == 1
-   else
-      multiplier = (DSP2Op0DInLen << 17) / ((DSP2Op0DOutLen << 1) + 1);
-
-   pixloc = 0;
-   for (i = 0; i < DSP2Op0DOutLen * 2; i++)
-   {
-      j = pixloc >> 16;
-
-      if (j & 1)
-         pixelarray[i] = DSP1.parameters[j >> 1] & 0x0f;
-      else
-         pixelarray[i] = (DSP1.parameters[j >> 1] & 0xf0) >> 4;
-
-      pixloc += multiplier;
-   }
-
-   for (i = 0; i < DSP2Op0DOutLen; i++)
-      DSP1.output[i] = (pixelarray[i << 1] << 4) | pixelarray[(i << 1) + 1];
-}
-
-#endif
