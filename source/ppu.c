@@ -1165,8 +1165,8 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
             CPU.Flags |= NMI_FLAG;
             CPU.NMIActive = true;
             CPU.NMICycleCount = CPU.Cycles + TWO_CYCLES;
+            break;
          }
-         break;
       case 0x4201:
          if ((byte & 0x80) == 0 && (Memory.FillRAM[0x4213] & 0x80) == 0x80)
             S9xLatchCounters(1);
@@ -2363,20 +2363,15 @@ void S9xSuperFXExec()
 {
    if (Settings.SuperFX)
    {
-      if ((Memory.FillRAM [0x3000 + GSU_SFR] & FLG_G) &&
-            (Memory.FillRAM [0x3000 + GSU_SCMR] & 0x18) == 0x18)
+      if ((Memory.FillRAM [0x3000 + GSU_SFR] & FLG_G) && (Memory.FillRAM [0x3000 + GSU_SCMR] & 0x18) == 0x18)
       {
          if (!Settings.WinterGold || Settings.StarfoxHack)
             FxEmulate(~0);
          else
             FxEmulate((Memory.FillRAM [0x3000 + GSU_CLSR] & 1) ? 700 : 350);
-         int32_t GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] |
-                             (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
+         int32_t GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] | (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
          if ((GSUStatus & (FLG_G | FLG_IRQ)) == FLG_IRQ)
-         {
-            // Trigger a GSU IRQ.
-            S9xSetIRQ(GSU_IRQ_SOURCE);
-         }
+            S9xSetIRQ(GSU_IRQ_SOURCE); // Trigger a GSU IRQ.
       }
    }
 }

@@ -673,7 +673,6 @@ again:
       Memory.ROM[0x107505] = 0x42; Memory.ROM[0x107506] = 0x5B;
       Memory.ROM[0x107539] = 0x42; Memory.ROM[0x10753A] = 0x5B;
       Memory.ROM[0x107563] = 0x42; Memory.ROM[0x107564] = 0x5B;
-      Memory.ROM[0x1801D4] = 0x42; Memory.ROM[0x1801D5] = 0x10;
       Memory.ROM[0x18041D] = 0x42; Memory.ROM[0x18041E] = 0x79;
    }
 #endif
@@ -2737,7 +2736,7 @@ void ApplyROMFixes()
    */
 
    //not MAD-1 compliant
-   if (strcmp(Memory.ROMName, "WANDERERS FROM YS") == 0)
+   if (match_na("WANDERERS FROM YS"))
    {
       int32_t c;
       for (c = 0; c < 0xE0; c++)
@@ -2758,19 +2757,19 @@ void ApplyROMFixes()
 
    //NMI hacks
    CPU.NMITriggerPoint = 4;
-   if (strcmp(Memory.ROMName, "CACOMA KNIGHT") == 0)
+   if (match_na("CACOMA KNIGHT"))
       CPU.NMITriggerPoint = 25;
 
    //Disabling a speed-up
    // Games which spool sound samples between the SNES and sound CPU using
    // H-DMA as the sample is playing.
-   if (strcmp(Memory.ROMName, "EARTHWORM JIM 2") == 0 ||
-         strcmp(Memory.ROMName, "PRIMAL RAGE") == 0 ||
-         strcmp(Memory.ROMName, "CLAY FIGHTER") == 0 ||
-         strcmp(Memory.ROMName, "ClayFighter 2") == 0 ||
+   if (match_na("EARTHWORM JIM 2") ||
+         match_na("PRIMAL RAGE") ||
+         match_na("CLAY FIGHTER") ||
+         match_na("ClayFighter 2") ||
          strncasecmp(Memory.ROMName, "MADDEN", 6) == 0 ||
          strncmp(Memory.ROMName, "NHL", 3) == 0 ||
-         strcmp(Memory.ROMName, "WeaponLord") == 0 ||
+         match_na("WeaponLord") ||
          strncmp(Memory.ROMName, "WAR 2410", 8) == 0)
       Settings.Shutdown = false;
 
@@ -2778,15 +2777,15 @@ void ApplyROMFixes()
 
 #ifndef USE_BLARGG_APU
    // Stunt Racer FX
-   if (strcmp(Memory.ROMId, "CQ  ") == 0 ||
+   if (match_id("CQ  ") ||
          // Illusion of Gaia
          strncmp(Memory.ROMId, "JG", 2) == 0 ||
-         strcmp(Memory.ROMName, "GAIA GENSOUKI 1 JPN") == 0)
+         match_na("GAIA GENSOUKI 1 JPN"))
       IAPU.OneCycle = 13;
    else if (strcmp (Memory.ROMName, "UMIHARAKAWASE") == 0)
       IAPU.OneCycle = 20;
    // RENDERING RANGER R2
-   else if (strcmp(Memory.ROMId, "AVCJ") == 0 ||
+   else if (match_id("AVCJ") ||
          //Mark Davis
          strncmp(Memory.ROMName, "THE FISHING MASTER", 18) == 0 || //needs >= actual APU timing. (21 is .002 Mhz slower)
          // Star Ocean
@@ -2796,13 +2795,13 @@ void ApplyROMFixes()
          // Act Raiser 1 & 2
          strncasecmp(Memory.ROMName, "ActRaiser", 9) == 0 ||
          // Soulblazer
-         strcmp(Memory.ROMName, "SOULBLAZER - 1 USA") == 0 ||
-         strcmp(Memory.ROMName, "SOULBLADER - 1") == 0 ||
+         match_na("SOULBLAZER - 1 USA") ||
+         match_na("SOULBLADER - 1") ||
          // Terranigma
          strncmp(Memory.ROMId, "AQT", 3) == 0 ||
          // Robotrek
          strncmp(Memory.ROMId, "E9 ", 3) == 0 ||
-         strcmp(Memory.ROMName, "SLAP STICK 1 JPN") == 0 ||
+         match_na("SLAP STICK 1 JPN") ||
          // ZENNIHON PURORESU2
          strncmp(Memory.ROMId, "APR", 3) == 0 ||
          // Bomberman 4
@@ -2813,34 +2812,34 @@ void ApplyROMFixes()
          // Panic Bomber World
          strncmp(Memory.ROMId, "APB", 3) == 0 ||
          ((strncmp(Memory.ROMName, "Parlor", 6) == 0 ||
-         strcmp(Memory.ROMName, "HEIWA Parlor!Mini8") == 0 ||
+         match_na("HEIWA Parlor!Mini8") ||
          strncmp(Memory.ROMName, "SANKYO Fever! \xCC\xA8\xB0\xCA\xDE\xB0!", 21) == 0) &&
          strcmp(Memory.CompanyId, "A0") == 0) ||
-         strcmp(Memory.ROMName, "DARK KINGDOM") == 0 ||
-         strcmp(Memory.ROMName, "ZAN3 SFC") == 0 ||
-         strcmp(Memory.ROMName, "HIOUDEN") == 0 ||
-         strcmp(Memory.ROMName, "\xC3\xDD\xBC\xC9\xB3\xC0") == 0 || //Tenshi no Uta
-         strcmp(Memory.ROMName, "FORTUNE QUEST") == 0 ||
-         strcmp(Memory.ROMName, "FISHING TO BASSING") == 0 ||
+         match_na("DARK KINGDOM") ||
+         match_na("ZAN3 SFC") ||
+         match_na("HIOUDEN") ||
+         match_na("\xC3\xDD\xBC\xC9\xB3\xC0") || //Tenshi no Uta
+         match_na("FORTUNE QUEST") ||
+         match_na("FISHING TO BASSING") ||
          strncmp(Memory.ROMName, "TokyoDome '95Battle 7", 21) == 0 ||
-         strcmp(Memory.ROMName, "OHMONO BLACKBASS") == 0 ||
+         match_na("OHMONO BLACKBASS") ||
          strncmp(Memory.ROMName, "SWORD WORLD SFC", 15) == 0 ||
-         strcmp(Memory.ROMName, "MASTERS") == 0 || //Augusta 2 J
-         strcmp(Memory.ROMName, "SFC \xB6\xD2\xDD\xD7\xB2\xC0\xDE\xB0") == 0 || //Kamen Rider
+         match_na("MASTERS") || //Augusta 2 J
+         match_na("SFC \xB6\xD2\xDD\xD7\xB2\xC0\xDE\xB0") || //Kamen Rider
          strncmp(Memory.ROMName, "LETs PACHINKO(", 14) == 0)  //A set of BS games
       IAPU.OneCycle = 15;
 #endif
 
    //Specific game fixes
 
-   Settings.StarfoxHack = strcmp(Memory.ROMName, "STAR FOX") == 0 ||
-                          strcmp(Memory.ROMName, "STAR WING") == 0;
-   Settings.WinterGold = strcmp(Memory.ROMName, "FX SKIING NINTENDO 96") == 0 ||
-                         strcmp(Memory.ROMName, "DIRT RACER") == 0 ||
+   Settings.StarfoxHack = match_na("STAR FOX") ||
+                          match_na("STAR WING");
+   Settings.WinterGold = match_na("FX SKIING NINTENDO 96") ||
+                         match_na("DIRT RACER") ||
                          Settings.StarfoxHack;
 
-   if((strcmp(Memory.ROMName, "LEGEND") == 0 && !Settings.PAL)||
-       strcmp(Memory.ROMName, "King Arthurs World") == 0)
+   if((match_na("LEGEND") && !Settings.PAL)||
+       match_na("King Arthurs World"))
       SNESGameFixes.EchoOnlyOutput = true;
 
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
@@ -2848,26 +2847,26 @@ void ApplyROMFixes()
    //OAM hacks because we don't fully understand the
    //behavior of the SNES.
 
-   if (strcmp(Memory.ROMName, "\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0") == 0 ||   //Super Famista
-       strcmp(Memory.ROMName, "\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0 2") == 0 ||  //Super Famista 2
-       strcmp(Memory.ROMName, "ZENKI TENCHIMEIDOU") == 0 ||
-       strcmp(Memory.ROMName, "GANBA LEAGUE") == 0)
+   if (match_na("\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0") ||   //Super Famista
+       match_na("\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0 2") ||  //Super Famista 2
+       match_na("ZENKI TENCHIMEIDOU") ||
+       match_na("GANBA LEAGUE"))
       SNESGameFixes.APU_OutPorts_ReturnValueFix = true;
-   else if (strcmp(Memory.ROMName, "FURAI NO SIREN") == 0)
+   else if (match_na("FURAI NO SIREN"))
       SNESGameFixes.SoundEnvelopeHeightReading2 = true;
 
    //CPU timing hacks
    Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * Settings.CyclesPercentage) / 100;
 
    // A Couple of HDMA related hacks - Lantus
-   if ((strcmp(Memory.ROMName, "SFX SUPERBUTOUDEN2") == 0) ||
-         (strcmp(Memory.ROMName, "ALIEN vs. PREDATOR") == 0) ||
-         (strcmp(Memory.ROMName, "STONE PROTECTORS") == 0) ||
-         (strcmp(Memory.ROMName, "SUPER BATTLETANK 2") == 0))
+   if ((match_na("SFX SUPERBUTOUDEN2")) ||
+         (match_na("ALIEN vs. PREDATOR")) ||
+         (match_na("STONE PROTECTORS")) ||
+         (match_na("SUPER BATTLETANK 2")))
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 130) / 100;
-   else if (strcmp(Memory.ROMName, "HOME IMPROVEMENT") == 0)
+   else if (match_na("HOME IMPROVEMENT"))
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 200) / 100;
-   else if (strcmp(Memory.ROMId, "ASRJ") == 0 && Settings.CyclesPercentage == 100)
+   else if (match_id("ASRJ") && Settings.CyclesPercentage == 100)
       // Street Racer
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 95) / 100;
    // Power Rangers Fight
@@ -2878,13 +2877,13 @@ void ApplyROMFixes()
    else if (strncmp(Memory.ROMId, "A3M", 3) == 0 && Settings.CyclesPercentage == 100)
       // Mortal Kombat 3. Fixes cut off speech sample
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 110) / 100;
-   else if (strcmp(Memory.ROMName, "\x0bd\x0da\x0b2\x0d4\x0b0\x0bd\x0de") == 0 &&
+   else if (match_na("\x0bd\x0da\x0b2\x0d4\x0b0\x0bd\x0de") &&
          Settings.CyclesPercentage == 100)
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 101) / 100;
-   else if (strcmp(Memory.ROMName, "WILD TRAX") == 0 ||
-         strcmp(Memory.ROMName, "STAR FOX 2") == 0 ||
-         strcmp(Memory.ROMName, "YOSSY'S ISLAND") == 0 ||
-         strcmp(Memory.ROMName, "YOSHI'S ISLAND") == 0)
+   else if (match_na("WILD TRAX") ||
+         match_na("STAR FOX 2") ||
+         match_na("YOSSY'S ISLAND") ||
+         match_na("YOSHI'S ISLAND"))
       CPU.TriedInterleavedMode2 = true;
    // Start Trek: Deep Sleep 9
    else if (strncmp(Memory.ROMId, "A9D", 3) == 0 && Settings.CyclesPercentage == 100)
@@ -3069,7 +3068,7 @@ void ApplyROMFixes()
 
    // Additional game fixes by sanmaiwashi ...
    // Gundam Knight Story
-   if (strcmp(Memory.ROMName, "SFX \xC5\xB2\xC4\xB6\xDE\xDD\xC0\xDE\xD1\xD3\xC9\xB6\xDE\xC0\xD8 1") == 0)
+   if (match_na("SFX \xC5\xB2\xC4\xB6\xDE\xDD\xC0\xDE\xD1\xD3\xC9\xB6\xDE\xC0\xD8 1"))
    {
       bytes0x2000 [0xb18] = 0x4c;
       bytes0x2000 [0xb19] = 0x4b;
@@ -3078,13 +3077,13 @@ void ApplyROMFixes()
    }
 
    //sram value fixes
-   if (strcmp(Memory.ROMName, "SUPER DRIFT OUT") == 0 ||
-         strcmp(Memory.ROMName, "SATAN IS OUR FATHER!") == 0 ||
-         strcmp(Memory.ROMName, "goemon 4") == 0)
+   if (match_na("SUPER DRIFT OUT") ||
+         match_na("SATAN IS OUR FATHER!") ||
+         match_na("goemon 4"))
       SNESGameFixes.SRAMInitialValue = 0x00;
 
    if(Settings.BS && Memory.LoROM &&
-      strcmp(Memory.ROMName, "F-ZERO") == 0 &&
+      match_na("F-ZERO") &&
       Memory.ROMChecksum == 0xb10d &&
       Memory.ROMComplementChecksum == 0x4ef2)
      Memory.ROM[0x7fd0] = 0xFF; // fix memory pack position bits
