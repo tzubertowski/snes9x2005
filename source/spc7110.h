@@ -7,14 +7,14 @@
 #define DECOMP_BUFFER_SIZE 0x10000
 
 extern void (*LoadUp7110)(char*);
-extern void (*CleanUp7110)(void);
-extern void (*Copy7110)(void);
+extern void (*CleanUp7110)();
+extern void (*Copy7110)();
 
 extern uint16_t cacheMegs;
 
-void Del7110Gfx(void);
-void Close7110Gfx(void);
-void Drop7110Gfx(void);
+void Del7110Gfx();
+void Close7110Gfx();
+void Drop7110Gfx();
 uint8_t S9xGetSPC7110(uint16_t Address);
 uint8_t S9xGetSPC7110Byte(uint32_t Address);
 uint8_t* Get7110BasePtr(uint32_t);

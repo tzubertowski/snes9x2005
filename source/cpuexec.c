@@ -13,10 +13,10 @@
 #include "sa1.h"
 #include "spc7110.h"
 
-void S9xMainLoop_SA1_SFX(void);
-void S9xMainLoop_SA1_NoSFX(void);
-void S9xMainLoop_NoSA1_SFX(void);
-void S9xMainLoop_NoSA1_NoSFX(void);
+void S9xMainLoop_SA1_SFX();
+void S9xMainLoop_SA1_NoSFX();
+void S9xMainLoop_NoSA1_SFX();
+void S9xMainLoop_NoSA1_NoSFX();
 
 /*
  * This is a CATSFC modification inspired by a Snes9x-Euphoria modification.
@@ -27,7 +27,7 @@ void S9xMainLoop_NoSA1_NoSFX(void);
  * to propagate modifications to the SA1_NoSFX, NoSA1_SFX and NoSA1_NoSFX
  * versions.
  */
-void S9xMainLoop(void)
+void S9xMainLoop()
 {
    if (Settings.SA1)
    {
@@ -41,7 +41,7 @@ void S9xMainLoop(void)
    }
 }
 
-void S9xMainLoop_SA1_SFX(void)
+void S9xMainLoop_SA1_SFX()
 {
    for (;;)
    {
@@ -56,7 +56,7 @@ void S9xMainLoop_SA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  ++CPU.PC;
+                  CPU.PC++;
                }
                S9xOpcode_NMI();
             }
@@ -69,7 +69,7 @@ void S9xMainLoop_SA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  ++CPU.PC;
+                  CPU.PC++;
                }
                if (CPU.IRQActive && !Settings.DisableIRQ)
                {
@@ -79,13 +79,9 @@ void S9xMainLoop_SA1_SFX(void)
                else
                   CPU.Flags &= ~IRQ_PENDING_FLAG;
             }
-            else
-            {
-               if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-                  CPU.IRQCycleCount = 1;
-            }
+            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+               CPU.IRQCycleCount = 1;
          }
-
          if (CPU.Flags & SCAN_KEYS_FLAG)
             break;
       }
@@ -94,7 +90,6 @@ void S9xMainLoop_SA1_SFX(void)
       CPU.PCAtOpcodeStart = CPU.PC;
 #endif
       CPU.Cycles += CPU.MemSpeed;
-
       (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
 
       if (SA1.Executing)
@@ -110,18 +105,9 @@ void S9xMainLoop_SA1_SFX(void)
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-
-#ifdef DETECT_NASTY_FX_INTERLEAVE
-   if (CPU.BRKTriggered && Settings.SuperFX && !CPU.TriedInterleavedMode2)
-   {
-      CPU.TriedInterleavedMode2 = true;
-      CPU.BRKTriggered = false;
-      S9xDeinterleaveMode2();
-   }
-#endif
 }
 
-void S9xMainLoop_SA1_NoSFX(void)
+void S9xMainLoop_SA1_NoSFX()
 {
    for (;;)
    {
@@ -159,13 +145,9 @@ void S9xMainLoop_SA1_NoSFX(void)
                else
                   CPU.Flags &= ~IRQ_PENDING_FLAG;
             }
-            else
-            {
-               if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-                  CPU.IRQCycleCount = 1;
-            }
+            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+               CPU.IRQCycleCount = 1;
          }
-
          if (CPU.Flags & SCAN_KEYS_FLAG)
             break;
       }
@@ -174,7 +156,6 @@ void S9xMainLoop_SA1_NoSFX(void)
       CPU.PCAtOpcodeStart = CPU.PC;
 #endif
       CPU.Cycles += CPU.MemSpeed;
-
       (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
 
       if (SA1.Executing)
@@ -192,7 +173,7 @@ void S9xMainLoop_SA1_NoSFX(void)
       CPU.Flags &= ~SCAN_KEYS_FLAG;
 }
 
-void S9xMainLoop_NoSA1_SFX(void)
+void S9xMainLoop_NoSA1_SFX()
 {
    for (;;)
    {
@@ -207,7 +188,7 @@ void S9xMainLoop_NoSA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  ++CPU.PC;
+                  CPU.PC++;
                }
                S9xOpcode_NMI();
             }
@@ -220,7 +201,7 @@ void S9xMainLoop_NoSA1_SFX(void)
                if (CPU.WaitingForInterrupt)
                {
                   CPU.WaitingForInterrupt = false;
-                  ++CPU.PC;
+                  CPU.PC++;
                }
                if (CPU.IRQActive && !Settings.DisableIRQ)
                {
@@ -230,13 +211,9 @@ void S9xMainLoop_NoSA1_SFX(void)
                else
                   CPU.Flags &= ~IRQ_PENDING_FLAG;
             }
-            else
-            {
-               if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-                  CPU.IRQCycleCount = 1;
-            }
+            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+               CPU.IRQCycleCount = 1;
          }
-
          if (CPU.Flags & SCAN_KEYS_FLAG)
             break;
       }
@@ -245,9 +222,7 @@ void S9xMainLoop_NoSA1_SFX(void)
       CPU.PCAtOpcodeStart = CPU.PC;
 #endif
       CPU.Cycles += CPU.MemSpeed;
-
       (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-
       DO_HBLANK_CHECK_SFX();
    }
 
@@ -259,18 +234,9 @@ void S9xMainLoop_NoSA1_SFX(void)
 #endif
    if (CPU.Flags & SCAN_KEYS_FLAG)
       CPU.Flags &= ~SCAN_KEYS_FLAG;
-
-#ifdef DETECT_NASTY_FX_INTERLEAVE
-   if (CPU.BRKTriggered && Settings.SuperFX && !CPU.TriedInterleavedMode2)
-   {
-      CPU.TriedInterleavedMode2 = true;
-      CPU.BRKTriggered = false;
-      S9xDeinterleaveMode2();
-   }
-#endif
 }
 
-void S9xMainLoop_NoSA1_NoSFX(void)
+void S9xMainLoop_NoSA1_NoSFX()
 {
    for (;;)
    {
@@ -308,13 +274,9 @@ void S9xMainLoop_NoSA1_NoSFX(void)
                else
                   CPU.Flags &= ~IRQ_PENDING_FLAG;
             }
-            else
-            {
-               if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-                  CPU.IRQCycleCount = 1;
-            }
+            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+               CPU.IRQCycleCount = 1;
          }
-
          if (CPU.Flags & SCAN_KEYS_FLAG)
             break;
       }
@@ -323,9 +285,7 @@ void S9xMainLoop_NoSA1_NoSFX(void)
       CPU.PCAtOpcodeStart = CPU.PC;
 #endif
       CPU.Cycles += CPU.MemSpeed;
-
       (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-
       DO_HBLANK_CHECK_NoSFX();
    }
 
@@ -396,8 +356,7 @@ void S9xDoHBlankProcessing_SFX()
       CPU.NextEvent = -1;
       ICPU.Scanline++;
 
-      if (++CPU.V_Counter >= (Settings.PAL ? SNES_MAX_PAL_VCOUNTER :
-                              SNES_MAX_NTSC_VCOUNTER))
+      if (++CPU.V_Counter >= (Settings.PAL ? SNES_MAX_PAL_VCOUNTER : SNES_MAX_NTSC_VCOUNTER))
       {
          CPU.V_Counter = 0;
          Memory.FillRAM[0x213F] ^= 0x80;

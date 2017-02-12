@@ -13,7 +13,7 @@ static void S9xSA1ReadVariableLengthData(bool inc, bool no_shift);
 void S9xSA1Init()
 {
    SA1.NMIActive = false;
-   SA1.IRQActive = false;
+   SA1.IRQActive = 0;
    SA1.WaitingForInterrupt = false;
    SA1.Waiting = false;
    SA1.Flags = 0;
@@ -413,7 +413,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       break;
    case 0x2231:
       if (byte & 0x80)
-         SA1.in_char_dma = false;
+         SA1.in_char_dma = 0;
       break;
    case 0x2236:
       Memory.FillRAM [address] = byte;
@@ -426,7 +426,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
          Memory.FillRAM [0x2300] |= 0x20;
          if (Memory.FillRAM [0x2201] & 0x20)
             S9xSetIRQ(SA1_DMA_IRQ_SOURCE);
-         SA1.in_char_dma = true;
+         SA1.in_char_dma = 1;
       }
       return;
    case 0x2237:
@@ -476,7 +476,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
             SA1.sum = SA1.op1 << 16;
          else
          {
-            uint64_t x = (SA1.op1 / (uint16_t) SA1.op2);
+            uint32_t x = (SA1.op1 / (uint16_t) SA1.op2);
             SA1.sum = x | ((SA1.op1 - (x * (uint16_t) SA1.op2)) << 16);
          }
          break;
@@ -614,8 +614,7 @@ void S9xSA1ReadVariableLengthData(bool inc, bool no_shift)
       addr += (s >> 4) << 1;
       s &= 15;
    }
-   uint32_t data = S9xSA1GetWord(addr) |
-                  (S9xSA1GetWord(addr + 2) << 16);
+   uint32_t data = S9xSA1GetWord(addr) | (S9xSA1GetWord(addr + 2) << 16);
 
    data >>= s;
    Memory.FillRAM [0x230c] = (uint8_t) data;

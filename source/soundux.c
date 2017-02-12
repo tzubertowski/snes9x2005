@@ -381,8 +381,8 @@ void DecodeBlock(Channel* ch)
    int8_t* compressed = (int8_t*) &IAPU.RAM [ch->block_pointer];
 
    filter = *compressed;
-   if ((ch->last_block = filter & 1))
-      ch->loop = (filter & 2) != 0;
+   if ((ch->last_block = (bool) (filter & 1)))
+      ch->loop = (bool) (filter & 2);
 
    int16_t* raw = ch->block = ch->decoded;
    uint32_t i;
@@ -480,7 +480,7 @@ static inline void MixStereo(int32_t sample_count)
       int32_t VL, VR;
       uint32_t freq0 = ch->frequency;
 
-      bool mod = pitch_mod & (1 << J);
+      uint8_t mod = pitch_mod & (1 << J);
 
       if (ch->needs_decode)
       {
@@ -497,8 +497,7 @@ static inline void MixStereo(int32_t sample_count)
          ch->interpolate = 0;
 
          if (Settings.InterpolatedSound && freq0 < FIXED_POINT && !mod)
-            ch->interpolate = ((ch->next_sample - ch->sample) *
-                               (int32_t) freq0) / (int32_t) FIXED_POINT;
+            ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq0) / (int32_t) FIXED_POINT;
       }
       VL = (ch->sample * ch-> left_vol_level) / 128;
       VR = (ch->sample * ch->right_vol_level) / 128;
@@ -702,10 +701,8 @@ static inline void MixStereo(int32_t sample_count)
             {
                if (Settings.InterpolatedSound && freq < FIXED_POINT && !mod)
                {
-                  ch->interpolate = ((ch->next_sample - ch->sample) *
-                                     (int32_t) freq) / (int32_t) FIXED_POINT;
-                  ch->sample = (int16_t)(ch->sample + (((ch->next_sample - ch->sample) *
-                                                      (int32_t)(ch->count)) / (int32_t) FIXED_POINT));
+                  ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq) / (int32_t) FIXED_POINT;
+                  ch->sample = (int16_t)(ch->sample + (((ch->next_sample - ch->sample) * (int32_t)(ch->count)) / (int32_t) FIXED_POINT));
                }
                else
                   ch->interpolate = 0;
@@ -931,7 +928,7 @@ bool S9xInitSound()
 {
    so.playback_rate = 0;
    S9xResetSound(true);
-   return (1);
+   return true;
 }
 
 bool S9xSetSoundMode(int32_t channel, int32_t mode)
@@ -944,7 +941,7 @@ bool S9xSetSoundMode(int32_t channel, int32_t mode)
       if (ch->mode != MODE_NONE)
       {
          ch->mode = MODE_RELEASE;
-         return (true);
+         return true;
       }
       break;
    case MODE_DECREASE_LINEAR:
@@ -957,18 +954,18 @@ bool S9xSetSoundMode(int32_t channel, int32_t mode)
          ch->mode = mode;
          if (ch->state != SOUND_SILENT)
             ch->state = mode;
-         return (true);
+         return true;
       }
       break;
    case MODE_ADSR:
       if (ch->mode == MODE_NONE || ch->mode == MODE_ADSR)
       {
          ch->mode = mode;
-         return (true);
+         return true;
       }
    }
 
-   return (false);
+   return false;
 }
 
 void S9xPlaySample(int32_t channel)

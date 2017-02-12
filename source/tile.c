@@ -17,16 +17,16 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
    uint32_t* p = (uint32_t*) pCache;
    uint32_t non_zero = 0;
    uint8_t line;
+   uint32_t p1;
+   uint32_t p2;
+   uint8_t pix;
 
    switch (BG.BitShift)
    {
    case 8:
       for (line = 8; line != 0; line--, tp += 2)
       {
-         uint32_t p1 = 0;
-         uint32_t p2 = 0;
-         uint8_t pix;
-
+         p1 = p2 = 0;
          if ((pix = *(tp + 0)))
          {
             p1 |= odd_high[0][pix >> 4];
@@ -76,9 +76,7 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
    case 4:
       for (line = 8; line != 0; line--, tp += 2)
       {
-         uint32_t p1 = 0;
-         uint32_t p2 = 0;
-         uint8_t pix;
+         p1 = p2 = 0;
          if ((pix = *(tp + 0)))
          {
             p1 |= odd_high[0][pix >> 4];
@@ -108,9 +106,7 @@ static uint8_t ConvertTile(uint8_t* pCache, uint32_t TileAddr)
    case 2:
       for (line = 8; line != 0; line--, tp += 2)
       {
-         uint32_t p1 = 0;
-         uint32_t p2 = 0;
-         uint8_t pix;
+         p1 = p2 = 0;
          if ((pix = *(tp + 0)))
          {
             p1 |= odd_high[0][pix >> 4];

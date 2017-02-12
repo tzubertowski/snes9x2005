@@ -55,10 +55,10 @@ bool LoadROM(const struct retro_game_info* game);
 #else
 bool LoadROM(const char*);
 #endif
-void  InitROM(bool);
+void InitROM(bool);
 bool S9xInitMemory();
-void  S9xDeinitMemory();
-void  FreeSDD1Data();
+void S9xDeinitMemory();
+void FreeSDD1Data();
 
 void WriteProtectROM();
 void FixROMSpeed();
@@ -70,6 +70,7 @@ void JumboLoROMMap(bool);
 void LoROMMap();
 void LoROM24MBSMap();
 void SRAM512KLoROMMap();
+void SRAM1024KLoROMMap();
 void SufamiTurboLoROMMap();
 void HiROMMap();
 void SuperFXROMMap();
@@ -81,6 +82,8 @@ void SPC7110HiROMMap();
 void SPC7110Sram(uint8_t);
 void SetaDSPMap();
 void ApplyROMFixes();
+void DSPMap();
+void CapcomProtectLoROMMap();
 
 const char* TVStandard();
 const char* Speed();
@@ -93,6 +96,7 @@ const char* Headers();
 const char* ROMID();
 const char* CompanyID();
 void ParseSNESHeader(uint8_t*);
+
 enum
 {
    MAP_PPU, MAP_CPU, MAP_DSP, MAP_LOROM_SRAM, MAP_HIROM_SRAM,
@@ -100,7 +104,17 @@ enum
    MAP_BWRAM_BITMAP2, MAP_SA1RAM, MAP_SPC7110_ROM, MAP_SPC7110_DRAM,
    MAP_RONLY_SRAM, MAP_OBC_RAM, MAP_SETA_DSP, MAP_SETA_RISC, MAP_LAST
 };
-enum { MAX_ROM_SIZE = 0x800000 };
+
+enum {
+   MAX_ROM_SIZE = 0x800000
+};
+
+enum
+{
+   MAP_TYPE_I_O,
+   MAP_TYPE_ROM,
+   MAP_TYPE_RAM
+};
 
 typedef struct
 {

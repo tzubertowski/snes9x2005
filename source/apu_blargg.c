@@ -327,7 +327,7 @@ static INLINE void dsp_decode_brr( dsp_voice_t* v )
    if ( (dsp_m.every_other_sample ^= 1) != 0 ) \
       dsp_m.new_kon &= ~dsp_m.kon; /* clears KON 63 clocks after it was last read */
 
-static INLINE void dsp_misc_30 (void)
+static INLINE void dsp_misc_30()
 {
    if ( dsp_m.every_other_sample )
    {
@@ -606,11 +606,11 @@ static void dsp_voice_V9_V6_V3( dsp_voice_t* const v )
    ECHO_FIR( 0 ) [ch] = ECHO_FIR( 8 ) [ch] = s >> 1; \
 }
 
-static INLINE void dsp_echo_22 (void)
+static INLINE void dsp_echo_22()
 {
    int32_t l, r;
 
-   if ( ++dsp_m.echo_hist_pos >= &dsp_m.echo_hist [ECHO_HIST_SIZE] )
+   if (++dsp_m.echo_hist_pos >= &dsp_m.echo_hist [ECHO_HIST_SIZE])
       dsp_m.echo_hist_pos = dsp_m.echo_hist;
 
    dsp_m.t_echo_ptr = (dsp_m.t_esa * 0x100 + dsp_m.echo_offset) & 0xFFFF;
@@ -624,7 +624,7 @@ static INLINE void dsp_echo_22 (void)
    dsp_m.t_echo_in [1] = r;
 }
 
-static INLINE void dsp_echo_23 (void)
+static INLINE void dsp_echo_23()
 {
    int32_t l, r;
 
@@ -637,7 +637,7 @@ static INLINE void dsp_echo_23 (void)
    ECHO_READ(1);
 }
 
-static INLINE void dsp_echo_24 (void)
+static INLINE void dsp_echo_24()
 {
    int32_t l, r;
 
@@ -648,7 +648,7 @@ static INLINE void dsp_echo_24 (void)
    dsp_m.t_echo_in [1] += r;
 }
 
-static INLINE void dsp_echo_25 (void)
+static INLINE void dsp_echo_25()
 {
    int32_t l = dsp_m.t_echo_in [0] + (((dsp_m.echo_hist_pos [6 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
    int32_t r = dsp_m.t_echo_in [1] + (((dsp_m.echo_hist_pos [6 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
@@ -674,7 +674,7 @@ static INLINE void dsp_echo_25 (void)
    CLAMP16( var ); \
 }
 
-static INLINE void dsp_echo_26 (void)
+static INLINE void dsp_echo_26()
 {
    int32_t l, r;
 
@@ -690,7 +690,7 @@ static INLINE void dsp_echo_26 (void)
    dsp_m.t_echo_out [1] = r & ~1;
 }
 
-static INLINE void dsp_echo_27 (void)
+static INLINE void dsp_echo_27()
 {
    int32_t l, r;
    int16_t *out;
@@ -733,7 +733,7 @@ static INLINE void dsp_echo_27 (void)
    } \
    dsp_m.t_echo_out [ch] = 0;
 
-static INLINE void dsp_echo_29 (void)
+static INLINE void dsp_echo_29()
 {
    dsp_m.t_esa = dsp_m.regs [R_ESA];
 
@@ -949,7 +949,7 @@ static void dsp_set_output( int16_t * out, int32_t size )
 
 /* Setup */
 
-static void dsp_soft_reset_common (void)
+static void dsp_soft_reset_common()
 {
    dsp_m.noise              = 0x4000;
    dsp_m.echo_hist_pos      = dsp_m.echo_hist;
@@ -962,7 +962,7 @@ static void dsp_soft_reset_common (void)
 
 /* Resets DSP to power-on state */
 
-static void dsp_reset (void)
+static void dsp_reset()
 {
    int32_t i;
 
@@ -1009,7 +1009,7 @@ static void dsp_init( void* ram_64k )
 
 /* Emulates pressing reset switch on SNES */
 
-static void dsp_soft_reset (void)
+static void dsp_soft_reset()
 {
    dsp_m.regs[R_FLG] = 0xE0;
    dsp_soft_reset_common();
@@ -2576,7 +2576,6 @@ set_psw:
                   {
                      addr &= 0xFFFF;
                      SET_PC( addr );
-                     /* dprintf( "SPC: PC wrapped around\n" ); */
                      goto loop;
                   }
                }
@@ -2670,7 +2669,7 @@ uint8_t * spc_apuram()
 
 /* Init */
 
-static void spc_reset_buffer(void)
+static void spc_reset_buffer()
 {
    int16_t *out;
    /* Start with half extra buffer of silence */
@@ -2745,7 +2744,7 @@ static void spc_reset_common( int32_t timer_counter_init )
 /*	Resets SPC to power-on state. This resets your output buffer, so you must
    call set_output() after this. */
 
-static void spc_reset (void)
+static void spc_reset()
 {
    m.cpu_regs.pc  = 0xFFC0;
    m.cpu_regs.a   = 0x00;
@@ -2782,9 +2781,9 @@ static void spc_reset (void)
 /*	Emulates pressing reset switch on SNES. This resets your output buffer, so
    you must call set_output() after this. */
 
-static void spc_soft_reset (void)
+static void spc_soft_reset()
 {
-   spc_reset_common( 0 );
+   spc_reset_common(0);
    dsp_soft_reset();
 }
 
@@ -2926,7 +2925,7 @@ static INLINE int32_t hermite (int32_t mu1, int32_t a, int32_t b, int32_t c, int
    return ((a0) + (a1) + (a2) + (a3)) >> 15;
 }
 
-static void resampler_clear(void)
+static void resampler_clear()
 {
    rb_start = 0;
    rb_size = 0;
@@ -3073,7 +3072,7 @@ bool S9xMixSamples (int16_t *buffer, uint32_t sample_count)
    return (true);
 }
 
-int32_t S9xGetSampleCount (void)
+int32_t S9xGetSampleCount()
 {
    return AVAIL();
 }
@@ -3108,7 +3107,7 @@ static void spc_set_output( int16_t* out, int32_t size )
    dsp_set_output( out, out_end - out );
 }
 
-void S9xFinalizeSamples (void)
+void S9xFinalizeSamples()
 {
    bool ret;
 
@@ -3126,13 +3125,13 @@ void S9xFinalizeSamples (void)
    spc_set_output(landing_buffer, buffer_size);
 }
 
-void S9xClearSamples (void)
+void S9xClearSamples()
 {
    resampler_clear();
    lag = lag_master;
 }
 
-bool S9xSyncSound (void)
+bool S9xSyncSound()
 {
    if (!Settings.SoundSync || sound_in_sync)
       return true;
@@ -3147,7 +3146,7 @@ void S9xSetSamplesAvailableCallback (apu_callback callback)
    sa_callback = callback;
 }
 
-static void UpdatePlaybackRate (void)
+static void UpdatePlaybackRate()
 {
    double time_ratio;
    if (Settings.SoundInputRate == 0)
@@ -3178,8 +3177,6 @@ bool S9xInitSound (int32_t buffer_ms, int32_t lag_ms)
    buffer_size = sample_count;
    buffer_size <<= 1;
    buffer_size <<= 1;
-
-   printf("Sound buffer size: %d (%d samples)\n", buffer_size, sample_count);
 
    if (landing_buffer)
       free(landing_buffer);
@@ -3248,7 +3245,7 @@ static int8_t const reg_times_ [256] =
    29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
 };
 
-bool S9xInitAPU (void)
+bool S9xInitAPU()
 {
    int32_t i;
 
@@ -3303,7 +3300,7 @@ bool S9xInitAPU (void)
    return true;
 }
 
-void S9xDeinitAPU (void)
+void S9xDeinitAPU()
 {
    if (resampler)
    {
@@ -3338,7 +3335,7 @@ void S9xAPUSetReferenceTime (int32_t cpucycles)
    reference_time = cpucycles;
 }
 
-void S9xAPUExecute (void)
+void S9xAPUExecute()
 {
    /* Accumulate partial APU cycles */
    spc_end_frame(S9X_APU_GET_CLOCK(CPU.Cycles));
@@ -3352,9 +3349,6 @@ void S9xAPUExecute (void)
 
 void S9xAPUTimingSetSpeedup (int32_t ticks)
 {
-   if (ticks != 0)
-      printf("APU speedup hack: %d\n", ticks);
-
    timing_hack_denominator = TEMPO_UNIT - ticks;
    spc_set_tempo(timing_hack_denominator);
 
@@ -3370,7 +3364,7 @@ void S9xAPUAllowTimeOverflow (bool allow)
    allow_time_overflow = allow;
 }
 
-void S9xResetAPU (void)
+void S9xResetAPU()
 {
    reference_time = 0;
    spc_remainder = 0;
@@ -3383,7 +3377,7 @@ void S9xResetAPU (void)
    resampler_clear();
 }
 
-void S9xSoftResetAPU (void)
+void S9xSoftResetAPU()
 {
    reference_time = 0;
    spc_remainder = 0;

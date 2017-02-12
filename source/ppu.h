@@ -18,9 +18,9 @@ extern uint16_t SignExtend [2];
 
 #define PPU_H_BEAM_IRQ_SOURCE (1 << 0)
 #define PPU_V_BEAM_IRQ_SOURCE (1 << 1)
-#define GSU_IRQ_SOURCE     (1 << 2)
-#define SA1_IRQ_SOURCE     (1 << 7)
-#define SA1_DMA_IRQ_SOURCE (1 << 5)
+#define GSU_IRQ_SOURCE        (1 << 2)
+#define SA1_DMA_IRQ_SOURCE    (1 << 5)
+#define SA1_IRQ_SOURCE        (1 << 7)
 
 struct ClipData
 {
@@ -31,26 +31,22 @@ struct ClipData
 
 typedef struct
 {
-   bool     ColorsChanged;
-   uint8_t  HDMA;
-   bool     HDMAStarted;
-   uint8_t  MaxBrightness;
-   bool     LatchedBlanking;
-   bool     OBJChanged;
-   bool     RenderThisFrame;
-   bool     DirectColourMapsNeedRebuild;
-   uint32_t FrameCount;
-   uint32_t RenderedFramesCount;
-   uint32_t DisplayedRenderedFrameCount;
-   uint32_t SkippedFrames;
-   uint32_t FrameSkip;
-   uint8_t* TileCache [3];
-   uint8_t* TileCached [3];
-#ifdef CORRECT_VRAM_READS
-   uint16_t VRAMReadBuffer;
-#else
-   bool  FirstVRAMRead;
-#endif
+   bool            ColorsChanged;
+   uint8_t         HDMA;
+   bool            HDMAStarted;
+   uint8_t         MaxBrightness;
+   bool            LatchedBlanking;
+   bool            OBJChanged;
+   bool            RenderThisFrame;
+   bool            DirectColourMapsNeedRebuild;
+   uint32_t        FrameCount;
+   uint32_t        RenderedFramesCount;
+   uint32_t        DisplayedRenderedFrameCount;
+   uint32_t        SkippedFrames;
+   uint32_t        FrameSkip;
+   uint8_t*        TileCache [3];
+   uint8_t*        TileCached [3];
+   bool            FirstVRAMRead;
    bool            DoubleHeightPixels;
    bool            Interlace;
    bool            InterlaceSprites;
@@ -176,7 +172,7 @@ typedef struct
    bool     ClipWindow1Inside [6];
    bool     ClipWindow2Inside [6];
    bool     RecomputeClipWindows;
-   uint8_t  CGFLIPRead;
+   bool     CGFLIPRead;
    uint16_t OBJNameSelect;
    bool     Need16x8Mulitply;
    uint8_t  Joypad3ButtonReadPos;

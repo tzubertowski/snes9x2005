@@ -32,8 +32,6 @@ uint8_t S9xGetST018(uint32_t Address)
    else if (address == 0x3800)
       t = ST018.status;
 
-   printf("ST018 R: %06X %02X\n", Address, t);
-
    return t;
 }
 
@@ -41,9 +39,6 @@ void S9xSetST018(uint8_t Byte, uint32_t Address)
 {
    uint16_t address = (uint16_t) Address & 0xFFFF;
    static bool reset = false;
-
-   printf("ST018 W: %06X %02X\n", Address, Byte);
-
    line++;
 
    if (!reset)
@@ -75,8 +70,6 @@ void S9xSetST018(uint8_t Byte, uint32_t Address)
          switch (ST018.command & 0xFFFFFF)
          {
          case 0x0100:
-            ST018.in_count = 0;
-            break;
          case 0xFF00:
             ST018.in_count = 0;
             break;

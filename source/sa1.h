@@ -51,7 +51,7 @@ typedef struct
    int64_t       sum;
    bool          overflow;
    uint8_t       VirtualBitmapFormat;
-   bool          in_char_dma;
+   uint8_t       in_char_dma;
    uint8_t       variable_bit_pos;
    SSA1Registers Registers;
 } SSA1;
@@ -78,6 +78,7 @@ void S9xSA1SetPCBase(uint32_t);
 uint8_t S9xGetSA1(uint32_t);
 void S9xSetSA1(uint8_t, uint32_t);
 
+extern SOpcodes S9xSA1OpcodesE1   [256];
 extern SOpcodes S9xSA1OpcodesM1X1 [256];
 extern SOpcodes S9xSA1OpcodesM1X0 [256];
 extern SOpcodes S9xSA1OpcodesM0X1 [256];
@@ -92,7 +93,7 @@ void S9xFixSA1AfterSnapshotLoad();
 #define TIMER_IRQ_SOURCE    (1 << 6)
 #define DMA_IRQ_SOURCE      (1 << 5)
 
-static inline void S9xSA1UnpackStatus(void)
+static inline void S9xSA1UnpackStatus()
 {
    SA1._Zero = (SA1.Registers.PL & Zero) == 0;
    SA1._Negative = (SA1.Registers.PL & Negative);
@@ -100,17 +101,17 @@ static inline void S9xSA1UnpackStatus(void)
    SA1._Overflow = (SA1.Registers.PL & Overflow) >> 6;
 }
 
-static inline void S9xSA1PackStatus(void)
+static inline void S9xSA1PackStatus()
 {
    SA1.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
    SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) |
                       (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
-static inline void S9xSA1FixCycles(void)
+static inline void S9xSA1FixCycles()
 {
    if (SA1CheckEmulation())
-      SA1.S9xOpcodes = S9xSA1OpcodesM1X1;
+      SA1.S9xOpcodes = S9xSA1OpcodesE1;
    else if (SA1CheckMemory())
    {
       if (SA1CheckIndex())

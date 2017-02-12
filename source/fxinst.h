@@ -337,28 +337,12 @@ struct FxRegs_s
 
 /* Execute instruction from the pipe, and fetch next byte to the pipe */
 #define FX_STEP { uint32_t vOpcode = (uint32_t)PIPE; FETCHPIPE; \
-(*fx_ppfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); } \
+(*fx_apfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); } \
 
-#define FX_FUNCTION_RUN       0
-#define FX_FUNCTION_RUN_TO_BREAKPOINT  1
-#define FX_FUNCTION_STEP_OVER    2
-
-extern uint32_t(**fx_ppfFunctionTable)(uint32_t);
-extern void (**fx_ppfPlotTable)();
-extern void (**fx_ppfOpcodeTable)();
-
-extern uint32_t(*fx_apfFunctionTable[])(uint32_t);
 extern void (*fx_apfOpcodeTable[])();
 extern void (*fx_apfPlotTable[])();
-extern uint32_t(*fx_a_apfFunctionTable[])(uint32_t);
-extern void (*fx_a_apfOpcodeTable[])();
-extern void (*fx_a_apfPlotTable[])();
-extern uint32_t(*fx_r_apfFunctionTable[])(uint32_t);
-extern void (*fx_r_apfOpcodeTable[])();
-extern void (*fx_r_apfPlotTable[])();
-extern uint32_t(*fx_ar_apfFunctionTable[])(uint32_t);
-extern void (*fx_ar_apfOpcodeTable[])();
-extern void (*fx_ar_apfPlotTable[])();
+
+uint32_t fx_run(uint32_t nInstructions);
 
 /* Set this define if branches are relative to the instruction in the delay slot */
 /* (I think they are) */

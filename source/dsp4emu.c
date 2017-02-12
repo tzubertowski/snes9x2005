@@ -160,7 +160,7 @@ resume2:
                          - 1.07629051 * project_focaly - 65.69315963);
 
       // approximate # of raster lines
-      segments = abs(project_y2 - project_y1);
+      segments = ABS(project_y2 - project_y1);
 
       // prevent overdraw
       if (project_y2 >= raster) segments = 0;
@@ -341,7 +341,7 @@ resume2:
                          - 1.07629051 * project_focaly - 65.69315963);
 
       // approximate # of raster lines
-      segments = abs(project_y2 - project_y1);
+      segments = ABS(project_y2 - project_y1);
 
       // prevent overdraw
       if (project_y2 >= raster) segments = 0;
@@ -555,7 +555,7 @@ DSP4_WAIT(2) resume2:
          int16_t dx1 = 0, dx2 = 0, dx3, dx4;
 
          // # segments to traverse
-         segments = abs(y_left - path_y[0]);
+         segments = ABS(y_left - path_y[0]);
 
          // prevent overdraw
          if (y_left >= path_raster[0]) segments = 0;
@@ -638,7 +638,7 @@ DSP4_WAIT(2) resume2:
 
          //////////////////////////////////////////////
          // zone 2
-         segments = abs(y_right - path_y[1]);
+         segments = ABS(y_right - path_y[1]);
 
          // prevent overdraw
          if (y_right >= path_raster[2]) segments = 0;
@@ -863,7 +863,7 @@ resume2:
                          - 1.07629051 * project_focaly - 65.69315963);
 
       // approximate # of raster lines
-      segments = abs(project_y2 - project_y1);
+      segments = ABS(project_y2 - project_y1);
 
       // prevent overdraw
       if (project_y2 >= raster) segments = 0;
@@ -994,7 +994,8 @@ void DSP4_Op09()
    // convert track line to the window region
    project_y2 = center_y + multi_raster[multi_index1] *
                 (viewport_bottom - center_y) / (0x33 - 0);
-   if (op09_mode == 0) project_y2 -= 2;
+   if (!op09_mode)
+      project_y2 -= 2;
 
    goto no_sprite;
 
@@ -1138,7 +1139,7 @@ DSP4_WAIT(5) resume5:
       }
 
       // default sprite size: 16x16
-      sprite_size = 1;
+      sprite_size = true;
 
       // convert tile data to OAM
 

@@ -285,7 +285,6 @@ void  S9xUpdateSrtcTime()
 /**********************************************************************************************/
 void S9xSetSRTC(uint8_t data, uint16_t Address)
 {
-
    data &= 0x0F; // Data is only 4-bits, mask out unused bits.
 
    if (data >= 0xD)
@@ -353,7 +352,6 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
          rtc.index = -1;
          rtc.mode = MODE_COMMAND_DONE;
          break;
-
       case COMMAND_LOAD_RTC:
          // Disable RTC counter
          rtc.count_enable = false;
@@ -361,7 +359,6 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
          rtc.index = 0;  // Setup for writing
          rtc.mode = MODE_LOAD_RTC;
          break;
-
       default:
          rtc.mode = MODE_COMMAND_DONE;
          // unrecognized command - need to implement.

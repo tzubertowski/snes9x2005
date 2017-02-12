@@ -59,7 +59,7 @@ void S9xDoDMA(uint8_t Channel)
 
    int32_t inc = d->AAddressFixed ? 0 : (!d->AAddressDecrement ? 1 : -1);
 
-   if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80)
+   if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80 && !d->TransferDirection)
    {
       d->AAddress += d->TransferBytes;
       //does an invalid DMA actually take time?
@@ -301,9 +301,7 @@ void S9xDoDMA(uint8_t Channel)
             while (--count > 0);
             break;
          case 0x18:
-#ifndef CORRECT_VRAM_READS
             IPPU.FirstVRAMRead = true;
-#endif
             if (!PPU.VMA.FullGraphicCount)
             {
                do
@@ -326,9 +324,7 @@ void S9xDoDMA(uint8_t Channel)
             }
             break;
          case 0x19:
-#ifndef CORRECT_VRAM_READS
             IPPU.FirstVRAMRead = true;
-#endif
             if (!PPU.VMA.FullGraphicCount)
             {
                do
@@ -384,9 +380,7 @@ void S9xDoDMA(uint8_t Channel)
          if (d->BAddress == 0x18)
          {
             // Write to V-RAM
-#ifndef CORRECT_VRAM_READS
             IPPU.FirstVRAMRead = true;
-#endif
             if (!PPU.VMA.FullGraphicCount)
             {
                while (count > 1)
@@ -632,8 +626,6 @@ update_address:
    d->TransferBytes = 0;
 
    CPU.InDMA = false;
-
-
 }
 
 void S9xStartHDMA()
@@ -767,15 +759,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
             continue;
          }
 
-         if (p->BAddress == 0x04)
-         {
-            if (SNESGameFixes.Uniracers)
-            {
-               PPU.OAMAddr = 0x10c;
-               PPU.OAMFlip = 0;
-            }
-         }
-
          switch (p->TransferMode)
          {
          case 0:
@@ -881,18 +864,12 @@ void S9xResetDMA()
       DMA [d].HDMAIndirectAddressing = false;
       DMA [d].AAddressFixed = true;
       DMA [d].AAddressDecrement = false;
-      DMA [d].TransferMode = 0xff;
+      DMA [d].TransferMode = 7;
       DMA [d].ABank = 0xff;
       DMA [d].AAddress = 0xffff;
       DMA [d].Address = 0xffff;
       DMA [d].BAddress = 0xff;
       DMA [d].TransferBytes = 0xffff;
-   }
-   for (c = 0x4300; c < 0x4380; c += 0x10)
-   {
-      for (d = c; d < c + 12; d++)
-         Memory.FillRAM [d] = 0xff;
-
-      Memory.FillRAM [c + 0xf] = 0xff;
+      DMA [d].IndirectAddress = 0xffff;
    }
 }

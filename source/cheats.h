@@ -44,33 +44,28 @@ typedef enum
     S9X_8_BITS, S9X_16_BITS, S9X_24_BITS, S9X_32_BITS
 } S9xCheatDataSize;
 
-void S9xInitCheatData ();
+void S9xInitCheatData();
 
-const char *S9xGameGenieToRaw (const char *code, uint32_t *address, uint8_t *byte);
-const char *S9xProActionReplayToRaw (const char *code, uint32_t *address, uint8_t *byte);
-const char *S9xGoldFingerToRaw (const char *code, uint32_t *address, bool *sram,
-				uint8_t *num_bytes, uint8_t bytes[3]);
-void S9xApplyCheats(void);
-void S9xApplyCheat (uint32_t which1);
-void S9xRemoveCheats ();
-void S9xRemoveCheat (uint32_t which1);
-void S9xEnableCheat (uint32_t which1);
-void S9xDisableCheat (uint32_t which1);
-void S9xDisableAllCheat(void);
-void S9xAddCheat (bool enable, bool save_current_value, uint32_t address,
-		  uint8_t byte);
-void S9xDeleteCheats(void);
-void S9xDeleteCheat (uint32_t which1);
-bool S9xLoadCheatFile (const char *filename);
-bool S9xSaveCheatFile (const char *filename);
+const char *S9xGameGenieToRaw(const char *code, uint32_t *address, uint8_t *byte);
+const char *S9xProActionReplayToRaw(const char *code, uint32_t *address, uint8_t *byte);
+const char *S9xGoldFingerToRaw(const char *code, uint32_t *address, bool *sram,	uint8_t *num_bytes, uint8_t bytes[3]);
+void S9xApplyCheats();
+void S9xApplyCheat(uint32_t which1);
+void S9xRemoveCheats();
+void S9xRemoveCheat(uint32_t which1);
+void S9xEnableCheat(uint32_t which1);
+void S9xDisableCheat(uint32_t which1);
+void S9xDisableAllCheat();
+void S9xAddCheat(bool enable, bool save_current_value, uint32_t address, uint8_t byte);
+void S9xDeleteCheats();
+void S9xDeleteCheat(uint32_t which1);
+bool S9xLoadCheatFile(const char *filename);
+bool S9xSaveCheatFile(const char *filename);
 
-void S9xStartCheatSearch (SCheatData *cheats);
-void S9xSearchForChange (SCheatData *cheats, S9xCheatComparisonType cmp,
-                         S9xCheatDataSize size, bool is_signed, bool update);
-void S9xSearchForValue (SCheatData *cheats, S9xCheatComparisonType cmp,
-                        S9xCheatDataSize size, uint32_t value,
-                        bool is_signed, bool update);
-void S9xOutputCheatSearchResults (SCheatData *cheats);
+void S9xStartCheatSearch(SCheatData *cheats);
+void S9xSearchForChange(SCheatData *cheats, S9xCheatComparisonType cmp, S9xCheatDataSize size, bool is_signed, bool update);
+void S9xSearchForValue(SCheatData *cheats, S9xCheatComparisonType cmp, S9xCheatDataSize size, uint32_t value, bool is_signed, bool update);
+void S9xOutputCheatSearchResults(SCheatData *cheats);
 
 #endif
 

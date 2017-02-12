@@ -26,50 +26,47 @@
 #define Negative  128
 #define Emulation 256
 
-#define ClearCarry() (ICPU._Carry = 0)
-#define SetCarry() (ICPU._Carry = 1)
-#define SetZero() (ICPU._Zero = 0)
-#define ClearZero() (ICPU._Zero = 1)
-#define SetIRQ() (ICPU.Registers.PL |= IRQ)
-#define ClearIRQ() (ICPU.Registers.PL &= ~IRQ)
-#define SetDecimal() (ICPU.Registers.PL |= Decimal)
-#define ClearDecimal() (ICPU.Registers.PL &= ~Decimal)
-#define SetIndex() (ICPU.Registers.PL |= IndexFlag)
-#define ClearIndex() (ICPU.Registers.PL &= ~IndexFlag)
-#define SetMemory() (ICPU.Registers.PL |= MemoryFlag)
-#define ClearMemory() (ICPU.Registers.PL &= ~MemoryFlag)
-#define SetOverflow() (ICPU._Overflow = 1)
-#define ClearOverflow() (ICPU._Overflow = 0)
-#define SetNegative() (ICPU._Negative = 0x80)
-#define ClearNegative() (ICPU._Negative = 0)
+#define SetCarry()       (ICPU._Carry = 1)
+#define ClearCarry()     (ICPU._Carry = 0)
+#define SetZero()        (ICPU._Zero = 0)
+#define ClearZero()      (ICPU._Zero = 1)
+#define SetIRQ()         (ICPU.Registers.PL |= IRQ)
+#define ClearIRQ()       (ICPU.Registers.PL &= ~IRQ)
+#define SetDecimal()     (ICPU.Registers.PL |= Decimal)
+#define ClearDecimal()   (ICPU.Registers.PL &= ~Decimal)
+#define SetIndex()       (ICPU.Registers.PL |= IndexFlag)
+#define ClearIndex()     (ICPU.Registers.PL &= ~IndexFlag)
+#define SetMemory()      (ICPU.Registers.PL |= MemoryFlag)
+#define ClearMemory()    (ICPU.Registers.PL &= ~MemoryFlag)
+#define SetOverflow()    (ICPU._Overflow = 1)
+#define ClearOverflow()  (ICPU._Overflow = 0)
+#define SetNegative()    (ICPU._Negative = 0x80)
+#define ClearNegative()  (ICPU._Negative = 0)
 
-#define CheckZero() (ICPU._Zero == 0)
-#define CheckCarry() (ICPU._Carry)
-#define CheckIRQ() (ICPU.Registers.PL & IRQ)
-#define CheckDecimal() (ICPU.Registers.PL & Decimal)
-#define CheckIndex() (ICPU.Registers.PL & IndexFlag)
-#define CheckMemory() (ICPU.Registers.PL & MemoryFlag)
-#define CheckOverflow() (ICPU._Overflow)
-#define CheckNegative() (ICPU._Negative & 0x80)
+#define CheckCarry()     (ICPU._Carry)
+#define CheckZero()      (ICPU._Zero == 0)
+#define CheckIRQ()       (ICPU.Registers.PL & IRQ)
+#define CheckDecimal()   (ICPU.Registers.PL & Decimal)
+#define CheckIndex()     (ICPU.Registers.PL & IndexFlag)
+#define CheckMemory()    (ICPU.Registers.PL & MemoryFlag)
+#define CheckOverflow()  (ICPU._Overflow)
+#define CheckNegative()  (ICPU._Negative & 0x80)
 #define CheckEmulation() (ICPU.Registers.P.W & Emulation)
 
-#define ClearFlags(f) (ICPU.Registers.P.W &= ~(f))
-#define SetFlags(f)   (ICPU.Registers.P.W |=  (f))
-#define CheckFlag(f)  (ICPU.Registers.PL & (f))
+#define SetFlags(f)      (ICPU.Registers.P.W |=  (f))
+#define ClearFlags(f)    (ICPU.Registers.P.W &= ~(f))
+#define CheckFlag(f)     (ICPU.Registers.PL & (f))
 
 typedef union
 {
+   struct
+   {
 #ifdef MSB_FIRST
-   struct
-   {
       uint8_t h, l;
-   } B;
 #else
-   struct
-   {
       uint8_t l, h;
-   } B;
 #endif
+   } B;
 
    uint16_t W;
 } pair;

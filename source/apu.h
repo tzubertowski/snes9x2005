@@ -47,21 +47,21 @@ typedef struct
 SAPU APU;
 SIAPU IAPU;
 
-static inline void S9xAPUUnpackStatus(void)
+static inline void S9xAPUUnpackStatus()
 {
    IAPU._Zero = ((IAPU.Registers.P & Zero) == 0) | (IAPU.Registers.P & Negative);
    IAPU._Carry = (IAPU.Registers.P & Carry);
    IAPU._Overflow = (IAPU.Registers.P & Overflow) >> 6;
 }
 
-static inline void S9xAPUPackStatus(void)
+static inline void S9xAPUPackStatus()
 {
    IAPU.Registers.P &= ~(Zero | Negative | Carry | Overflow);
    IAPU.Registers.P |= IAPU._Carry | ((IAPU._Zero == 0) << 1) |
                        (IAPU._Zero & 0x80) | (IAPU._Overflow << 6);
 }
 
-void S9xResetAPU(void);
+void S9xResetAPU();
 bool S9xInitAPU();
 void S9xDeinitAPU();
 void S9xDecacheSamples();
@@ -73,7 +73,7 @@ void S9xOpenCloseSoundTracingFile(bool);
 void S9xPrintAPUState();
 extern uint16_t S9xAPUCycles [256];       // Scaled cycle lengths
 extern uint16_t S9xAPUCycleLengths [256]; // Raw data.
-extern void (*S9xApuOpcodes [256])(void);
+extern void (*S9xApuOpcodes [256])();
 
 #define APU_VOL_LEFT 0x00
 #define APU_VOL_RIGHT 0x01
