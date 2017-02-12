@@ -50,11 +50,11 @@ extern void fx_updateRamBank(uint8_t Byte);
 #define FX_FLAG_ROM_BUFFER    0x02
 
 /* Return codes from FxEmulate(), FxStepInto() or FxStepOver() */
-#define FX_BREAKPOINT         -1
+#define FX_BREAKPOINT            -1
 #define FX_ERROR_ILLEGAL_ADDRESS -2
 
 /* Return the number of bytes in an opcode */
-#define OPCODE_BYTES(op) ((((op)>=0x05&&(op)<=0xf)||((op)>=0xa0&&(op)<=0xaf))?2:(((op)>=0xf0)?3:1))
+#define OPCODE_BYTES(op) ((((op) >= 0x05 && (op) <= 0xf) || ((op) >= 0xa0 && (op) <= 0xaf)) ? 2 : (((op) >= 0xf0) ? 3 : 1))
 
 extern void fx_computeScreenPointers();
 

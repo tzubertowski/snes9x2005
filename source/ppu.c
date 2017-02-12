@@ -131,6 +131,7 @@ static void S9xSetSuperFX(uint8_t Byte, uint16_t Address)
       case 0x3037:
       case 0x3039:
       case 0x303a:
+      case 0x303b:
       case 0x303f:
          break;
       case 0x3034:
@@ -139,8 +140,6 @@ static void S9xSetSuperFX(uint8_t Byte, uint16_t Address)
          break;
       case 0x3038:
          fx_dirtySCBR();
-         break;
-      case 0x303b:
          break;
       case 0x303c:
          fx_updateRamBank(Byte);
@@ -1165,8 +1164,8 @@ void S9xSetCPU(uint8_t byte, uint16_t Address)
             CPU.Flags |= NMI_FLAG;
             CPU.NMIActive = true;
             CPU.NMICycleCount = CPU.Cycles + TWO_CYCLES;
-            break;
          }
+         break;
       case 0x4201:
          if ((byte & 0x80) == 0 && (Memory.FillRAM[0x4213] & 0x80) == 0x80)
             S9xLatchCounters(1);

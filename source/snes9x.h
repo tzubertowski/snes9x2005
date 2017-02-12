@@ -15,27 +15,27 @@
 #define ROM_NAME_LEN 23
 
 #define STREAM FILE*
-#define READ_STREAM(p,l,s) fread (p,1,l,s)
-#define WRITE_STREAM(p,l,s) fwrite (p,1,l,s)
-#define OPEN_STREAM(f,m) fopen (f,m)
-#define REOPEN_STREAM(f,m) fdopen (f,m)
-#define FIND_STREAM(f)  ftell(f)
-#define REVERT_STREAM(f,o,s)   fseek(f,o,s)
-#define CLOSE_STREAM(s) fclose (s)
+#define READ_STREAM(p,l,s)   fread(p,1,l,s)
+#define WRITE_STREAM(p,l,s)  fwrite(p,1,l,s)
+#define OPEN_STREAM(f,m)     fopen(f,m)
+#define REOPEN_STREAM(f,m)   fdopen(f,m)
+#define FIND_STREAM(f)       ftell(f)
+#define REVERT_STREAM(f,o,s) fseek(f,o,s)
+#define CLOSE_STREAM(s)      fclose(s)
 
 
 /* SNES screen width and height */
-#define SNES_WIDTH      256
-#define SNES_HEIGHT     224
+#define SNES_WIDTH            256
+#define SNES_HEIGHT           224
 #define SNES_HEIGHT_EXTENDED  239
-#define IMAGE_WIDTH     (Settings.SupportHiRes ? SNES_WIDTH * 2 : SNES_WIDTH)
-#define IMAGE_HEIGHT    (Settings.SupportHiRes ? SNES_HEIGHT_EXTENDED * 2 : SNES_HEIGHT_EXTENDED)
+#define IMAGE_WIDTH           (Settings.SupportHiRes ? SNES_WIDTH * 2 : SNES_WIDTH)
+#define IMAGE_HEIGHT          (Settings.SupportHiRes ? SNES_HEIGHT_EXTENDED * 2 : SNES_HEIGHT_EXTENDED)
 
 #define SNES_MAX_NTSC_VCOUNTER  262
 #define SNES_MAX_PAL_VCOUNTER   312
-#define SNES_HCOUNTER_MAX  342
-#define SPC700_TO_65C816_RATIO   2
-#define AUTO_FRAMERATE     200
+#define SNES_HCOUNTER_MAX       341
+#define SPC700_TO_65C816_RATIO  2
+#define AUTO_FRAMERATE          200
 
 /* NTSC master clock signal 21.47727MHz
  * PPU: master clock / 4

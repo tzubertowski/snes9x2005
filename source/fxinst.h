@@ -150,7 +150,6 @@ struct FxRegs_s
    int32_t  vOverflow; /* (v >= 0x8000 || v < -0x8000) */
 
    /* Other emulator variables */
-
    int32_t  vErrorCode;
    uint32_t vIllegalAddress;
 
@@ -192,78 +191,82 @@ struct FxRegs_s
 };
 
 /* GSU registers */
-#define GSU_R0 0x000
-#define GSU_R1 0x002
-#define GSU_R2 0x004
-#define GSU_R3 0x006
-#define GSU_R4 0x008
-#define GSU_R5 0x00a
-#define GSU_R6 0x00c
-#define GSU_R7 0x00e
-#define GSU_R8 0x010
-#define GSU_R9 0x012
-#define GSU_R10 0x014
-#define GSU_R11 0x016
-#define GSU_R12 0x018
-#define GSU_R13 0x01a
-#define GSU_R14 0x01c
-#define GSU_R15 0x01e
-#define GSU_SFR 0x030
-#define GSU_BRAMR 0x033
-#define GSU_PBR 0x034
-#define GSU_ROMBR 0x036
-#define GSU_CFGR 0x037
-#define GSU_SCBR 0x038
-#define GSU_CLSR 0x039
-#define GSU_SCMR 0x03a
-#define GSU_VCR 0x03b
-#define GSU_RAMBR 0x03c
-#define GSU_CBR 0x03e
+#define GSU_R0       0x000
+#define GSU_R1       0x002
+#define GSU_R2       0x004
+#define GSU_R3       0x006
+#define GSU_R4       0x008
+#define GSU_R5       0x00a
+#define GSU_R6       0x00c
+#define GSU_R7       0x00e
+#define GSU_R8       0x010
+#define GSU_R9       0x012
+#define GSU_R10      0x014
+#define GSU_R11      0x016
+#define GSU_R12      0x018
+#define GSU_R13      0x01a
+#define GSU_R14      0x01c
+#define GSU_R15      0x01e
+#define GSU_SFR      0x030
+#define GSU_BRAMR    0x033
+#define GSU_PBR      0x034
+#define GSU_ROMBR    0x036
+#define GSU_CFGR     0x037
+#define GSU_SCBR     0x038
+#define GSU_CLSR     0x039
+#define GSU_SCMR     0x03a
+#define GSU_VCR      0x03b
+#define GSU_RAMBR    0x03c
+#define GSU_CBR      0x03e
 #define GSU_CACHERAM 0x100
 
 /* SFR flags */
-#define FLG_Z (1<<1)
-#define FLG_CY (1<<2)
-#define FLG_S (1<<3)
-#define FLG_OV (1<<4)
-#define FLG_G (1<<5)
-#define FLG_R (1<<6)
-#define FLG_ALT1 (1<<8)
-#define FLG_ALT2 (1<<9)
-#define FLG_IL (1<<10)
-#define FLG_IH (1<<11)
-#define FLG_B (1<<12)
-#define FLG_IRQ (1<<15)
+#define FLG_Z    (1 << 1)
+#define FLG_CY   (1 << 2)
+#define FLG_S    (1 << 3)
+#define FLG_OV   (1 << 4)
+#define FLG_G    (1 << 5)
+#define FLG_R    (1 << 6)
+#define FLG_ALT1 (1 << 8)
+#define FLG_ALT2 (1 << 9)
+#define FLG_IL   (1 << 10)
+#define FLG_IH   (1 << 11)
+#define FLG_B    (1 << 12)
+#define FLG_IRQ  (1 << 15)
 
 /* Test flag */
-#define TF(a) (GSU.vStatusReg & FLG_##a )
+#define TF(a) (GSU.vStatusReg &   FLG_##a )
 #define CF(a) (GSU.vStatusReg &= ~FLG_##a )
-#define SF(a) (GSU.vStatusReg |= FLG_##a )
+#define SF(a) (GSU.vStatusReg |=  FLG_##a )
 
 /* Test and set flag if condition, clear if not */
-#define TS(a,b) GSU.vStatusReg = ( (GSU.vStatusReg & (~FLG_##a)) | ( (!!(##b)) * FLG_##a ) )
+#define TS(a,b) GSU.vStatusReg = ((GSU.vStatusReg & (~FLG_##a)) | ((!!(##b)) * FLG_##a ))
 
 /* Testing ALT1 & ALT2 bits */
-#define ALT0 (!TF(ALT1)&&!TF(ALT2))
-#define ALT1 (TF(ALT1)&&!TF(ALT2))
-#define ALT2 (!TF(ALT1)&&TF(ALT2))
-#define ALT3 (TF(ALT1)&&TF(ALT2))
+#define ALT0 (!TF(ALT1) && !TF(ALT2))
+#define ALT1 ( TF(ALT1) && !TF(ALT2))
+#define ALT2 (!TF(ALT1) &&  TF(ALT2))
+#define ALT3 ( TF(ALT1) &&  TF(ALT2))
 
 /* Sign extend from 8/16 bit to 32 bit */
 #define SEX16(a) ((int32_t)((int16_t)(a)))
-#define SEX8(a) ((int32_t)((int8_t)(a)))
+#define SEX8(a)  ((int32_t)((int8_t) (a)))
 
 /* Unsign extend from 8/16 bit to 32 bit */
 #define USEX16(a) ((uint32_t)((uint16_t)(a)))
-#define USEX8(a) ((uint32_t)((uint8_t)(a)))
+#define USEX8(a)  ((uint32_t)((uint8_t) (a)))
 
 #define SUSEX16(a) ((int32_t)((uint16_t)(a)))
 
 /* Set/Clr Sign and Zero flag */
-#define TSZ(num) TS(S, (num & 0x8000)); TS(Z, (!USEX16(num)) )
+#define TSZ(num) \
+    TS(S, (num & 0x8000)); \
+    TS(Z, (!USEX16(num)))
 
 /* Clear flags */
-#define CLRFLAGS GSU.vStatusReg &= ~(FLG_ALT1|FLG_ALT2|FLG_B); GSU.pvDreg = GSU.pvSreg = &R0;
+#define CLRFLAGS \
+    GSU.vStatusReg &= ~(FLG_ALT1|FLG_ALT2|FLG_B); \
+    GSU.pvDreg = GSU.pvSreg = &R0;
 
 /* Read current RAM-Bank */
 #define RAM(adr) GSU.pvRamBank[USEX16(adr)]
@@ -336,8 +339,12 @@ struct FxRegs_s
 #define CLSR USEX8(GSU.pvRegisters[GSU_CLSR])
 
 /* Execute instruction from the pipe, and fetch next byte to the pipe */
-#define FX_STEP { uint32_t vOpcode = (uint32_t)PIPE; FETCHPIPE; \
-(*fx_apfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); } \
+#define FX_STEP \
+{ \
+    uint32_t vOpcode = (uint32_t) PIPE; \
+    FETCHPIPE; \
+    (*fx_apfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); \
+}
 
 extern void (*fx_apfOpcodeTable[])();
 extern void (*fx_apfPlotTable[])();

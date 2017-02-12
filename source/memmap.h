@@ -6,35 +6,22 @@
 #include "snes9x.h"
 
 #ifdef FAST_LSB_WORD_ACCESS
-#define READ_WORD(s) (*(uint16_t *) (s))
-#define READ_DWORD(s) (*(uint32_t *) (s))
-#define WRITE_WORD(s, d) (*(uint16_t *) (s)) = (d)
+#define READ_WORD(s)      (*(uint16_t *) (s))
+#define READ_DWORD(s)     (*(uint32_t *) (s))
+#define WRITE_WORD(s, d)  (*(uint16_t *) (s)) = (d)
 #define WRITE_DWORD(s, d) (*(uint32_t *) (s)) = (d)
 
-#define READ_3WORD(s) (0x00ffffff & *(uint32_t *) (s))
-#define WRITE_3WORD(s, d) *(uint16_t *) (s) = (uint16_t)(d),\
-                          *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16)
+#define READ_3WORD(s)      (0x00ffffff & *(uint32_t *) (s))
+#define WRITE_3WORD(s, d) *(uint16_t *) (s) = (uint16_t)(d), *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16)
 
 
 #else
-#define READ_WORD(s) ( *(uint8_t *) (s) |\
-            (*((uint8_t *) (s) + 1) << 8))
-#define READ_DWORD(s) ( *(uint8_t *) (s) |\
-             (*((uint8_t *) (s) + 1) << 8) |\
-             (*((uint8_t *) (s) + 2) << 16) |\
-             (*((uint8_t *) (s) + 3) << 24))
-#define WRITE_WORD(s, d) *(uint8_t *) (s) = (d), \
-                         *((uint8_t *) (s) + 1) = (d) >> 8
-#define WRITE_DWORD(s, d) *(uint8_t *) (s) = (uint8_t) (d), \
-                          *((uint8_t *) (s) + 1) = (uint8_t) ((d) >> 8),\
-                          *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16),\
-                          *((uint8_t *) (s) + 3) = (uint8_t) ((d) >> 24)
-#define WRITE_3WORD(s, d) *(uint8_t *) (s) = (uint8_t) (d), \
-                          *((uint8_t *) (s) + 1) = (uint8_t) ((d) >> 8),\
-                          *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16)
-#define READ_3WORD(s) ( *(uint8_t *) (s) |\
-                       (*((uint8_t *) (s) + 1) << 8) |\
-                       (*((uint8_t *) (s) + 2) << 16))
+#define READ_WORD(s)      (*(uint8_t *) (s) | (*((uint8_t *) (s) + 1) << 8))
+#define READ_DWORD(s)     (*(uint8_t *) (s) | (*((uint8_t *) (s) + 1) << 8) | (*((uint8_t *) (s) + 2) << 16) | (*((uint8_t *) (s) + 3) << 24))
+#define WRITE_WORD(s, d)   *(uint8_t *) (s) = (d), *((uint8_t *) (s) + 1) = (d) >> 8
+#define WRITE_DWORD(s, d)  *(uint8_t *) (s) = (uint8_t) (d), *((uint8_t *) (s) + 1) = (uint8_t) ((d) >> 8), *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16), *((uint8_t *) (s) + 3) = (uint8_t) ((d) >> 24)
+#define WRITE_3WORD(s, d)  *(uint8_t *) (s) = (uint8_t) (d), *((uint8_t *) (s) + 1) = (uint8_t) ((d) >> 8), *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16)
+#define READ_3WORD(s)     (*(uint8_t *) (s) | (*((uint8_t *) (s) + 1) << 8) | (*((uint8_t *) (s) + 2) << 16))
 #endif
 
 #define MEMMAP_BLOCK_SIZE (0x1000)
@@ -42,7 +29,6 @@
 #define MEMMAP_BLOCKS_PER_BANK (0x10000 / MEMMAP_BLOCK_SIZE)
 #define MEMMAP_SHIFT 12
 #define MEMMAP_MASK (MEMMAP_BLOCK_SIZE - 1)
-#define MEMMAP_MAX_SDD1_LOGGED_ENTRIES (0x10000 / 8)
 
 //Extended ROM Formats
 #define NOPE 0
@@ -149,9 +135,6 @@ typedef struct
    uint8_t* SDD1Index;
    uint8_t* SDD1Data;
    uint32_t SDD1Entries;
-   uint32_t SDD1LoggedDataCountPrev;
-   uint32_t SDD1LoggedDataCount;
-   uint8_t  SDD1LoggedData [MEMMAP_MAX_SDD1_LOGGED_ENTRIES];
    char     ROMFilename [_MAX_PATH];
    uint8_t  ROMRegion;
    uint32_t ROMCRC32;
