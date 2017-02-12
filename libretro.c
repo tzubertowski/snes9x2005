@@ -43,8 +43,8 @@ char slash = '\\';
 char slash = '/';
 #endif
 
-static float samples_per_frame = 0.0;
-static float samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
+static int32_t samples_per_frame = 0;
+static int32_t samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
 
 #ifdef PERF_TEST
 #define RETRO_PERFORMANCE_INIT(name) \
@@ -400,7 +400,7 @@ static void check_variables(void)
 #define FRAMESKIP
 #endif
 
-static float samples_to_play = 0.0;
+static int32_t samples_to_play = 0;
 void retro_run(void)
 {
    bool updated = false;
@@ -427,13 +427,13 @@ void retro_run(void)
 
    if (samples_to_play > 512)
    {
-      S9xMixSamples(audio_buf, ((int32_t)samples_to_play) * 2);
-      audio_batch_cb(audio_buf, (int32_t)samples_to_play);
-      samples_to_play -= (int32_t)samples_to_play;
+      S9xMixSamples(audio_buf, samples_to_play * 2);
+      audio_batch_cb(audio_buf, samples_to_play);
+      samples_to_play = 0;
    }
 #endif
 
-#ifdef  NO_VIDEO_OUTPUT
+#ifdef NO_VIDEO_OUTPUT
    return;
 #endif
 
@@ -767,7 +767,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
    
    Cheat.c[index].saved = false; // it'll be saved next time cheats run anyways
    
-   Settings.ApplyCheats=true;
+   Settings.ApplyCheats = true;
    S9xApplyCheats();
 #endif
 }

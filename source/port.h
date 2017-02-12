@@ -30,10 +30,8 @@
 #define _MAX_EXT PATH_MAX
 #define _MAX_PATH PATH_MAX
 
-void _makepath(char* path, const char* drive, const char* dir,
-               const char* fname, const char* ext);
-void _splitpath(const char* path, char* drive, char* dir, char* fname,
-                char* ext);
+void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext);
+void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
 #else /* __WIN32__ */
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
@@ -56,5 +54,32 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname,
 #define ABS(X)   ((X) <  0  ? -(X) : (X))
 #define MIN(A,B) ((A) < (B) ?  (A) : (B))
 #define MAX(A,B) ((A) > (B) ?  (A) : (B))
+
+/* Integer square root by Halleck's method, with Legalize's speedup */
+static inline int32_t _isqrt(int32_t val)
+{
+   int32_t squaredbit, remainder, root;
+
+   if (val < 1)
+      return 0;
+
+   squaredbit  = 1 << 30;
+   remainder = val;
+   root = 0;
+
+   while (squaredbit > 0)
+   {
+      if (remainder >= (squaredbit | root))
+      {
+         remainder -= (squaredbit | root);
+         root >>= 1;
+         root |= squaredbit;
+      } else
+         root >>= 1;
+      squaredbit >>= 2;
+   }
+
+   return root;
+}
 
 #endif

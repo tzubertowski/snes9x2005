@@ -30,12 +30,6 @@ const int16_t ST010_M7Scale[176] =
    0x002d,  0x002c,  0x002c,  0x002c,  0x002c,  0x002b,  0x002b,  0x002b
 };
 
-// H-DMA hack
-bool seta_hack;
-
-//temporary Op04 requirement
-#include <math.h>
-
 ST010_Regs ST010;
 
 uint8_t S9xGetST010(uint32_t Address)
@@ -52,23 +46,23 @@ uint8_t S9xGetST010(uint32_t Address)
 
 const int16_t ST010_SinTable[256] =
 {
-   0x0000,  0x0324,  0x0648,  0x096a,  0x0c8c,  0x0fab,  0x12c8,  0x15e2,
-   0x18f9,  0x1c0b,  0x1f1a,  0x2223,  0x2528,  0x2826,  0x2b1f,  0x2e11,
-   0x30fb,  0x33df,  0x36ba,  0x398c,  0x3c56,  0x3f17,  0x41ce,  0x447a,
-   0x471c,  0x49b4,  0x4c3f,  0x4ebf,  0x5133,  0x539b,  0x55f5,  0x5842,
-   0x5a82,  0x5cb3,  0x5ed7,  0x60eb,  0x62f1,  0x64e8,  0x66cf,  0x68a6,
-   0x6a6d,  0x6c23,  0x6dc9,  0x6f5e,  0x70e2,  0x7254,  0x73b5,  0x7504,
-   0x7641,  0x776b,  0x7884,  0x7989,  0x7a7c,  0x7b5c,  0x7c29,  0x7ce3,
-   0x7d89,  0x7e1d,  0x7e9c,  0x7f09,  0x7f61,  0x7fa6,  0x7fd8,  0x7ff5,
-   0x7fff,  0x7ff5,  0x7fd8,  0x7fa6,  0x7f61,  0x7f09,  0x7e9c,  0x7e1d,
-   0x7d89,  0x7ce3,  0x7c29,  0x7b5c,  0x7a7c,  0x7989,  0x7884,  0x776b,
-   0x7641,  0x7504,  0x73b5,  0x7254,  0x70e2,  0x6f5e,  0x6dc9,  0x6c23,
-   0x6a6d,  0x68a6,  0x66cf,  0x64e8,  0x62f1,  0x60eb,  0x5ed7,  0x5cb3,
-   0x5a82,  0x5842,  0x55f5,  0x539b,  0x5133,  0x4ebf,  0x4c3f,  0x49b4,
-   0x471c,  0x447a,  0x41ce,  0x3f17,  0x3c56,  0x398c,  0x36ba,  0x33df,
-   0x30fb,  0x2e11,  0x2b1f,  0x2826,  0x2528,  0x2223,  0x1f1a,  0x1c0b,
-   0x18f8,  0x15e2,  0x12c8,  0x0fab,  0x0c8c,  0x096a,  0x0648,  0x0324,
-   0x0000, -0x0324, -0x0648, -0x096b, -0x0c8c, -0x0fab, -0x12c8, -0x15e2,
+    0x0000,  0x0324,  0x0648,  0x096a,  0x0c8c,  0x0fab,  0x12c8,  0x15e2,
+    0x18f9,  0x1c0b,  0x1f1a,  0x2223,  0x2528,  0x2826,  0x2b1f,  0x2e11,
+    0x30fb,  0x33df,  0x36ba,  0x398c,  0x3c56,  0x3f17,  0x41ce,  0x447a,
+    0x471c,  0x49b4,  0x4c3f,  0x4ebf,  0x5133,  0x539b,  0x55f5,  0x5842,
+    0x5a82,  0x5cb3,  0x5ed7,  0x60eb,  0x62f1,  0x64e8,  0x66cf,  0x68a6,
+    0x6a6d,  0x6c23,  0x6dc9,  0x6f5e,  0x70e2,  0x7254,  0x73b5,  0x7504,
+    0x7641,  0x776b,  0x7884,  0x7989,  0x7a7c,  0x7b5c,  0x7c29,  0x7ce3,
+    0x7d89,  0x7e1d,  0x7e9c,  0x7f09,  0x7f61,  0x7fa6,  0x7fd8,  0x7ff5,
+    0x7fff,  0x7ff5,  0x7fd8,  0x7fa6,  0x7f61,  0x7f09,  0x7e9c,  0x7e1d,
+    0x7d89,  0x7ce3,  0x7c29,  0x7b5c,  0x7a7c,  0x7989,  0x7884,  0x776b,
+    0x7641,  0x7504,  0x73b5,  0x7254,  0x70e2,  0x6f5e,  0x6dc9,  0x6c23,
+    0x6a6d,  0x68a6,  0x66cf,  0x64e8,  0x62f1,  0x60eb,  0x5ed7,  0x5cb3,
+    0x5a82,  0x5842,  0x55f5,  0x539b,  0x5133,  0x4ebf,  0x4c3f,  0x49b4,
+    0x471c,  0x447a,  0x41ce,  0x3f17,  0x3c56,  0x398c,  0x36ba,  0x33df,
+    0x30fb,  0x2e11,  0x2b1f,  0x2826,  0x2528,  0x2223,  0x1f1a,  0x1c0b,
+    0x18f8,  0x15e2,  0x12c8,  0x0fab,  0x0c8c,  0x096a,  0x0648,  0x0324,
+    0x0000, -0x0324, -0x0648, -0x096b, -0x0c8c, -0x0fab, -0x12c8, -0x15e2,
    -0x18f9, -0x1c0b, -0x1f1a, -0x2223, -0x2528, -0x2826, -0x2b1f, -0x2e11,
    -0x30fb, -0x33df, -0x36ba, -0x398d, -0x3c56, -0x3f17, -0x41ce, -0x447a,
    -0x471c, -0x49b4, -0x4c3f, -0x4ebf, -0x5133, -0x539b, -0x55f5, -0x5842,
@@ -228,8 +222,7 @@ int16_t ST010_Cos(int16_t Theta)
    return ST010_SinTable[((Theta + 0x4000) >> 8) & 0xff];
 }
 
-void ST010_OP01(int16_t x0, int16_t y0, int16_t* x1, int16_t* y1, int16_t* Quadrant,
-                int16_t* Theta)
+void ST010_OP01(int16_t x0, int16_t y0, int16_t* x1, int16_t* y1, int16_t* Quadrant, int16_t* Theta)
 {
    if ((x0 < 0) && (y0 < 0))
    {
@@ -258,8 +251,10 @@ void ST010_OP01(int16_t x0, int16_t y0, int16_t* x1, int16_t* y1, int16_t* Quadr
 
    while ((*x1 > 0x1f) || (*y1 > 0x1f))
    {
-      if (*x1 > 1) *x1 >>= 1;
-      if (*y1 > 1) *y1 >>= 1;
+      if (*x1 > 1)
+         *x1 >>= 1;
+      if (*y1 > 1)
+         *y1 >>= 1;
    }
 
    if (*y1 == 0) *Quadrant += 0x4000;
@@ -346,8 +341,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
-         ST010_SortDrivers(*(int16_t*)&Memory.SRAM[0x0024], (uint16_t*)(Memory.SRAM + 0x0040),
-                           (uint16_t*)(Memory.SRAM + 0x0080));
+         ST010_SortDrivers(*(int16_t*)&Memory.SRAM[0x0024], (uint16_t*)(Memory.SRAM + 0x0040), (uint16_t*)(Memory.SRAM + 0x0080));
 #else
          uint16_t Places[32];
          uint16_t Positions = ST010_WORD(0x0024);
@@ -391,13 +385,11 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
          ST010_Scale(*(int16_t*)&Memory.SRAM[0x0004], *(int16_t*)&Memory.SRAM[0x0000],
-                     *(int16_t*)&Memory.SRAM[0x0002],
-                     (int32_t*)&Memory.SRAM[0x0010], (int32_t*)&Memory.SRAM[0x0014]);
+                     *(int16_t*)&Memory.SRAM[0x0002], (int32_t*)&Memory.SRAM[0x0010], (int32_t*)&Memory.SRAM[0x0014]);
 #else
          int32_t x1, y1;
 
-         ST010_Scale(ST010_WORD(0x0004), ST010_WORD(0x0000), ST010_WORD(0x0002), &x1,
-                     &y1);
+         ST010_Scale(ST010_WORD(0x0004), ST010_WORD(0x0000), ST010_WORD(0x0002), &x1, &y1);
 
          Memory.SRAM[0x0010] = (uint8_t)(x1);
          Memory.SRAM[0x0011] = (uint8_t)(x1 >> 8);
@@ -423,8 +415,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
-         ST010_Multiply(*(int16_t*)&Memory.SRAM[0x0000], *(int16_t*)&Memory.SRAM[0x0002],
-                        (int32_t*)&Memory.SRAM[0x0010]);
+         ST010_Multiply(*(int16_t*)&Memory.SRAM[0x0000], *(int16_t*)&Memory.SRAM[0x0002], (int32_t*)&Memory.SRAM[0x0010]);
 #else
          int32_t Product;
 
@@ -501,13 +492,11 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
          ST010_Rotate(*(int16_t*)&Memory.SRAM[0x0004], *(int16_t*)&Memory.SRAM[0x0000],
-                      *(int16_t*)&Memory.SRAM[0x0002],
-                      (int16_t*)&Memory.SRAM[0x0010], (int16_t*)&Memory.SRAM[0x0012]);
+                      *(int16_t*)&Memory.SRAM[0x0002], (int16_t*)&Memory.SRAM[0x0010], (int16_t*)&Memory.SRAM[0x0012]);
 #else
          int16_t x1, y1;
 
-         ST010_Rotate(ST010_WORD(0x0004), ST010_WORD(0x0000), ST010_WORD(0x0002), &x1,
-                      &y1);
+         ST010_Rotate(ST010_WORD(0x0004), ST010_WORD(0x0000), ST010_WORD(0x0002), &x1, &y1);
 
          Memory.SRAM[0x0010] = (uint8_t)(x1);
          Memory.SRAM[0x0011] = (uint8_t)(x1 >> 8);
@@ -562,7 +551,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          x = Memory.SRAM[0] | (Memory.SRAM[1] << 8);
          y = Memory.SRAM[2] | (Memory.SRAM[3] << 8);
 #endif
-         square = (int16_t)sqrt((double)(y * y + x * x));
+         square = (int16_t)_isqrt((int32_t) x * x + (int32_t) y * y);
 
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
          /* TODO - FIXME */
@@ -624,7 +613,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          ST010_OP01(dy, dx, &a1, &b1, &c1, (int16_t*)&o1);
 
          // check for wrapping
-         if (abs(o1 - rot) > 0x8000)
+         if (ABS(o1 - rot) > 0x8000)
          {
             o1 += 0x8000;
             rot += 0x8000;
@@ -636,12 +625,12 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          old_speed = speed;
 
          // special case
-         if (abs(o1 - rot) == 0x8000)
+         if (ABS(o1 - rot) == 0x8000)
             speed = 0x100;
          // slow down for sharp curves
-         else if (abs(o1 - rot) >= 0x1000)
+         else if (ABS(o1 - rot) >= 0x1000)
          {
-            uint32_t slow = abs(o1 - rot);
+            uint32_t slow = ABS(o1 - rot);
             slow >>= 4; // scaling
             speed -= slow;
          }
@@ -657,7 +646,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          }
 
          // prevent negative/positive overflow
-         if (abs(old_speed - speed) > 0x8000)
+         if (ABS(old_speed - speed) > 0x8000)
          {
             if (old_speed < speed) speed = 0;
             else speed = 0xff00;
@@ -717,13 +706,8 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          Memory.SRAM[0x00D5] = (uint8_t)(speed >> 8);
          Memory.SRAM[0x00DC] = (uint8_t)(flags);
          Memory.SRAM[0x00DD] = (uint8_t)(flags >> 8);
-
          break;
       }
-
-      default:
-         printf("Unknown Op\n");
-         break;
       }
 
       // lower signal: op processed

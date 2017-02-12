@@ -23,9 +23,9 @@ extern int16_t C41FAngleRes;
 extern int16_t C41FDist;
 extern int16_t C41FDistVal;
 
-void C4Op1F();
-void C4Op15();
-void C4Op0D();
+extern int32_t tanval;
+
+int16_t _atan2(int16_t x, int16_t y);
 
 extern int16_t C4CosTable[];
 extern int16_t C4SinTable[];

@@ -356,8 +356,8 @@ void DSP1SetByte(uint8_t byte, uint16_t address)
                   DSP1.output [1] = (uint8_t)((Op06H >> 8) & 0xFF);
                   DSP1.output [2] = (uint8_t)(Op06V & 0xFF);
                   DSP1.output [3] = (uint8_t)((Op06V >> 8) & 0xFF);
-                  DSP1.output [4] = (uint8_t)(Op06S & 0xFF);
-                  DSP1.output [5] = (uint8_t)((Op06S >> 8) & 0xFF);
+                  DSP1.output [4] = (uint8_t)(Op06M & 0xFF);
+                  DSP1.output [5] = (uint8_t)((Op06M >> 8) & 0xFF);
                   break;
                case 0x1e:
                case 0x2e:

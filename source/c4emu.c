@@ -12,11 +12,13 @@
 
 void S9xInitC4()
 {
-   memset(Memory.C4RAM, 0, 0x2000);
+   Memory.C4RAM = &Memory.FillRAM [0x6000];
 }
 
 uint8_t S9xGetC4(uint16_t Address)
 {
+   if (Address == 0x7f5e)
+      return 0;
    return (Memory.C4RAM [Address - 0x6000]);
 }
 
@@ -37,15 +39,12 @@ static uint8_t C4TestPattern [12 * 4] =
 };
 
 
-static void C4ConvOAM(void)
+static void C4ConvOAM()
 {
    uint8_t* i;
    uint8_t* OAMptr = Memory.C4RAM + (Memory.C4RAM[0x626] << 2);
    for (i = Memory.C4RAM + 0x1fd; i > OAMptr; i -= 4)
-   {
-      // Clear OAM-to-be
-      *i = 0xe0;
-   }
+      *i = 0xe0; // Clear OAM-to-be
 
    uint16_t globalX, globalY;
    uint8_t* OAMptr2;
@@ -67,7 +66,8 @@ static void C4ConvOAM(void)
          uint8_t* srcptr = Memory.C4RAM + 0x220;
          for (i = Memory.C4RAM[0x0620]; i > 0 && SprCount > 0; i--, srcptr += 16)
          {
-            if ((srcptr[4] & 0x30) != prio) continue;
+            if ((srcptr[4] & 0x30) != prio)
+               continue;
             SprX = READ_WORD(srcptr) - globalX;
             SprY = READ_WORD(srcptr + 2) - globalY;
             SprName = srcptr[5];
@@ -97,12 +97,15 @@ static void C4ConvOAM(void)
                         OAMptr[2] = SprName + sprptr[3];
                         OAMptr[3] = SprAttr ^ (sprptr[0] & 0xc0); // XXX: Carry from SprName addition?
                         *OAMptr2 &= ~(3 << offset);
-                        if (X & 0x100) *OAMptr2 |= 1 << offset;
-                        if (sprptr[0] & 0x20) *OAMptr2 |= 2 << offset;
+                        if (X & 0x100)
+                           *OAMptr2 |= 1 << offset;
+                        if (sprptr[0] & 0x20)
+                           *OAMptr2 |= 2 << offset;
                         OAMptr += 4;
                         SprCount--;
                         offset = (offset + 2) & 6;
-                        if (offset == 0) OAMptr2++;
+                        if (offset == 0)
+                           OAMptr2++;
                      }
                   }
                }
@@ -114,17 +117,19 @@ static void C4ConvOAM(void)
                OAMptr[2] = SprName;
                OAMptr[3] = SprAttr;
                *OAMptr2 &= ~(3 << offset);
-               if (SprX & 0x100) *OAMptr2 |= 3 << offset;
-               else *OAMptr2 |= 2 << offset;
+               if (SprX & 0x100)
+                  *OAMptr2 |= 3 << offset;
+               else
+                  *OAMptr2 |= 2 << offset;
                OAMptr += 4;
                SprCount--;
                offset = (offset + 2) & 6;
-               if (offset == 0) OAMptr2++;
+               if (offset == 0)
+                  OAMptr2++;
             }
          }
       }
    }
-   // XXX: Copy to OAM? I doubt it.
 }
 
 static void C4DoScaleRotate(int32_t row_padding)
@@ -133,9 +138,11 @@ static void C4DoScaleRotate(int32_t row_padding)
 
    // Calculate matrix
    int32_t XScale = READ_WORD(Memory.C4RAM + 0x1f8f);
-   if (XScale & 0x8000) XScale = 0x7fff;
+   if (XScale & 0x8000)
+      XScale = 0x7fff;
    int32_t YScale = READ_WORD(Memory.C4RAM + 0x1f92);
-   if (YScale & 0x8000) YScale = 0x7fff;
+   if (YScale & 0x8000)
+      YScale = 0x7fff;
 
    if (READ_WORD(Memory.C4RAM + 0x1f80) == 0)
    {
@@ -173,14 +180,10 @@ static void C4DoScaleRotate(int32_t row_padding)
    }
    else
    {
-      A = (int16_t)SAR16(C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * XScale,
-                       15);
-      B = (int16_t)(-SAR16(C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] *
-                         YScale, 15));
-      C = (int16_t)SAR16(C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * XScale,
-                       15);
-      D = (int16_t)SAR16(C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * YScale,
-                       15);
+      A = (int16_t)  SAR16(C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * XScale, 15);
+      B = (int16_t)(-SAR16(C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * YScale, 15));
+      C = (int16_t)  SAR16(C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * XScale, 15);
+      D = (int16_t)  SAR16(C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * YScale, 15);
    }
 
    // Calculate Pixel Resolution
@@ -218,14 +221,19 @@ static void C4DoScaleRotate(int32_t row_padding)
          {
             uint32_t addr = (Y >> 12) * w + (X >> 12);
             byte = Memory.C4RAM[0x600 + (addr >> 1)];
-            if (addr & 1) byte >>= 4;
+            if (addr & 1)
+               byte >>= 4;
          }
 
          // De-bitplanify
-         if (byte & 1) Memory.C4RAM[outidx] |= bit;
-         if (byte & 2) Memory.C4RAM[outidx + 1] |= bit;
-         if (byte & 4) Memory.C4RAM[outidx + 16] |= bit;
-         if (byte & 8) Memory.C4RAM[outidx + 17] |= bit;
+         if (byte & 1)
+            Memory.C4RAM[outidx] |= bit;
+         if (byte & 2)
+            Memory.C4RAM[outidx + 1] |= bit;
+         if (byte & 4)
+            Memory.C4RAM[outidx + 16] |= bit;
+         if (byte & 8)
+            Memory.C4RAM[outidx + 17] |= bit;
 
          bit >>= 1;
          if (bit == 0)
@@ -247,8 +255,7 @@ static void C4DoScaleRotate(int32_t row_padding)
    }
 }
 
-static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
-                       int32_t X2, int32_t Y2, int16_t Z2, uint8_t Color)
+static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1, int32_t X2, int32_t Y2, int16_t Z2, uint8_t Color)
 {
    // Transform coordinates
    C4WFXVal = (int16_t)X1;
@@ -270,8 +277,8 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
    Y2 = (C4WFYVal + 48) << 8;
 
    // get line info
-   C4WFXVal = (int16_t)(X1 >> 8);
-   C4WFYVal = (int16_t)(Y1 >> 8);
+   C4WFXVal  = (int16_t)(X1 >> 8);
+   C4WFYVal  = (int16_t)(Y1 >> 8);
    C4WFX2Val = (int16_t)(X2 >> 8);
    C4WFY2Val = (int16_t)(Y2 >> 8);
    C4CalcWireFrame();
@@ -285,20 +292,21 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1,
       //.loop
       if (X1 > 0xff && Y1 > 0xff && X1 < 0x6000 && Y1 < 0x6000)
       {
-         uint16_t addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((
-                            X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
+         uint16_t addr = (((Y1 >> 8) >> 3) << 8) - (((Y1 >> 8) >> 3) << 6) + (((X1 >> 8) >> 3) << 4) + ((Y1 >> 8) & 7) * 2;
          uint8_t bit = 0x80 >> ((X1 >> 8) & 7);
          Memory.C4RAM[addr + 0x300] &= ~bit;
          Memory.C4RAM[addr + 0x301] &= ~bit;
-         if (Color & 1) Memory.C4RAM[addr + 0x300] |= bit;
-         if (Color & 2) Memory.C4RAM[addr + 0x301] |= bit;
+         if (Color & 1)
+            Memory.C4RAM[addr + 0x300] |= bit;
+         if (Color & 2)
+            Memory.C4RAM[addr + 0x301] |= bit;
       }
       X1 += X2;
       Y1 += Y2;
    }
 }
 
-static void C4DrawWireFrame(void)
+static void C4DrawWireFrame()
 {
    uint8_t* line = S9xGetMemPointer(READ_3WORD(Memory.C4RAM + 0x1f80));
    uint8_t* point1, *point2;
@@ -312,15 +320,13 @@ static void C4DrawWireFrame(void)
       if (line[0] == 0xff && line[1] == 0xff)
       {
          uint8_t* tmp = line - 5;
-         while (line[2] == 0xff && line[3] == 0xff) tmp -= 5;
-         point1 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) |
-                                   (tmp[2] << 8) | tmp[3]);
+         while (line[2] == 0xff && line[3] == 0xff)
+            tmp -= 5;
+         point1 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) | (tmp[2] << 8) | tmp[3]);
       }
       else
-         point1 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) |
-                                   (line[0] << 8) | line[1]);
-      point2 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) |
-                                (line[2] << 8) | line[3]);
+         point1 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) | (line[0] << 8) | line[1]);
+      point2 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) | (line[2] << 8) | line[3]);
 
       X1 = (point1[0] << 8) | point1[1];
       Y1 = (point1[2] << 8) | point1[3];
@@ -333,7 +339,7 @@ static void C4DrawWireFrame(void)
    }
 }
 
-static void C4TransformLines(void)
+static void C4TransformLines()
 {
    C4WFX2Val = Memory.C4RAM[0x1f83];
    C4WFY2Val = Memory.C4RAM[0x1f86];
@@ -366,19 +372,17 @@ static void C4TransformLines(void)
 
    ptr = Memory.C4RAM + 0xb02;
    uint8_t* ptr2 = Memory.C4RAM;
+
+   for (i = READ_WORD(Memory.C4RAM + 0xb00); i > 0; i--, ptr += 2, ptr2 += 8)
    {
-      int32_t i;
-      for (i = READ_WORD(Memory.C4RAM + 0xb00); i > 0; i--, ptr += 2, ptr2 += 8)
-      {
-         C4WFXVal = READ_WORD(Memory.C4RAM + (ptr[0] << 4) + 1);
-         C4WFYVal = READ_WORD(Memory.C4RAM + (ptr[0] << 4) + 5);
-         C4WFX2Val = READ_WORD(Memory.C4RAM + (ptr[1] << 4) + 1);
-         C4WFY2Val = READ_WORD(Memory.C4RAM + (ptr[1] << 4) + 5);
-         C4CalcWireFrame();
-         WRITE_WORD(ptr2 + 0x600, C4WFDist ? C4WFDist : 1);
-         WRITE_WORD(ptr2 + 0x602, C4WFXVal);
-         WRITE_WORD(ptr2 + 0x605, C4WFYVal);
-      }
+      C4WFXVal = READ_WORD(Memory.C4RAM + (ptr[0] << 4) + 1);
+      C4WFYVal = READ_WORD(Memory.C4RAM + (ptr[0] << 4) + 5);
+      C4WFX2Val = READ_WORD(Memory.C4RAM + (ptr[1] << 4) + 1);
+      C4WFY2Val = READ_WORD(Memory.C4RAM + (ptr[1] << 4) + 5);
+      C4CalcWireFrame();
+      WRITE_WORD(ptr2 + 0x600, C4WFDist ? C4WFDist : 1);
+      WRITE_WORD(ptr2 + 0x602, C4WFXVal);
+      WRITE_WORD(ptr2 + 0x605, C4WFYVal);
    }
 }
 static void C4BitPlaneWave()
@@ -479,12 +483,17 @@ static void C4SprDisintegrate()
             uint8_t pixel = (j & 1) ? (*src >> 4) : *src;
             int32_t idx = (y >> 11) * width * 4 + (x >> 11) * 32 + ((y >> 8) & 7) * 2;
             uint8_t mask = 0x80 >> ((x >> 8) & 7);
-            if (pixel & 1) Memory.C4RAM[idx] |= mask;
-            if (pixel & 2) Memory.C4RAM[idx + 1] |= mask;
-            if (pixel & 4) Memory.C4RAM[idx + 16] |= mask;
-            if (pixel & 8) Memory.C4RAM[idx + 17] |= mask;
+            if (pixel & 1)
+               Memory.C4RAM[idx] |= mask;
+            if (pixel & 2)
+               Memory.C4RAM[idx + 1] |= mask;
+            if (pixel & 4)
+               Memory.C4RAM[idx + 16] |= mask;
+            if (pixel & 8)
+               Memory.C4RAM[idx + 17] |= mask;
          }
-         if (j & 1) src++;
+         if (j & 1)
+            src++;
       }
    }
 }
@@ -496,31 +505,24 @@ static void S9xC4ProcessSprites()
    case 0x00: // Build OAM
       C4ConvOAM();
       break;
-
    case 0x03: // Scale/Rotate
       C4DoScaleRotate(0);
       break;
-
    case 0x05: // Transform Lines
       C4TransformLines();
       break;
-
    case 0x07: // Scale/Rotate
       C4DoScaleRotate(64);
       break;
-
    case 0x08: // Draw wireframe
       C4DrawWireFrame();
       break;
-
    case 0x0b: // Disintegrate
       C4SprDisintegrate();
       break;
-
    case 0x0c: // Wave
       C4BitPlaneWave();
       break;
-
    default:
       break;
    }
@@ -541,76 +543,75 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
          case 0x00: // Sprite
             S9xC4ProcessSprites();
             break;
-
          case 0x01: // Draw wireframe
             memset(Memory.C4RAM + 0x300, 0, 16 * 12 * 3 * 4);
             C4DrawWireFrame();
             break;
-
          case 0x05: // Propulsion (?)
          {
             int32_t tmp = 0x10000;
             if (READ_WORD(Memory.C4RAM + 0x1f83))
-               tmp = SAR32((tmp / READ_WORD(Memory.C4RAM + 0x1f83)) * READ_WORD(
-                              Memory.C4RAM + 0x1f81), 8);
+               tmp = SAR32((tmp / READ_WORD(Memory.C4RAM + 0x1f83)) * READ_WORD(Memory.C4RAM + 0x1f81), 8);
             WRITE_WORD(Memory.C4RAM + 0x1f80, (uint16_t)tmp);
+            break;
          }
-         break;
-
          case 0x0d: // Set vector length
             C41FXVal = READ_WORD(Memory.C4RAM + 0x1f80);
             C41FYVal = READ_WORD(Memory.C4RAM + 0x1f83);
             C41FDistVal = READ_WORD(Memory.C4RAM + 0x1f86);
-            C4Op0D();
+            tanval = C41FDistVal / _isqrt((int32_t) C41FYVal * C41FYVal + (int32_t) C41FXVal * C41FXVal);
+            C41FYVal = (int16_t)(((int32_t)C41FYVal * tanval * 99) / 100);
+            C41FXVal = (int16_t)(((int32_t)C41FXVal * tanval * 98) / 100);
             WRITE_WORD(Memory.C4RAM + 0x1f89, C41FXVal);
             WRITE_WORD(Memory.C4RAM + 0x1f8c, C41FYVal);
             break;
-
          case 0x10: // Polar to rectangluar
          {
-            int32_t tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) *
-                              C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 16);
+            int32_t tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 16);
             WRITE_3WORD(Memory.C4RAM + 0x1f86, tmp);
-            tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4SinTable[READ_WORD(
-                           Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 16);
+            tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 16);
             WRITE_3WORD(Memory.C4RAM + 0x1f89, (tmp - SAR32(tmp, 6)));
+            break;
          }
-         break;
-
          case 0x13: // Polar to rectangluar
          {
-            int32_t tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) *
-                              C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 8);
+            int32_t tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4CosTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 8);
             WRITE_3WORD(Memory.C4RAM + 0x1f86, tmp);
-            tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4SinTable[READ_WORD(
-                           Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 8);
+            tmp = SAR32((int32_t)READ_WORD(Memory.C4RAM + 0x1f83) * C4SinTable[READ_WORD(Memory.C4RAM + 0x1f80) & 0x1ff] * 2, 8);
             WRITE_3WORD(Memory.C4RAM + 0x1f89, tmp);
+            break;
          }
-         break;
-
          case 0x15: // Pythagorean
             C41FXVal = READ_WORD(Memory.C4RAM + 0x1f80);
             C41FYVal = READ_WORD(Memory.C4RAM + 0x1f83);
-            C41FDist = (int16_t)sqrt((double)C41FXVal * C41FXVal + (double)C41FYVal *
-                                   C41FYVal);
+            C41FDist = (int16_t)_isqrt((int32_t) C41FXVal * C41FXVal + (int32_t) C41FYVal * C41FYVal);
             WRITE_WORD(Memory.C4RAM + 0x1f80, C41FDist);
             break;
-
          case 0x1f: // atan
             C41FXVal = READ_WORD(Memory.C4RAM + 0x1f80);
             C41FYVal = READ_WORD(Memory.C4RAM + 0x1f83);
-            C4Op1F();
+            if (C41FXVal == 0)
+            {
+               if (C41FYVal > 0)
+                  C41FAngleRes = 0x80;
+               else
+                  C41FAngleRes = 0x180;
+            }
+            else
+            {
+               C41FAngleRes = (int16_t)(_atan2(C41FYVal, C41FXVal) / 2);
+               if (C41FXVal < 0)
+                  C41FAngleRes += 0x100;
+               C41FAngleRes &= 0x1FF;
+            }
             WRITE_WORD(Memory.C4RAM + 0x1f86, C41FAngleRes);
             break;
-
          case 0x22: // Trapezoid
          {
             int16_t angle1 = READ_WORD(Memory.C4RAM + 0x1f8c) & 0x1ff;
             int16_t angle2 = READ_WORD(Memory.C4RAM + 0x1f8f) & 0x1ff;
-            int32_t tan1 = (C4CosTable[angle1] != 0) ? ((((int32_t)C4SinTable[angle1]) << 16) /
-                         C4CosTable[angle1]) : 0x80000000;
-            int32_t tan2 = (C4CosTable[angle2] != 0) ? ((((int32_t)C4SinTable[angle2]) << 16) /
-                         C4CosTable[angle2]) : 0x80000000;
+            int32_t tan1 = (C4CosTable[angle1] != 0) ? ((((int32_t)C4SinTable[angle1]) << 16) / C4CosTable[angle1]) : 0x80000000;
+            int32_t tan2 = (C4CosTable[angle2] != 0) ? ((((int32_t)C4SinTable[angle2]) << 16) / C4CosTable[angle2]) : 0x80000000;
             int16_t y = READ_WORD(Memory.C4RAM + 0x1f83) - READ_WORD(Memory.C4RAM + 0x1f89);
             int16_t left, right;
             int32_t j;
@@ -618,13 +619,8 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
             {
                if (y >= 0)
                {
-                  left = SAR32((int32_t)tan1 * y, 16) -
-                         READ_WORD(Memory.C4RAM + 0x1f80) +
-                         READ_WORD(Memory.C4RAM + 0x1f86);
-                  right = SAR32((int32_t)tan2 * y, 16) -
-                          READ_WORD(Memory.C4RAM + 0x1f80) +
-                          READ_WORD(Memory.C4RAM + 0x1f86) +
-                          READ_WORD(Memory.C4RAM + 0x1f93);
+                  left = SAR32((int32_t)tan1 * y, 16) - READ_WORD(Memory.C4RAM + 0x1f80) + READ_WORD(Memory.C4RAM + 0x1f86);
+                  right = SAR32((int32_t)tan2 * y, 16) - READ_WORD(Memory.C4RAM + 0x1f80) + READ_WORD(Memory.C4RAM + 0x1f86) + READ_WORD(Memory.C4RAM + 0x1f93);
 
                   if (left < 0 && right < 0)
                   {
@@ -654,18 +650,16 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
                Memory.C4RAM[j + 0x900] = (uint8_t)right;
                y++;
             }
+            break;
          }
-         break;
-
          case 0x25: // Multiply
          {
             int32_t foo = READ_3WORD(Memory.C4RAM + 0x1f80);
             int32_t bar = READ_3WORD(Memory.C4RAM + 0x1f83);
             foo *= bar;
             WRITE_3WORD(Memory.C4RAM + 0x1f80, foo);
+            break;
          }
-         break;
-
          case 0x2d: // Transform Coords
             C4WFXVal = READ_WORD(Memory.C4RAM + 0x1f81);
             C4WFYVal = READ_WORD(Memory.C4RAM + 0x1f84);
@@ -678,88 +672,79 @@ void S9xSetC4(uint8_t byte, uint16_t Address)
             WRITE_WORD(Memory.C4RAM + 0x1f80, C4WFXVal);
             WRITE_WORD(Memory.C4RAM + 0x1f83, C4WFYVal);
             break;
-
          case 0x40: // Sum
          {
             int32_t i;
             uint16_t sum = 0;
             for (i = 0; i < 0x800; sum += Memory.C4RAM[i++]);
             WRITE_WORD(Memory.C4RAM + 0x1f80, sum);
+            break;
          }
-         break;
-
          case 0x54: // Square
          {
             int64_t a = SAR64((int64_t)READ_3WORD(Memory.C4RAM + 0x1f80) << 40, 40);
             a *= a;
             WRITE_3WORD(Memory.C4RAM + 0x1f83, a);
             WRITE_3WORD(Memory.C4RAM + 0x1f86, (a >> 24));
+            break;
          }
-         break;
-
          case 0x5c: // Immediate Reg
             for (i = 0; i < 12 * 4; i++)
                Memory.C4RAM [i] = C4TestPattern [i];
             break;
-
          case 0x89: // Immediate ROM
             Memory.C4RAM [0x1f80] = 0x36;
             Memory.C4RAM [0x1f81] = 0x43;
             Memory.C4RAM [0x1f82] = 0x05;
             break;
-
          default:
             break;
          }
       }
    }
    else if (Address == 0x7f47)
-   {
       // memmove required: Can overlap arbitrarily [Neb]
-      memmove(Memory.C4RAM + (READ_WORD(Memory.C4RAM + 0x1f45) & 0x1fff),
-              S9xGetMemPointer(READ_3WORD(Memory.C4RAM + 0x1f40)),
-              READ_WORD(Memory.C4RAM + 0x1f43));
-   }
+      memmove(Memory.C4RAM + (READ_WORD(Memory.C4RAM + 0x1f45) & 0x1fff), S9xGetMemPointer(READ_3WORD(Memory.C4RAM + 0x1f40)), READ_WORD(Memory.C4RAM + 0x1f43));
 }
 
 int16_t C4SinTable[512] =
 {
-   0,    402,    804,   1206,   1607,   2009,   2410,   2811,
-   3211,   3611,   4011,   4409,   4808,   5205,   5602,   5997,
-   6392,   6786,   7179,   7571,   7961,   8351,   8739,   9126,
-   9512,   9896,  10278,  10659,  11039,  11416,  11793,  12167,
-   12539,  12910,  13278,  13645,  14010,  14372,  14732,  15090,
-   15446,  15800,  16151,  16499,  16846,  17189,  17530,  17869,
-   18204,  18537,  18868,  19195,  19519,  19841,  20159,  20475,
-   20787,  21097,  21403,  21706,  22005,  22301,  22594,  22884,
-   23170,  23453,  23732,  24007,  24279,  24547,  24812,  25073,
-   25330,  25583,  25832,  26077,  26319,  26557,  26790,  27020,
-   27245,  27466,  27684,  27897,  28106,  28310,  28511,  28707,
-   28898,  29086,  29269,  29447,  29621,  29791,  29956,  30117,
-   30273,  30425,  30572,  30714,  30852,  30985,  31114,  31237,
-   31357,  31471,  31581,  31685,  31785,  31881,  31971,  32057,
-   32138,  32214,  32285,  32351,  32413,  32469,  32521,  32568,
-   32610,  32647,  32679,  32706,  32728,  32745,  32758,  32765,
-   32767,  32765,  32758,  32745,  32728,  32706,  32679,  32647,
-   32610,  32568,  32521,  32469,  32413,  32351,  32285,  32214,
-   32138,  32057,  31971,  31881,  31785,  31685,  31581,  31471,
-   31357,  31237,  31114,  30985,  30852,  30714,  30572,  30425,
-   30273,  30117,  29956,  29791,  29621,  29447,  29269,  29086,
-   28898,  28707,  28511,  28310,  28106,  27897,  27684,  27466,
-   27245,  27020,  26790,  26557,  26319,  26077,  25832,  25583,
-   25330,  25073,  24812,  24547,  24279,  24007,  23732,  23453,
-   23170,  22884,  22594,  22301,  22005,  21706,  21403,  21097,
-   20787,  20475,  20159,  19841,  19519,  19195,  18868,  18537,
-   18204,  17869,  17530,  17189,  16846,  16499,  16151,  15800,
-   15446,  15090,  14732,  14372,  14010,  13645,  13278,  12910,
-   12539,  12167,  11793,  11416,  11039,  10659,  10278,   9896,
-   9512,   9126,   8739,   8351,   7961,   7571,   7179,   6786,
-   6392,   5997,   5602,   5205,   4808,   4409,   4011,   3611,
-   3211,   2811,   2410,   2009,   1607,   1206,    804,    402,
-   0,   -402,   -804,  -1206,  -1607,  -2009,  -2410,  -2811,
+    0,      402,    804,    1206,   1607,   2009,   2410,   2811,
+    3211,   3611,   4011,   4409,   4808,   5205,   5602,   5997,
+    6392,   6786,   7179,   7571,   7961,   8351,   8739,   9126,
+    9512,   9896,   10278,  10659,  11039,  11416,  11793,  12167,
+    12539,  12910,  13278,  13645,  14010,  14372,  14732,  15090,
+    15446,  15800,  16151,  16499,  16846,  17189,  17530,  17869,
+    18204,  18537,  18868,  19195,  19519,  19841,  20159,  20475,
+    20787,  21097,  21403,  21706,  22005,  22301,  22594,  22884,
+    23170,  23453,  23732,  24007,  24279,  24547,  24812,  25073,
+    25330,  25583,  25832,  26077,  26319,  26557,  26790,  27020,
+    27245,  27466,  27684,  27897,  28106,  28310,  28511,  28707,
+    28898,  29086,  29269,  29447,  29621,  29791,  29956,  30117,
+    30273,  30425,  30572,  30714,  30852,  30985,  31114,  31237,
+    31357,  31471,  31581,  31685,  31785,  31881,  31971,  32057,
+    32138,  32214,  32285,  32351,  32413,  32469,  32521,  32568,
+    32610,  32647,  32679,  32706,  32728,  32745,  32758,  32765,
+    32767,  32765,  32758,  32745,  32728,  32706,  32679,  32647,
+    32610,  32568,  32521,  32469,  32413,  32351,  32285,  32214,
+    32138,  32057,  31971,  31881,  31785,  31685,  31581,  31471,
+    31357,  31237,  31114,  30985,  30852,  30714,  30572,  30425,
+    30273,  30117,  29956,  29791,  29621,  29447,  29269,  29086,
+    28898,  28707,  28511,  28310,  28106,  27897,  27684,  27466,
+    27245,  27020,  26790,  26557,  26319,  26077,  25832,  25583,
+    25330,  25073,  24812,  24547,  24279,  24007,  23732,  23453,
+    23170,  22884,  22594,  22301,  22005,  21706,  21403,  21097,
+    20787,  20475,  20159,  19841,  19519,  19195,  18868,  18537,
+    18204,  17869,  17530,  17189,  16846,  16499,  16151,  15800,
+    15446,  15090,  14732,  14372,  14010,  13645,  13278,  12910,
+    12539,  12167,  11793,  11416,  11039,  10659,  10278,  9896,
+    9512,   9126,   8739,   8351,   7961,   7571,   7179,   6786,
+    6392,   5997,   5602,   5205,   4808,   4409,   4011,   3611,
+    3211,   2811,   2410,   2009,   1607,   1206,   804,    402,
+    0,     -402,   -804,   -1206,  -1607,  -2009,  -2410,  -2811,
    -3211,  -3611,  -4011,  -4409,  -4808,  -5205,  -5602,  -5997,
    -6392,  -6786,  -7179,  -7571,  -7961,  -8351,  -8739,  -9126,
-   -9512,  -9896, -10278, -10659, -11039, -11416, -11793, -12167,
+   -9512,  -9896,  -10278, -10659, -11039, -11416, -11793, -12167,
    -12539, -12910, -13278, -13645, -14010, -14372, -14732, -15090,
    -15446, -15800, -16151, -16499, -16846, -17189, -17530, -17869,
    -18204, -18537, -18868, -19195, -19519, -19841, -20159, -20475,
@@ -792,26 +777,26 @@ int16_t C4SinTable[512] =
 
 int16_t C4CosTable[512] =
 {
-   32767,  32765,  32758,  32745,  32728,  32706,  32679,  32647,
-   32610,  32568,  32521,  32469,  32413,  32351,  32285,  32214,
-   32138,  32057,  31971,  31881,  31785,  31685,  31581,  31471,
-   31357,  31237,  31114,  30985,  30852,  30714,  30572,  30425,
-   30273,  30117,  29956,  29791,  29621,  29447,  29269,  29086,
-   28898,  28707,  28511,  28310,  28106,  27897,  27684,  27466,
-   27245,  27020,  26790,  26557,  26319,  26077,  25832,  25583,
-   25330,  25073,  24812,  24547,  24279,  24007,  23732,  23453,
-   23170,  22884,  22594,  22301,  22005,  21706,  21403,  21097,
-   20787,  20475,  20159,  19841,  19519,  19195,  18868,  18537,
-   18204,  17869,  17530,  17189,  16846,  16499,  16151,  15800,
-   15446,  15090,  14732,  14372,  14010,  13645,  13278,  12910,
-   12539,  12167,  11793,  11416,  11039,  10659,  10278,   9896,
-   9512,   9126,   8739,   8351,   7961,   7571,   7179,   6786,
-   6392,   5997,   5602,   5205,   4808,   4409,   4011,   3611,
-   3211,   2811,   2410,   2009,   1607,   1206,    804,    402,
-   0,   -402,   -804,  -1206,  -1607,  -2009,  -2410,  -2811,
+    32767,  32765,  32758,  32745,  32728,  32706,  32679,  32647,
+    32610,  32568,  32521,  32469,  32413,  32351,  32285,  32214,
+    32138,  32057,  31971,  31881,  31785,  31685,  31581,  31471,
+    31357,  31237,  31114,  30985,  30852,  30714,  30572,  30425,
+    30273,  30117,  29956,  29791,  29621,  29447,  29269,  29086,
+    28898,  28707,  28511,  28310,  28106,  27897,  27684,  27466,
+    27245,  27020,  26790,  26557,  26319,  26077,  25832,  25583,
+    25330,  25073,  24812,  24547,  24279,  24007,  23732,  23453,
+    23170,  22884,  22594,  22301,  22005,  21706,  21403,  21097,
+    20787,  20475,  20159,  19841,  19519,  19195,  18868,  18537,
+    18204,  17869,  17530,  17189,  16846,  16499,  16151,  15800,
+    15446,  15090,  14732,  14372,  14010,  13645,  13278,  12910,
+    12539,  12167,  11793,  11416,  11039,  10659,  10278,  9896,
+    9512,   9126,   8739,   8351,   7961,   7571,   7179,   6786,
+    6392,   5997,   5602,   5205,   4808,   4409,   4011,   3611,
+    3211,   2811,   2410,   2009,   1607,   1206,   804,    402,
+    0,     -402,   -804,   -1206,  -1607,  -2009,  -2410,  -2811,
    -3211,  -3611,  -4011,  -4409,  -4808,  -5205,  -5602,  -5997,
    -6392,  -6786,  -7179,  -7571,  -7961,  -8351,  -8739,  -9126,
-   -9512,  -9896, -10278, -10659, -11039, -11416, -11793, -12167,
+   -9512,  -9896, -10278,  -10659, -11039, -11416, -11793, -12167,
    -12539, -12910, -13278, -13645, -14010, -14372, -14732, -15090,
    -15446, -15800, -16151, -16499, -16846, -17189, -17530, -17869,
    -18204, -18537, -18868, -19195, -19519, -19841, -20159, -20475,
@@ -836,24 +821,24 @@ int16_t C4CosTable[512] =
    -20787, -20475, -20159, -19841, -19519, -19195, -18868, -18537,
    -18204, -17869, -17530, -17189, -16846, -16499, -16151, -15800,
    -15446, -15090, -14732, -14372, -14010, -13645, -13278, -12910,
-   -12539, -12167, -11793, -11416, -11039, -10659, -10278,  -9896,
+   -12539, -12167, -11793, -11416, -11039, -10659, -10278, -9896,
    -9512,  -9126,  -8739,  -8351,  -7961,  -7571,  -7179,  -6786,
    -6392,  -5997,  -5602,  -5205,  -4808,  -4409,  -4011,  -3611,
-   -3211,  -2811,  -2410,  -2009,  -1607,  -1206,   -804,   -402,
-   0,    402,    804,   1206,   1607,   2009,   2410,   2811,
-   3211,   3611,   4011,   4409,   4808,   5205,   5602,   5997,
-   6392,   6786,   7179,   7571,   7961,   8351,   8739,   9126,
-   9512,   9896,  10278,  10659,  11039,  11416,  11793,  12167,
-   12539,  12910,  13278,  13645,  14010,  14372,  14732,  15090,
-   15446,  15800,  16151,  16499,  16846,  17189,  17530,  17869,
-   18204,  18537,  18868,  19195,  19519,  19841,  20159,  20475,
-   20787,  21097,  21403,  21706,  22005,  22301,  22594,  22884,
-   23170,  23453,  23732,  24007,  24279,  24547,  24812,  25073,
-   25330,  25583,  25832,  26077,  26319,  26557,  26790,  27020,
-   27245,  27466,  27684,  27897,  28106,  28310,  28511,  28707,
-   28898,  29086,  29269,  29447,  29621,  29791,  29956,  30117,
-   30273,  30425,  30572,  30714,  30852,  30985,  31114,  31237,
-   31357,  31471,  31581,  31685,  31785,  31881,  31971,  32057,
-   32138,  32214,  32285,  32351,  32413,  32469,  32521,  32568,
-   32610,  32647,  32679,  32706,  32728,  32745,  32758,  32765
+   -3211,  -2811,  -2410,  -2009,  -1607,  -1206,  -804,   -402,
+    0,      402,    804,    1206,   1607,   2009,   2410,   2811,
+    3211,   3611,   4011,   4409,   4808,   5205,   5602,   5997,
+    6392,   6786,   7179,   7571,   7961,   8351,   8739,   9126,
+    9512,   9896,   10278,  10659,  11039,  11416,  11793,  12167,
+    12539,  12910,  13278,  13645,  14010,  14372,  14732,  15090,
+    15446,  15800,  16151,  16499,  16846,  17189,  17530,  17869,
+    18204,  18537,  18868,  19195,  19519,  19841,  20159,  20475,
+    20787,  21097,  21403,  21706,  22005,  22301,  22594,  22884,
+    23170,  23453,  23732,  24007,  24279,  24547,  24812,  25073,
+    25330,  25583,  25832,  26077,  26319,  26557,  26790,  27020,
+    27245,  27466,  27684,  27897,  28106,  28310,  28511,  28707,
+    28898,  29086,  29269,  29447,  29621,  29791,  29956,  30117,
+    30273,  30425,  30572,  30714,  30852,  30985,  31114,  31237,
+    31357,  31471,  31581,  31685,  31785,  31881,  31971,  32057,
+    32138,  32214,  32285,  32351,  32413,  32469,  32521,  32568,
+    32610,  32647,  32679,  32706,  32728,  32745,  32758,  32765
 };
