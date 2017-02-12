@@ -205,6 +205,7 @@ typedef struct
    bool    SPC7110;
    bool    SPC7110RTC;
    bool    OBC1;
+   uint8_t DSP;
    /* Sound options */
    uint32_t SoundPlaybackRate;
 #ifdef USE_BLARGG_APU

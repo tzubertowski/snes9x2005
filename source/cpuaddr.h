@@ -3,283 +3,309 @@
 #ifndef _CPUADDR_H_
 #define _CPUADDR_H_
 
-typedef enum
-{
-   NONE = 0,
-   READ = 1,
-   WRITE = 2,
-   MODIFY = 3,
-   JUMP = 4
-} AccessMode;
+extern int32_t OpAddress;
 
-// The type for a function that can run after the addressing mode is resolved:
-typedef void (*InternalOp)(int32_t);
-
-static void Immediate8(AccessMode a, InternalOp op)
+static inline void Immediate8()
 {
-   int32_t Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
+   OpAddress = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC++;
-   (*op)(Addr);
 }
 
-static void Immediate16(AccessMode a, InternalOp op)
+static inline void Immediate16()
 {
-   int32_t Addr = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
+   OpAddress = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC += 2;
-   (*op)(Addr);
 }
 
-static void Relative(AccessMode a, InternalOp op)
+static inline void Relative()
 {
    int8_t Int8 = *CPU.PC++;
-   int32_t Addr = ((int32_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
-   (*op)(Addr);
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
+   OpAddress = ((int32_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
 }
 
-static void RelativeLong(AccessMode a, InternalOp op)
+static inline void RelativeLong()
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = *(uint16_t*) CPU.PC;
+   OpAddress = *(uint16_t*) CPU.PC;
 #else
-   Addr = *CPU.PC + (*(CPU.PC + 1) << 8);
+   OpAddress = *CPU.PC + (*(CPU.PC + 1) << 8);
+#endif
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2 + ONE_CYCLE;
 #endif
    CPU.PC += 2;
-   Addr += (CPU.PC - CPU.PCBase);
-   Addr &= 0xffff;
-   (*op)(Addr);
+   OpAddress += (CPU.PC - CPU.PCBase);
+   OpAddress &= 0xffff;
 }
 
-static void AbsoluteIndexedIndirect(AccessMode a, InternalOp op)
+static inline void AbsoluteIndexedIndirect(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = (ICPU.Registers.X.W + * (uint16_t*) CPU.PC) & 0xffff;
+   OpAddress = (ICPU.Registers.X.W + * (uint16_t*) CPU.PC) & 0xffff;
 #else
-   Addr = (ICPU.Registers.X.W + *CPU.PC + (*(CPU.PC + 1) << 8)) & 0xffff;
+   OpAddress = (ICPU.Registers.X.W + *CPU.PC + (*(CPU.PC + 1) << 8)) & 0xffff;
+#endif
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
 #endif
    OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
-   Addr = S9xGetWord(ICPU.ShiftedPB + Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   (*op)(Addr);
+   OpAddress = S9xGetWord(ICPU.ShiftedPB + OpAddress);
+   if (read)
+      OpenBus = (uint8_t)(OpAddress >> 8);
 }
 
-static void AbsoluteIndirectLong(AccessMode a, InternalOp op)
+static inline void AbsoluteIndirectLong(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = *(uint16_t*) CPU.PC;
+   OpAddress = *(uint16_t*) CPU.PC;
 #else
-   Addr = *CPU.PC + (*(CPU.PC + 1) << 8);
+   OpAddress = *CPU.PC + (*(CPU.PC + 1) << 8);
 #endif
-
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
+#endif
    OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
-   if (a & READ)
-      Addr = S9xGetWord(Addr) | ((OpenBus = S9xGetByte(Addr + 2)) << 16);
+   if (read)
+      OpAddress = S9xGetWord(OpAddress) | ((OpenBus = S9xGetByte(OpAddress + 2)) << 16);
    else
-      Addr = S9xGetWord(Addr) | (S9xGetByte(Addr + 2) << 16);
-   (*op)(Addr);
+      OpAddress = S9xGetWord(OpAddress) | (S9xGetByte(OpAddress + 2) << 16);
 }
 
-static void AbsoluteIndirect(AccessMode a, InternalOp op)
+static inline void AbsoluteIndirect(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = *(uint16_t*) CPU.PC;
+   OpAddress = *(uint16_t*) CPU.PC;
 #else
-   Addr = *CPU.PC + (*(CPU.PC + 1) << 8);
+   OpAddress = *CPU.PC + (*(CPU.PC + 1) << 8);
 #endif
-
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
+#endif
    OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
-   Addr = S9xGetWord(Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   Addr += ICPU.ShiftedPB;
-   (*op)(Addr);
+   OpAddress = S9xGetWord(OpAddress);
+   if (read)
+      OpenBus = (uint8_t) (OpAddress >> 8);
+   OpAddress += ICPU.ShiftedPB;
 }
 
-static void Absolute(AccessMode a, InternalOp op)
+static inline void Absolute(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = *(uint16_t*) CPU.PC + ICPU.ShiftedDB;
+   OpAddress = *(uint16_t*) CPU.PC + ICPU.ShiftedDB;
 #else
-   Addr = *CPU.PC + (*(CPU.PC + 1) << 8) + ICPU.ShiftedDB;
+   OpAddress = *CPU.PC + (*(CPU.PC + 1) << 8) + ICPU.ShiftedDB;
 #endif
-   if (a & READ) OpenBus = *(CPU.PC + 1);
+   if (read)
+      OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
-   (*op)(Addr);
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
+#endif
 }
 
-static void AbsoluteLong(AccessMode a, InternalOp op)
+static inline void AbsoluteLong(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = (*(uint32_t*) CPU.PC) & 0xffffff;
+   OpAddress = (*(uint32_t*) CPU.PC) & 0xffffff;
 #elif defined FAST_ALIGNED_LSB_WORD_ACCESS
    if (((int32_t) CPU.PC & 1) == 0)
-      Addr = (*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16);
+      OpAddress = (*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16);
    else
-      Addr = *CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8);
+      OpAddress = *CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8);
 #else
-   Addr = *CPU.PC + (*(CPU.PC + 1) << 8) + (*(CPU.PC + 2) << 16);
+   OpAddress = *CPU.PC + (*(CPU.PC + 1) << 8) + (*(CPU.PC + 2) << 16);
 #endif
-   if (a & READ) OpenBus = *(CPU.PC + 2);
+   if (read)
+      OpenBus = *(CPU.PC + 2);
    CPU.PC += 3;
-   (*op)(Addr);
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2 + CPU.MemSpeed;
+#endif
 }
 
-static void Direct(AccessMode a, InternalOp op)
+static inline void Direct(bool read)
 {
-   if (a & READ) OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-   (*op)(Addr);
+   if (read)
+      OpenBus = *CPU.PC;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
 }
 
-static void DirectIndirectIndexed(AccessMode a, InternalOp op)
+static inline void DirectIndirectIndexed(bool read)
 {
    OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-
-   Addr = S9xGetWord(Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   Addr += ICPU.ShiftedDB + ICPU.Registers.Y.W;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
+   OpAddress = S9xGetWord(OpAddress);
+   if (read)
+      OpenBus = (uint8_t)(OpAddress >> 8);
+   OpAddress += ICPU.ShiftedDB + ICPU.Registers.Y.W;
 
    // XXX: always add one if STA
    // XXX: else Add one cycle if crosses page boundary
-   (*op)(Addr);
 }
 
-static void DirectIndirectIndexedLong(AccessMode a, InternalOp op)
+static inline void DirectIndirectIndexedLong(bool read)
 {
    OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-
-   if (a & READ)
-      Addr = S9xGetWord(Addr) + ((OpenBus = S9xGetByte(Addr + 2)) << 16) +
-             ICPU.Registers.Y.W;
-   else
-      Addr = S9xGetWord(Addr) + (S9xGetByte(Addr + 2) << 16) + ICPU.Registers.Y.W;
-   (*op)(Addr);
-}
-
-static void DirectIndexedIndirect(AccessMode a, InternalOp op)
-{
-   OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W) & 0xffff;
-
-   Addr = S9xGetWord(Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   Addr += ICPU.ShiftedDB;
-   (*op)(Addr);
-}
-
-static void DirectIndexedX(AccessMode a, InternalOp op)
-{
-   if (a & READ) OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W);
-   Addr &= CheckEmulation() ? 0xff : 0xffff;
-
-   (*op)(Addr);
-}
-
-static void DirectIndexedY(AccessMode a, InternalOp op)
-{
-   if (a & READ) OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.Y.W);
-   Addr &= CheckEmulation() ? 0xff : 0xffff;
-   (*op)(Addr);
-}
-
-static void AbsoluteIndexedX(AccessMode a, InternalOp op)
-{
-   int32_t Addr;
-#ifdef FAST_LSB_WORD_ACCESS
-   Addr = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.X.W;
-#else
-   Addr = ICPU.ShiftedDB + *CPU.PC + (*(CPU.PC + 1) << 8) +
-          ICPU.Registers.X.W;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
 #endif
-   if (a & READ) OpenBus = *(CPU.PC + 1);
+   if (read)
+      OpAddress = S9xGetWord(OpAddress) + ((OpenBus = S9xGetByte(OpAddress + 2)) << 16) + ICPU.Registers.Y.W;
+   else
+      OpAddress = S9xGetWord(OpAddress) + (S9xGetByte(OpAddress + 2) << 16) + ICPU.Registers.Y.W;
+}
+
+static inline void DirectIndexedIndirect(bool read)
+{
+   OpenBus = *CPU.PC;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
+   OpAddress = S9xGetWord(OpAddress);
+   if (read)
+      OpenBus = (uint8_t)(OpAddress >> 8);
+   OpAddress += ICPU.ShiftedDB;
+#ifndef SA1_OPCODES
+   CPU.Cycles += ONE_CYCLE;
+#endif
+}
+
+static inline void DirectIndexedX(bool read)
+{
+   if (read)
+      OpenBus = *CPU.PC;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W);
+   OpAddress &= CheckEmulation() ? 0xff : 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
+#endif
+}
+
+static void DirectIndexedY(bool read)
+{
+   if (read)
+      OpenBus = *CPU.PC;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.Y.W);
+   OpAddress &= CheckEmulation() ? 0xff : 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
+#endif
+}
+
+static inline void AbsoluteIndexedX(bool read)
+{
+#ifdef FAST_LSB_WORD_ACCESS
+   OpAddress = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.X.W;
+#else
+   OpAddress = ICPU.ShiftedDB + *CPU.PC + (*(CPU.PC + 1) << 8) + ICPU.Registers.X.W;
+#endif
+   if (read)
+      OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
+#endif
    // XXX: always add one cycle for ROL, LSR, etc
    // XXX: else is cross page boundary add one cycle
-   (*op)(Addr);
 }
 
-static void AbsoluteIndexedY(AccessMode a, InternalOp op)
+static inline void AbsoluteIndexedY(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.Y.W;
+   OpAddress = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.Y.W;
 #else
-   Addr = ICPU.ShiftedDB + *CPU.PC + (*(CPU.PC + 1) << 8) +
-          ICPU.Registers.Y.W;
+   OpAddress = ICPU.ShiftedDB + *CPU.PC + (*(CPU.PC + 1) << 8) + ICPU.Registers.Y.W;
 #endif
-   if (a & READ) OpenBus = *(CPU.PC + 1);
+   if (read)
+      OpenBus = *(CPU.PC + 1);
    CPU.PC += 2;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeedx2;
+#endif
    // XXX: always add cycle for STA
    // XXX: else is cross page boundary add one cycle
-   (*op)(Addr);
 }
 
-static void AbsoluteLongIndexedX(AccessMode a, InternalOp op)
+static inline void AbsoluteLongIndexedX(bool read)
 {
-   int32_t Addr;
 #ifdef FAST_LSB_WORD_ACCESS
-   Addr = (*(uint32_t*) CPU.PC + ICPU.Registers.X.W) & 0xffffff;
+    OpAddress = (*(uint32_t*) CPU.PC + ICPU.Registers.X.W) & 0xffffff;
 #elif defined FAST_ALIGNED_LSB_WORD_ACCESS
    if (((int32_t) CPU.PC & 1) == 0)
-      Addr = ((*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16) + ICPU.Registers.X.W) & 0xFFFFFF;
+       OpAddress = ((*(uint16_t*) CPU.PC) + (*(CPU.PC + 2) << 16) + ICPU.Registers.X.W) & 0xFFFFFF;
    else
-      Addr = (*CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8) + ICPU.Registers.X.W) & 0xFFFFFF;
+       OpAddress = (*CPU.PC + ((*(uint16_t*)(CPU.PC + 1)) << 8) + ICPU.Registers.X.W) & 0xFFFFFF;
 #else
-   Addr = (*CPU.PC + (*(CPU.PC + 1) << 8) + (*(CPU.PC + 2) << 16) +
-           ICPU.Registers.X.W) & 0xffffff;
+    OpAddress = (*CPU.PC + (*(CPU.PC + 1) << 8) + (*(CPU.PC + 2) << 16) + ICPU.Registers.X.W) & 0xffffff;
 #endif
-   if (a & READ) OpenBus = *(CPU.PC + 2);
+    if (read)
+       OpenBus = *(CPU.PC + 2);
    CPU.PC += 3;
-   (*op)(Addr);
+#ifndef SA1_OPCODES
+    CPU.Cycles += CPU.MemSpeedx2 + CPU.MemSpeed;
+#endif
 }
 
-static void DirectIndirect(AccessMode a, InternalOp op)
+static inline void DirectIndirect(bool read)
 {
    OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-   Addr = S9xGetWord(Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   Addr += ICPU.ShiftedDB;
-   (*op)(Addr);
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
+   OpAddress = S9xGetWord(OpAddress);
+   if (read)
+      OpenBus = (uint8_t)(OpAddress >> 8);
+   OpAddress += ICPU.ShiftedDB;
 }
 
-static void DirectIndirectLong(AccessMode a, InternalOp op)
+static inline void DirectIndirectLong(bool read)
 {
    OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
-   if (a & READ)
-      Addr = S9xGetWord(Addr) + ((OpenBus = S9xGetByte(Addr + 2)) << 16);
+   OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed;
+#endif
+   if (read)
+      OpAddress = S9xGetWord(OpAddress) + ((OpenBus = S9xGetByte(OpAddress + 2)) << 16);
    else
-      Addr = S9xGetWord(Addr) + (S9xGetByte(Addr + 2) << 16);
-   (*op)(Addr);
+      OpAddress = S9xGetWord(OpAddress) + (S9xGetByte(OpAddress + 2) << 16);
 }
 
-static void StackRelative(AccessMode a, InternalOp op)
+static inline void StackRelative(bool read)
 {
-   if (a & READ) OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
-   (*op)(Addr);
+   if (read)
+      OpenBus = *CPU.PC;
+   OpAddress = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed + ONE_CYCLE;
+#endif
 }
 
-static void StackRelativeIndirectIndexed(AccessMode a, InternalOp op)
+static inline void StackRelativeIndirectIndexed(bool read)
 {
    OpenBus = *CPU.PC;
-   int32_t Addr = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
-   Addr = S9xGetWord(Addr);
-   if (a & READ) OpenBus = (uint8_t)(Addr >> 8);
-   Addr = (Addr + ICPU.ShiftedDB +
-           ICPU.Registers.Y.W) & 0xffffff;
-   (*op)(Addr);
+   OpAddress = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;
+#ifndef SA1_OPCODES
+   CPU.Cycles += CPU.MemSpeed + TWO_CYCLES;
+#endif
+   OpAddress = S9xGetWord(OpAddress);
+   if (read)
+      OpenBus = (uint8_t)(OpAddress >> 8);
+   OpAddress = (OpAddress + ICPU.ShiftedDB + ICPU.Registers.Y.W) & 0xffffff;
 }
 #endif
