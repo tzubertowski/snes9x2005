@@ -114,9 +114,7 @@ void fx_dirtySCBR()
 
 void fx_computeScreenPointers()
 {
-   if (GSU.vMode != GSU.vPrevMode ||
-         GSU.vPrevScreenHeight != GSU.vScreenHeight ||
-         GSU.vSCBRDirty)
+   if (GSU.vMode != GSU.vPrevMode || GSU.vPrevScreenHeight != GSU.vScreenHeight || GSU.vSCBRDirty)
    {
       int32_t i;
 

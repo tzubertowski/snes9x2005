@@ -120,8 +120,7 @@ static inline void S9xReschedule()
          (!PPU.VTimerEnabled ||
          (PPU.VTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)))
    {
-      which = (int32_t) PPU.HTimerPosition < Settings.HBlankStart ?
-              HTIMER_BEFORE_EVENT : HTIMER_AFTER_EVENT;
+      which = (int32_t) PPU.HTimerPosition < Settings.HBlankStart ? HTIMER_BEFORE_EVENT : HTIMER_AFTER_EVENT;
       max = PPU.HTimerPosition;
    }
    CPU.NextEvent = max;

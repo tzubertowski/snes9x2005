@@ -14,15 +14,14 @@ static bool S9xAllHex(const char* code, int32_t len)
    int32_t i;
    for (i = 0; i < len; i++)
       if ((code [i] < '0' || code [i] > '9') &&
-            (code [i] < 'a' || code [i] > 'f') &&
-            (code [i] < 'A' || code [i] > 'F'))
+          (code [i] < 'a' || code [i] > 'f') &&
+          (code [i] < 'A' || code [i] > 'F'))
          return (false);
 
    return (true);
 }
 
-const char* S9xProActionReplayToRaw(const char* code, uint32_t* address,
-                                    uint8_t* byte)
+const char* S9xProActionReplayToRaw(const char* code, uint32_t* address, uint8_t* byte)
 {
    uint32_t data = 0;
    if (strlen(code) != 8 || !S9xAllHex(code, 8) ||
