@@ -327,7 +327,8 @@ void S9xDeinitMemory()
       Memory.BSRAM = NULL;
    }
 
-   for (int t = 0; t < 2; t++)
+   int t;
+   for (t = 0; t < 2; t++)
    {
       if (IPPU.TileCache[t])
       {
