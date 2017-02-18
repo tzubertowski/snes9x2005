@@ -3,9 +3,7 @@
 #ifndef _SAR_H_
 #define _SAR_H_
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include <stdint.h>
 
 #include "port.h"
 

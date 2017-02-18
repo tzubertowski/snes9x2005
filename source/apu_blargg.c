@@ -1009,7 +1009,7 @@ static void dsp_init( void* ram_64k )
 
 /* Emulates pressing reset switch on SNES */
 
-static void dsp_soft_reset()
+static void dsp_soft_reset(void)
 {
    dsp_m.regs[R_FLG] = 0xE0;
    dsp_soft_reset_common();
