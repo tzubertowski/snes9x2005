@@ -6,8 +6,8 @@
 
 #include "sa1.h"
 
-static void S9xSA1CharConv2();
-static void S9xSA1DMA();
+static void S9xSA1CharConv2(void);
+static void S9xSA1DMA(void);
 static void S9xSA1ReadVariableLengthData(bool inc, bool no_shift);
 
 void S9xSA1Init()
@@ -196,8 +196,6 @@ void S9xSA1SetByte(uint8_t byte, uint32_t address)
          *ptr &= ~(15 << ((address & 1) << 2));
          *ptr |= (byte & 15) << ((address & 1) << 2);
       }
-   default:
-      return;
    }
 }
 
@@ -252,20 +250,25 @@ void S9xSetSA1MemMap(uint32_t which1, uint8_t map)
    int32_t i;
    int32_t start = which1 * 0x100 + 0xc00;
    int32_t start2 = which1 * 0x200;
+   uint8_t* block;
 
    if (which1 >= 2)
       start2 += 0x400;
 
    for (c = 0; c < 0x100; c += 16)
    {
-      uint8_t* block = &Memory.ROM [(map & 7) * 0x100000 + (c << 12)];
+      block = &Memory.ROM [(map & 7) * 0x100000 + (c << 12)];
       for (i = c; i < c + 16; i++)
          Memory.Map [start + i] = SA1.Map [start + i] = block;
    }
 
    for (c = 0; c < 0x200; c += 16)
    {
-      uint8_t* block = &Memory.ROM [(map & 7) * 0x100000 + (c << 11) - 0x8000];
+      /*Code from Snes9x 1.54.1 -                                             *
+       * This allows Super Mario World VLDC 9 hack to load                    *
+       * conversion to int is needed here - map is promoted but which1 is not */
+      int32_t offset = (((map & 0x80) ? map : which1) & 7) * 0x100000 + (c << 11) - 0x8000;
+      block = &Memory.ROM [offset];
       for (i = c + 8; i < c + 16; i++)
          Memory.Map [start2 + i] = SA1.Map [start2 + i] = block;
    }
@@ -292,13 +295,13 @@ uint8_t S9xGetSA1(uint32_t address)
       case 0x230a:
          return ((uint8_t)(SA1.sum >> 32));
       case 0x230d:
-         {
-            uint8_t byte = Memory.FillRAM [0x230d];
+      {
+         uint8_t byte = Memory.FillRAM [0x230d];
 
-            if (Memory.FillRAM [0x2258] & 0x80)
-               S9xSA1ReadVariableLengthData(true, false);
-            return (byte);
-         }
+         if (Memory.FillRAM [0x2258] & 0x80)
+            S9xSA1ReadVariableLengthData(true, false);
+         return (byte);
+      }
    }
 
    return (Memory.FillRAM [address]);
@@ -418,9 +421,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
    case 0x2236:
       Memory.FillRAM [address] = byte;
       if ((Memory.FillRAM [0x2230] & 0xa4) == 0x80)
-      {
          S9xSA1DMA(); // Normal DMA to I-RAM
-      }
       else if ((Memory.FillRAM [0x2230] & 0xb0) == 0xb0)
       {
          Memory.FillRAM [0x2300] |= 0x20;
@@ -500,7 +501,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       S9xSA1ReadVariableLengthData(false, true);
       return;
    }
-   
+
    Memory.FillRAM [address] = byte;
 }
 
