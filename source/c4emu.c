@@ -1,9 +1,5 @@
 #include "../copyright"
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include <math.h>
 #include "snes9x.h"
 #include "sar.h"
 #include "memmap.h"
@@ -37,7 +33,6 @@ static uint8_t C4TestPattern [12 * 4] =
    0xff, 0xfe, 0x00, 0x01,
    0x00, 0xff, 0xfe, 0x00
 };
-
 
 static void C4ConvOAM()
 {
@@ -320,7 +315,7 @@ static void C4DrawWireFrame()
       if (line[0] == 0xff && line[1] == 0xff)
       {
          uint8_t* tmp = line - 5;
-         while (line[2] == 0xff && line[3] == 0xff)
+         while (tmp[2] == 0xff && tmp[3] == 0xff)
             tmp -= 5;
          point1 = S9xGetMemPointer((Memory.C4RAM[0x1f82] << 16) | (tmp[2] << 8) | tmp[3]);
       }
