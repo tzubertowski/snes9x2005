@@ -28,11 +28,10 @@ typedef struct
    uint32_t out_count;
    uint32_t out_index;
    uint8_t  parameters [512];
-   //output was 512 for DSP-2 work, updated to reflect current thinking on DSP-3
-   uint8_t  output [512];
+   uint8_t  output     [512];
 } SDSP1;
 
-void S9xResetDSP1();
+void S9xResetDSP1(void);
 uint8_t S9xGetDSP(uint16_t Address);
 void S9xSetDSP(uint8_t Byte, uint16_t Address);
 extern SDSP1 DSP1;

@@ -5,17 +5,28 @@
 #ifndef _SOUND_H_
 #define _SOUND_H_
 
-enum { SOUND_SAMPLE = 0, SOUND_NOISE, SOUND_EXTRA_NOISE, SOUND_MUTE };
-enum { SOUND_SILENT, SOUND_ATTACK, SOUND_DECAY, SOUND_SUSTAIN,
-       SOUND_RELEASE, SOUND_GAIN, SOUND_INCREASE_LINEAR,
-       SOUND_INCREASE_BENT_LINE, SOUND_DECREASE_LINEAR,
-       SOUND_DECREASE_EXPONENTIAL
-     };
+enum
+{
+   SOUND_SAMPLE = 0,
+   SOUND_NOISE,
+   SOUND_EXTRA_NOISE,
+   SOUND_MUTE
+};
 
-enum { MODE_NONE = SOUND_SILENT, MODE_ADSR, MODE_RELEASE = SOUND_RELEASE,
-       MODE_GAIN, MODE_INCREASE_LINEAR, MODE_INCREASE_BENT_LINE,
-       MODE_DECREASE_LINEAR, MODE_DECREASE_EXPONENTIAL
-     };
+enum
+{
+   SOUND_SILENT, SOUND_ATTACK, SOUND_DECAY, SOUND_SUSTAIN,
+   SOUND_RELEASE, SOUND_GAIN, SOUND_INCREASE_LINEAR,
+   SOUND_INCREASE_BENT_LINE, SOUND_DECREASE_LINEAR,
+   SOUND_DECREASE_EXPONENTIAL
+};
+
+enum
+{
+   MODE_NONE = SOUND_SILENT, MODE_ADSR, MODE_RELEASE = SOUND_RELEASE,
+   MODE_GAIN, MODE_INCREASE_LINEAR, MODE_INCREASE_BENT_LINE,
+   MODE_DECREASE_LINEAR, MODE_DECREASE_EXPONENTIAL
+};
 
 #define MAX_ENVELOPE_HEIGHT 127
 #define ENVELOPE_SHIFT 7
@@ -32,7 +43,7 @@ enum { MODE_NONE = SOUND_SILENT, MODE_ADSR, MODE_RELEASE = SOUND_RELEASE,
 typedef struct
 {
    int32_t  playback_rate;
-   int32_t  buffer_size;
+   int32_t  noise_gen;
    uint32_t freqbase; // notaz
    bool     mute_sound;
 } SoundStatus;
@@ -63,7 +74,6 @@ typedef struct
    uint32_t sustain_level;
    int16_t  sample;
    int16_t  decoded [16];
-   int16_t  previous16 [2];
    int16_t* block;
    uint16_t sample_number;
    bool     last_block;
@@ -76,12 +86,9 @@ typedef struct
    int16_t  next_sample;
    int32_t  interpolate;
    int32_t  previous [2];
-   // notaz
    uint8_t  env_ind_attack;
    uint8_t  env_ind_decay;
    uint8_t  env_ind_sustain;
-   // Just incase they are needed in the future, for snapshot compatibility.
-   uint8_t  dummy [29];
 } Channel;
 
 typedef struct
@@ -91,13 +98,10 @@ typedef struct
    int32_t  echo_ptr;
    int32_t  echo_buffer_size;
    int32_t  echo_write_enabled;
-   int32_t  echo_channel_enable;
    int32_t  pitch_mod;
-   // Just incase they are needed in the future, for snapshot compatibility.
-   uint32_t dummy [3];
    Channel  channels [NUM_CHANNELS];
    int16_t  master_volume [2]; /* range is -128 .. 127 */
-   int16_t  echo_volume [2]; /* range is -128 .. 127 */
+   int16_t  echo_volume   [2]; /* range is -128 .. 127 */
    int32_t  noise_hertz;
 } SSoundData;
 
@@ -131,8 +135,6 @@ void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
 void S9xStartSample(int32_t channel);
 
 void S9xMixSamples(int16_t* buffer, int32_t sample_count);
-bool S9xOpenSoundDevice(int32_t, bool, int32_t);
 void S9xSetPlaybackRate(uint32_t rate);
 #endif
-
 #endif

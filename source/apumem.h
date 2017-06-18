@@ -6,24 +6,20 @@
 extern uint8_t W4;
 extern uint8_t APUROM[64];
 
-INLINE uint8_t S9xAPUGetByteZ(uint8_t Address)
+static inline uint8_t S9xAPUGetByteZ(uint8_t Address)
 {
    if (Address >= 0xf0 && IAPU.DirectPage == IAPU.RAM)
    {
       if (Address >= 0xf4 && Address <= 0xf7)
       {
-#ifdef SPC700_SHUTDOWN
          IAPU.WaitAddress2 = IAPU.WaitAddress1;
          IAPU.WaitAddress1 = IAPU.PC;
-#endif
          return (IAPU.RAM [Address]);
       }
       if (Address >= 0xfd)
       {
-#ifdef SPC700_SHUTDOWN
          IAPU.WaitAddress2 = IAPU.WaitAddress1;
          IAPU.WaitAddress1 = IAPU.PC;
-#endif
          uint8_t t = IAPU.RAM [Address];
          IAPU.RAM [Address] = 0;
          return (t);
@@ -33,11 +29,10 @@ INLINE uint8_t S9xAPUGetByteZ(uint8_t Address)
 
       return (IAPU.RAM [Address]);
    }
-   else
-      return (IAPU.DirectPage [Address]);
+   return (IAPU.DirectPage [Address]);
 }
 
-INLINE void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
+static inline void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
 {
    if (Address >= 0xf0 && IAPU.DirectPage == IAPU.RAM)
    {
@@ -63,7 +58,7 @@ INLINE void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
       IAPU.DirectPage [Address] = byte;
 }
 
-INLINE uint8_t S9xAPUGetByte(uint32_t Address)
+static inline uint8_t S9xAPUGetByte(uint32_t Address)
 {
    Address &= 0xffff;
 
@@ -73,13 +68,11 @@ INLINE uint8_t S9xAPUGetByte(uint32_t Address)
    bool zero = (Address >= 0xfd && Address <= 0xff);
    uint8_t t = IAPU.RAM [Address];
 
-#ifdef SPC700_SHUTDOWN
    if (zero || (Address >= 0xf4 && Address <= 0xf7))
    {
       IAPU.WaitAddress2 = IAPU.WaitAddress1;
       IAPU.WaitAddress1 = IAPU.PC;
    }
-#endif
 
    if(zero)
       IAPU.RAM [Address] = 0;
@@ -87,7 +80,7 @@ INLINE uint8_t S9xAPUGetByte(uint32_t Address)
    return t;
 }
 
-INLINE void S9xAPUSetByte(uint8_t byte, uint32_t Address)
+static inline void S9xAPUSetByte(uint8_t byte, uint32_t Address)
 {
    Address &= 0xffff;
 

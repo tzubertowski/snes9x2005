@@ -124,71 +124,65 @@
 /* Number of banks in GSU RAM */
 #define FX_RAM_BANKS 4
 
-struct FxRegs_s
+typedef struct
 {
    /* FxChip registers */
-   uint32_t  avReg[16];      /* 16 Generic registers */
-   uint32_t  vColorReg;      /* Internal color register */
-   uint32_t  vPlotOptionReg; /* Plot option register */
-   uint32_t  vStatusReg;     /* Status register */
-   uint32_t  vPrgBankReg;    /* Program bank index register */
-   uint32_t  vRomBankReg;    /* Rom bank index register */
-   uint32_t  vRamBankReg;    /* Ram bank index register */
-   uint32_t  vCacheBaseReg;  /* Cache base address register */
-   uint32_t  vCacheFlags;    /* Saying what parts of the cache was written to */
-   uint32_t  vLastRamAdr;    /* Last RAM address accessed */
-   uint32_t* pvDreg;         /* Pointer to current destination register */
-   uint32_t* pvSreg;         /* Pointer to current source register */
-   uint8_t   vRomBuffer;     /* Current byte read by R14 */
-   uint8_t   vPipe;          /* Instructionset pipe */
-   uint32_t  vPipeAdr;       /* The address of where the pipe was read from */
+   uint32_t    avReg[16];                /* 16 Generic registers */
+   uint32_t    vColorReg;                /* Internal color register */
+   uint32_t    vPlotOptionReg;           /* Plot option register */
+   uint32_t    vStatusReg;               /* Status register */
+   uint32_t    vPrgBankReg;              /* Program bank index register */
+   uint32_t    vRomBankReg;              /* Rom bank index register */
+   uint32_t    vRamBankReg;              /* Ram bank index register */
+   uint32_t    vCacheBaseReg;            /* Cache base address register */
+   uint32_t    vCacheFlags;              /* Saying what parts of the cache was written to */
+   uint32_t    vLastRamAdr;              /* Last RAM address accessed */
+   uint32_t*   pvDreg;                   /* Pointer to current destination register */
+   uint32_t*   pvSreg;                   /* Pointer to current source register */
+   uint8_t     vRomBuffer;               /* Current byte read by R14 */
+   uint8_t     vPipe;                    /* Instructionset pipe */
+   uint32_t    vPipeAdr;                 /* The address of where the pipe was read from */
 
    /* status register optimization stuff */
-   uint32_t vSign;     /* v & 0x8000 */
-   uint32_t vZero;     /* v == 0 */
-   uint32_t vCarry;    /* a value of 1 or 0 */
-   int32_t  vOverflow; /* (v >= 0x8000 || v < -0x8000) */
+   uint32_t    vSign;                    /* v & 0x8000 */
+   uint32_t    vZero;                    /* v == 0 */
+   uint32_t    vCarry;                   /* a value of 1 or 0 */
+   int32_t     vOverflow;                /* (v >= 0x8000 || v < -0x8000) */
 
    /* Other emulator variables */
-   int32_t  vErrorCode;
-   uint32_t vIllegalAddress;
-
-   uint8_t  bBreakPoint;
-   uint32_t vBreakPoint;
-   uint32_t vStepPoint;
-
-   uint8_t* pvRegisters; /* 768 bytes located in the memory at address 0x3000 */
-   uint32_t nRamBanks;   /* Number of 64kb-banks in FxRam (Don't confuse it with SNES-Ram!!!) */
-   uint8_t* pvRam;       /* Pointer to FxRam */
-   uint32_t nRomBanks;   /* Number of 32kb-banks in Cart-ROM */
-   uint8_t* pvRom;       /* Pointer to Cart-ROM */
-
-   uint32_t vMode;             /* Color depth/mode */
-   uint32_t vPrevMode;         /* Previous depth */
-   uint8_t* pvScreenBase;
-   uint8_t* apvScreen[32];     /* Pointer to each of the 32 screen colums */
-   int32_t  x[32];
-   uint32_t vScreenHeight;     /* 128, 160, 192 or 256 (could be overriden by cmode) */
-   uint32_t vScreenRealHeight; /* 128, 160, 192 or 256 */
-   uint32_t vPrevScreenHeight;
-   uint32_t vScreenSize;
-   void   (*pfPlot)();
-   void   (*pfRpix)();
-
-   uint8_t* pvRamBank; /* Pointer to current RAM-bank */
-   uint8_t* pvRomBank; /* Pointer to current ROM-bank */
-   uint8_t* pvPrgBank; /* Pointer to current program ROM-bank */
-
-   uint8_t* apvRamBank[FX_RAM_BANKS]; /* Ram bank table (max 256kb) */
-   uint8_t* apvRomBank[256];          /* Rom bank table */
-
-   uint8_t  bCacheActive;
-   uint8_t* pvCache;            /* Pointer to the GSU cache */
-   uint8_t  avCacheBackup[512]; /* Backup of ROM when the cache has replaced it */
-   uint32_t vCounter;
-   uint32_t vInstCount;
-   uint32_t vSCBRDirty;         /* if SCBR is written, our cached screen pointers need updating */
-};
+   int32_t     vErrorCode;
+   uint32_t    vIllegalAddress;
+   uint8_t     bBreakPoint;
+   uint32_t    vBreakPoint;
+   uint32_t    vStepPoint;
+   uint8_t*    pvRegisters;              /* 768 bytes located in the memory at address 0x3000 */
+   uint32_t    nRamBanks;                /* Number of 64kb-banks in FxRam (Don't confuse it with SNES-Ram!!!) */
+   uint8_t*    pvRam;                    /* Pointer to FxRam */
+   uint32_t    nRomBanks;                /* Number of 32kb-banks in Cart-ROM */
+   uint8_t*    pvRom;                    /* Pointer to Cart-ROM */
+   uint32_t    vMode;                    /* Color depth/mode */
+   uint32_t    vPrevMode;                /* Previous depth */
+   uint8_t*    pvScreenBase;
+   uint8_t*    apvScreen[32];            /* Pointer to each of the 32 screen colums */
+   int32_t     x[32];
+   uint32_t    vScreenHeight;            /* 128, 160, 192 or 256 (could be overriden by cmode) */
+   uint32_t    vScreenRealHeight;        /* 128, 160, 192 or 256 */
+   uint32_t    vPrevScreenHeight;
+   uint32_t    vScreenSize;
+   void      (*pfPlot)();
+   void      (*pfRpix)();
+   uint8_t*    pvRamBank;                /* Pointer to current RAM-bank */
+   uint8_t*    pvRomBank;                /* Pointer to current ROM-bank */
+   uint8_t*    pvPrgBank;                /* Pointer to current program ROM-bank */
+   uint8_t*    apvRamBank[FX_RAM_BANKS]; /* Ram bank table (max 256kb) */
+   uint8_t*    apvRomBank[256];          /* Rom bank table */
+   uint8_t     bCacheActive;
+   uint8_t*    pvCache;                  /* Pointer to the GSU cache */
+   uint8_t     avCacheBackup[512];       /* Backup of ROM when the cache has replaced it */
+   uint32_t    vCounter;
+   uint32_t    vInstCount;
+   uint32_t    vSCBRDirty;               /* if SCBR is written, our cached screen pointers need updating */
+} FxRegs_s;
 
 /* GSU registers */
 #define GSU_R0       0x000

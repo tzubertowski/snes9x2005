@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 /* The FxChip Emulator's internal variables */
-struct FxRegs_s GSU; // This will be initialized when loading a ROM
+FxRegs_s GSU; /* This will be initialized when loading a ROM */
 
 void FxCacheWriteAccess(uint16_t vAddress)
 {
@@ -282,10 +282,10 @@ static void fx_writeRegisterSpaceAfterUse()
 }
 
 /* Reset the FxChip */
-void FxReset(struct FxInit_s* psFxInfo)
+void FxReset(FxInit_s* psFxInfo)
 {
    /* Clear all internal variables */
-   memset((uint8_t*) &GSU, 0, sizeof(struct FxRegs_s));
+   memset(&GSU, 0, sizeof(FxRegs_s));
 
    /* Set default registers */
    GSU.pvSreg = GSU.pvDreg = &R0;

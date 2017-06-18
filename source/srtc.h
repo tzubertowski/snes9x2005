@@ -15,32 +15,22 @@
 #define COMMAND_LOAD_RTC    0
 #define COMMAND_CLEAR_RTC   4
 
-
 /***   The format of the rtc_data structure is:
-
 Index Description     Range (nibble)
 ----- --------------  ---------------------------------------
-
   0   Seconds low     0-9
   1   Seconds high    0-5
-
   2   Minutes low     0-9
   3   Minutes high    0-5
-
   4   Hour low        0-9
   5   Hour high       0-2
-
   6   Day low         0-9
   7   Day high        0-3
-
   8   Month           1-C (0xC is December, 12th month)
-
   9   Year ones       0-9
   A   Year tens       0-9
   B   Year High       9-B  (9=19xx, A=20xx, B=21xx)
-
   C   Day of week     0-6  (0=Sunday, 1=Monday,...,6=Saturday)
-
 ***/
 
 typedef struct
@@ -51,10 +41,9 @@ typedef struct
    int8_t   index;
    uint8_t  mode;
    time_t   system_timestamp;         // Of latest RTC load time
-   uint32_t pad;
 } SRTC_DATA;
 
-extern SRTC_DATA           rtc;
+extern SRTC_DATA rtc;
 
 void    S9xUpdateSrtcTime();
 void    S9xSetSRTC(uint8_t data, uint16_t Address);
@@ -66,4 +55,4 @@ void    S9xHardResetSRTC();
 
 #define SRTC_SRAM_PAD (4 + 8 + 1 + MAX_RTC_INDEX)
 
-#endif   // _srtc_h
+#endif // _srtc_h

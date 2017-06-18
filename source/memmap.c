@@ -29,7 +29,7 @@
 #define MAP_RONLY_SRAM_OR_NONE (Memory.SRAMSize == 0 ? (uint8_t*) MAP_NONE : (uint8_t*) MAP_RONLY_SRAM)
 
 #include "fxemu.h"
-extern struct FxInit_s SuperFX;
+extern FxInit_s SuperFX;
 
 static int32_t retry_count = 0;
 static uint8_t bytes0x2000 [0x2000];
@@ -107,11 +107,9 @@ static bool AllASCII(uint8_t* b, int32_t size)
 {
    int32_t i;
    for (i = 0; i < size; i++)
-   {
       if (b[i] < 32 || b[i] > 126)
-         return (false);
-   }
-   return (true);
+         return false;
+   return true;
 }
 
 static int32_t ScoreHiROM(bool skip_header, int32_t romoff)
@@ -156,7 +154,7 @@ static int32_t ScoreHiROM(bool skip_header, int32_t romoff)
    if (!AllASCII(&Memory.ROM [o + 0xc0], ROM_NAME_LEN - 1))
       score -= 1;
 
-   return (score);
+   return score;
 }
 
 static int32_t ScoreLoROM(bool skip_header, int32_t romoff)
@@ -198,7 +196,7 @@ static int32_t ScoreLoROM(bool skip_header, int32_t romoff)
    if (!AllASCII(&Memory.ROM [o + 0xc0], ROM_NAME_LEN - 1))
       score -= 1;
 
-   return (score);
+   return score;
 }
 
 static char* Safe(const char* s)
@@ -232,7 +230,7 @@ static char* Safe(const char* s)
          safe [i] = '?';
    }
    safe [len] = 0;
-   return (safe);
+   return safe;
 }
 
 /**********************************************************************************************/
@@ -269,7 +267,7 @@ bool S9xInitMemory()
        !IPPU.TileCached [TILE_4BIT] ||  !IPPU.TileCached [TILE_8BIT])
    {
       S9xDeinitMemory();
-      return (false);
+      return false;
    }
 
    // FillRAM uses first 32K of ROM image area, otherwise space just
@@ -287,10 +285,7 @@ bool S9xInitMemory()
    SuperFX.nRomBanks = (2 * 1024 * 1024) / (32 * 1024);
    SuperFX.pvRom = (uint8_t*) Memory.ROM;
 
-   Memory.SDD1Data = NULL;
-   Memory.SDD1Index = NULL;
-
-   return (true);
+   return true;
 }
 
 void S9xDeinitMemory()
@@ -341,21 +336,6 @@ void S9xDeinitMemory()
          IPPU.TileCached[t] = NULL;
       }
    }
-   FreeSDD1Data();
-}
-
-void FreeSDD1Data()
-{
-   if (Memory.SDD1Index)
-   {
-      free(Memory.SDD1Index);
-      Memory.SDD1Index = NULL;
-   }
-   if (Memory.SDD1Data)
-   {
-      free(Memory.SDD1Data);
-      Memory.SDD1Data = NULL;
-   }
 }
 
 #ifndef LOAD_FROM_MEMORY_TEST
@@ -371,7 +351,7 @@ static int32_t ReadInt(FILE* f, uint32_t nbytes)
          return -1;
       v = (v << 8) | (c & 0xFF);
    }
-   return (v);
+   return v;
 }
 
 #define IPS_EOF 0x00454F46l
@@ -393,8 +373,7 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
       if (!(patch_file = fopen(S9xGetFilename("ips"), "rb")))
          return;
 
-   if (fread(fname, 1, 5, patch_file) != 5 ||
-         strncmp(fname, "PATCH", 5) != 0)
+   if (fread(fname, 1, 5, patch_file) != 5 || strncmp(fname, "PATCH", 5) != 0)
    {
       fclose(patch_file);
       return;
@@ -496,7 +475,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 #endif
 
    if ((ROMFile = fopen(fname, "rb")) == NULL)
-      return (0);
+      return 0;
 
    strcpy(Memory.ROMFilename, fname);
 
@@ -635,7 +614,7 @@ again:
    TotalFileSize = FileLoader(Memory.ROM, filename, MAX_ROM_SIZE);
 
    if (!TotalFileSize)
-		return false; // it ends here
+      return false; // it ends here
    else if (!Settings.NoPatch)
       CheckForIPSPatch(filename, Memory.HeaderCount != 0, &TotalFileSize);
 #endif
@@ -945,17 +924,12 @@ again:
    if (Memory.ExtendedFormat == SMALLFIRST)
       Tales = true;
 
-   FreeSDD1Data();
    InitROM(Tales);
-#ifdef WANT_CHEATS
    S9xLoadCheatFile(S9xGetFilename("cht"));
    S9xInitCheatData();
    S9xApplyCheats();
-#endif
-
    S9xReset();
-
-   return (true);
+   return true;
 }
 
 /* compatibility wrapper */
@@ -1162,9 +1136,7 @@ void InitROM(bool Interleaved)
             Settings.SPC7110RTC = true;
       }
 
-      if (Settings.BS)
-         BSLoROMMap();
-      else if (Settings.SPC7110)
+      if (Settings.SPC7110)
          SPC7110HiROMMap();
       else if ((Memory.ROMSpeed & ~0x10) == 0x25)
          TalesROMMap(Interleaved);
@@ -1291,8 +1263,6 @@ void InitROM(bool Interleaved)
          Memory.SRAMSize = 3;
          LoROMMap();
       }
-      else if (Settings.BS)
-         BSLoROMMap();
       else
          LoROMMap();
    }
@@ -1392,8 +1362,8 @@ void InitROM(bool Interleaved)
    sprintf(Memory.ROMId, "%s", Safe(Memory.ROMId));
    sprintf(Memory.CompanyId, "%s", Safe(Memory.CompanyId));
 
-   sprintf(String,
-           "\"%s\" [%s] %s, %s, Type: %s, Mode: %s, TV: %s, S-RAM: %s, ROMId: %s Company: %2.2s",
+   fprintf(stderr,
+           "\"%s\" [%s] %s, %s, Type: %s, Mode: %s, TV: %s, S-RAM: %s, ROMId: %s Company: %2.2s\n",
            Memory.ROMName,
            (Memory.ROMChecksum + Memory.ROMComplementChecksum != 0xffff ||
             Memory.ROMChecksum != Memory.CalculatedChecksum) ? "bad checksum" : "checksum ok",
@@ -1406,7 +1376,6 @@ void InitROM(bool Interleaved)
            Memory.ROMId,
            Memory.CompanyId);
 
-   S9xMessage(String);
    Settings.ForceHeader = Settings.ForceHiROM = Settings.ForceLoROM =
                           Settings.ForceInterleaved = Settings.ForceNoHeader =
                           Settings.ForceNotInterleaved =
@@ -1740,83 +1709,6 @@ void SetaDSPMap()
    WriteProtectROM();
 }
 
-void BSLoROMMap()
-{
-   int32_t c;
-   int32_t i;
-
-   if (Settings.BS)
-      Memory.SRAMSize = 5;
-
-   // Banks 00->3f and 80->bf
-   for (c = 0; c < 0x400; c += 16)
-   {
-      Memory.Map [c + 0] = Memory.Map [c + 0x800] = Memory.RAM;
-      Memory.Map [c + 1] = Memory.Map [c + 0x801] = Memory.RAM;
-      Memory.BlockIsRAM [c + 0] = Memory.BlockIsRAM [c + 0x800] = true;
-      Memory.BlockIsRAM [c + 1] = Memory.BlockIsRAM [c + 0x801] = true;
-
-      Memory.Map [c + 2] = Memory.Map [c + 0x802] = (uint8_t*) MAP_PPU;
-      Memory.Map [c + 3] = Memory.Map [c + 0x803] = (uint8_t*) MAP_PPU;
-      Memory.Map [c + 4] = Memory.Map [c + 0x804] = (uint8_t*) MAP_CPU;
-      Memory.Map [c + 5] = Memory.Map [c + 0x805] = (uint8_t*) Memory.RAM;
-      Memory.BlockIsRAM [c + 5] = Memory.BlockIsRAM [c + 0x805] = true;
-
-      Memory.Map [c + 6] = Memory.Map [c + 0x806] = (uint8_t*) Memory.RAM;
-      Memory.BlockIsRAM [c + 6] = Memory.BlockIsRAM [c + 0x806] = true;
-      Memory.Map [c + 7] = Memory.Map [c + 0x807] = (uint8_t*) Memory.RAM;
-      Memory.BlockIsRAM [c + 7] = Memory.BlockIsRAM [c + 0x807] = true;
-      for (i = c + 8; i < c + 16; i++)
-      {
-         Memory.Map [i] = Memory.Map [i + 0x800] = &Memory.ROM [(c << 11) % Memory.CalculatedSize] - 0x8000;
-         Memory.BlockIsROM [i] = Memory.BlockIsROM [i + 0x800] = true;
-      }
-   }
-
-   for (c = 0; c < 8; c++)
-   {
-      Memory.Map[(c << 4) + 0x105] = MAP_LOROM_SRAM_OR_NONE;
-      Memory.BlockIsROM [(c << 4) + 0x105] = false;
-      Memory.BlockIsRAM [(c << 4) + 0x105] = true;
-   }
-
-   for (c = 1; c <= 4; c++)
-   {
-      for (i = 0; i < 16; i++)
-      {
-         Memory.Map[0x400 + i + (c << 4)] = MAP_LOROM_SRAM_OR_NONE;
-         Memory.BlockIsRAM[0x400 + i + (c << 4)] = true;
-         Memory.BlockIsROM[0x400 + i + (c << 4)] = false;
-      }
-   }
-
-   for (i = 0; i < 0x80; i++)
-   {
-      Memory.Map[0x700 + i] = &Memory.BSRAM[0x10000 * (i / 16)];
-      Memory.BlockIsRAM[0x700 + i] = true;
-      Memory.BlockIsROM[0x700 + i] = false;
-   }
-   for (i = 0; i < 8; i++)
-   {
-      Memory.Map[0x205 + (i << 4)] = Memory.Map[0x285 + (i << 4)] = Memory.Map[0x305
-                                     + (i << 4)] = Memory.Map[0x385 + (i << 4)] = Memory.Map[0x705 + (i << 4)];
-      Memory.BlockIsRAM[0x205 + (i << 4)] = Memory.BlockIsRAM[0x285 +
-                                            (i << 4)] = Memory.BlockIsRAM[0x305 + (i << 4)] = Memory.BlockIsRAM[0x385 +
-                                                  (i << 4)] = true;
-      Memory.BlockIsROM[0x205 + (i << 4)] = Memory.BlockIsROM[0x285 +
-                                            (i << 4)] = Memory.BlockIsROM[0x305 + (i << 4)] = Memory.BlockIsROM[0x385 +
-                                                  (i << 4)] = false;
-   }
-   for (c = 0; c < 8; c++)
-   {
-      Memory.Map[(c << 4) + 0x005] = Memory.BSRAM - 0x5000;
-      Memory.BlockIsROM [(c << 4) + 0x005] = false;
-      Memory.BlockIsRAM [(c << 4) + 0x005] = true;
-   }
-   MapRAM();
-   WriteProtectROM();
-}
-
 void HiROMMap()
 {
    int32_t i;
@@ -1920,8 +1812,7 @@ void TalesROMMap(bool Interleaved)
       }
       for (i = c + 8; i < c + 16; i++)
       {
-         Memory.Map [i] = &Memory.ROM [((c << 12) % (Memory.CalculatedSize - 0x400000)) +
-                                       OFFSET0];
+         Memory.Map [i] = &Memory.ROM [((c << 12) % (Memory.CalculatedSize - 0x400000)) + OFFSET0];
          Memory.Map [i + 0x800] = &Memory.ROM [((c << 12) % 0x400000) + OFFSET2];
          Memory.BlockIsROM [i] = true;
          Memory.BlockIsROM [i + 0x800] = true;
@@ -2616,17 +2507,17 @@ void SPC7110Sram(uint8_t newstate)
 
 const char* TVStandard()
 {
-   return (Settings.PAL ? "PAL" : "NTSC");
+   return Settings.PAL ? "PAL" : "NTSC";
 }
 
 const char* Speed()
 {
-   return (Memory.ROMSpeed & 0x10 ? "120ns" : "200ns");
+   return Memory.ROMSpeed & 0x10 ? "120ns" : "200ns";
 }
 
 const char* MapType()
 {
-   return (Memory.HiROM ? "HiROM" : "LoROM");
+   return Memory.HiROM ? "HiROM" : "LoROM";
 }
 
 const char* StaticRAMSize()
@@ -2634,9 +2525,9 @@ const char* StaticRAMSize()
    static char tmp [20];
 
    if (Memory.SRAMSize > 16)
-      return ("Corrupt");
+      return "Corrupt";
    sprintf(tmp, "%dKB", (Memory.SRAMMask + 1) / 1024);
-   return (tmp);
+   return tmp;
 }
 
 const char* Size()
@@ -2644,9 +2535,9 @@ const char* Size()
    static char tmp [20];
 
    if (Memory.ROMSize < 7 || Memory.ROMSize - 7 > 23)
-      return ("Corrupt");
+      return "Corrupt";
    sprintf(tmp, "%dMbits", 1 << (Memory.ROMSize - 7));
-   return (tmp);
+   return tmp;
 }
 
 const char* KartContents()
@@ -2663,7 +2554,7 @@ const char* KartContents()
       "ROM", "ROM+RAM", "ROM+RAM+BAT"
    };
    if (Memory.ROMType == 0 && !Settings.BS)
-      return ("ROM only");
+      return "ROM only";
 
    sprintf(tmp, "%s", Contents [(Memory.ROMType & 0xf) % 3]);
 
@@ -2698,29 +2589,29 @@ const char* KartContents()
          sprintf(tmp, "%s+DSP%d", tmp, Settings.DSP == 0 ? 1 : Settings.DSP);
    }
 
-   return (tmp);
+   return tmp;
 }
 
 const char* MapMode()
 {
    static char tmp [4];
    sprintf(tmp, "%02x", Memory.ROMSpeed & ~0x10);
-   return (tmp);
+   return tmp;
 }
 
 const char* ROMID()
 {
-   return (Memory.ROMId);
+   return Memory.ROMId;
 }
 
 bool match_na(const char* str)
 {
-   return (strcmp(Memory.ROMName, str) == 0);
+   return strcmp(Memory.ROMName, str) == 0;
 }
 
 bool match_id(const char* str)
 {
-   return (strncmp(Memory.ROMId, str, strlen(str)) == 0);
+   return strncmp(Memory.ROMId, str, strlen(str)) == 0;
 }
 
 void ApplyROMFixes()
@@ -3232,6 +3123,4 @@ void ParseSNESHeader(uint8_t* RomHeader)
       sprintf(Memory.CompanyId, "%02X", RomHeader[0x2A]);
 }
 
-#undef INLINE
-#define INLINE
 #include "getset.h"

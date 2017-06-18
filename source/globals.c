@@ -4,7 +4,6 @@
 #include "memmap.h"
 #include "ppu.h"
 #include "dsp1.h"
-#include "missing.h"
 #include "cpuexec.h"
 #include "apu.h"
 #include "dma.h"
@@ -16,8 +15,6 @@
 #include "spc7110.h"
 
 char String[513];
-
-struct Missing missing;
 
 SICPU ICPU;
 
@@ -39,8 +36,6 @@ SnesModel M1SNES = {1, 3, 2};
 SnesModel M2SNES = {2, 4, 3};
 SnesModel* Model = &M1SNES;
 
-uint8_t* C4RAM = NULL;
-
 int32_t OpAddress = 0;
 
 CMemory Memory;
@@ -49,7 +44,7 @@ SSNESGameFixes SNESGameFixes;
 
 uint8_t OpenBus = 0;
 
-struct FxInit_s SuperFX;
+FxInit_s SuperFX;
 
 SPPU PPU;
 InternalPPU IPPU;
@@ -61,9 +56,9 @@ uint8_t* HDMABasePointers [8];
 
 SBG BG;
 
-struct SGFX GFX;
-struct SLineData LineData[240];
-struct SLineMatrixData LineMatrixData [240];
+SGFX GFX;
+SLineData LineData[240];
+SLineMatrixData LineMatrixData [240];
 
 uint8_t Mode7Depths [2];
 NormalTileRenderer DrawTilePtr = NULL;
@@ -77,9 +72,7 @@ uint32_t odd_low[4][16];
 uint32_t even_high[4][16];
 uint32_t even_low[4][16];
 
-#ifdef WANT_CHEATS
 SCheatData Cheat;
-#endif
 
 #ifndef USE_BLARGG_APU
 SoundStatus so;
@@ -150,12 +143,12 @@ uint8_t Depths[8][4] =
 {
    {TILE_2BIT, TILE_2BIT, TILE_2BIT, TILE_2BIT}, // 0
    {TILE_4BIT, TILE_4BIT, TILE_2BIT, 0},         // 1
-   {TILE_4BIT, TILE_4BIT, 0, 0},                 // 2
-   {TILE_8BIT, TILE_4BIT, 0, 0},                 // 3
-   {TILE_8BIT, TILE_2BIT, 0, 0},                 // 4
-   {TILE_4BIT, TILE_2BIT, 0, 0},                 // 5
-   {TILE_4BIT, 0, 0, 0},                         // 6
-   {0, 0, 0, 0}                                  // 7
+   {TILE_4BIT, TILE_4BIT, 0,         0},         // 2
+   {TILE_8BIT, TILE_4BIT, 0,         0},         // 3
+   {TILE_8BIT, TILE_2BIT, 0,         0},         // 4
+   {TILE_4BIT, TILE_2BIT, 0,         0},         // 5
+   {TILE_4BIT, 0,         0,         0},         // 6
+   {0,         0,         0,         0}          // 7
 };
 uint8_t BGSizes [2] =
 {
@@ -165,8 +158,8 @@ uint16_t DirectColourMaps [8][256];
 
 int32_t FilterValues[4][2] =
 {
-   {0, 0},
-   {240, 0},
+   {0,    0},
+   {240,  0},
    {488, -240},
    {460, -208}
 };
@@ -208,7 +201,7 @@ uint8_t APUROM [64] =
 // Raw SPC700 instruction cycle lengths
 uint16_t S9xAPUCycleLengths [256] =
 {
-   /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f, */
+   /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e,  f, */
    /* 00 */  2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 6,  8,
    /* 10 */  2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 4,  6,
    /* 20 */  2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 5,  4,
@@ -231,7 +224,7 @@ uint16_t S9xAPUCycleLengths [256] =
 // to be relative to the 65c816 instruction lengths.
 uint16_t S9xAPUCycles [256] =
 {
-   /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f, */
+   /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e,  f, */
    /* 00 */  2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 6,  8,
    /* 10 */  2, 8, 4, 5, 4, 5, 5, 6, 5, 5, 6, 5, 2, 2, 4,  6,
    /* 20 */  2, 8, 4, 5, 3, 4, 3, 6, 2, 6, 5, 4, 5, 4, 5,  4,

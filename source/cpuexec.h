@@ -18,15 +18,15 @@ typedef struct
 
 #define DO_HBLANK_CHECK_SFX() \
     if (CPU.Cycles >= CPU.NextEvent) \
-   S9xDoHBlankProcessing_SFX ();
+       S9xDoHBlankProcessing_SFX ();
 
 #define DO_HBLANK_CHECK_NoSFX() \
     if (CPU.Cycles >= CPU.NextEvent) \
-   S9xDoHBlankProcessing_NoSFX ();
+       S9xDoHBlankProcessing_NoSFX ();
 
 typedef struct
 {
-   uint8_t*   Speed;
+   uint8_t*   UNUSED1;
    SOpcodes*  S9xOpcodes;
    SRegisters Registers;
    uint8_t    _Carry;
@@ -37,19 +37,19 @@ typedef struct
    uint32_t   ShiftedPB;
    uint32_t   ShiftedDB;
    uint32_t   Frame;
-   uint32_t   Scanline;
-   uint32_t   FrameAdvanceCount;
+   uint32_t   UNUSED2;
+   uint32_t   UNUSED3;
 } SICPU;
 
-void S9xMainLoop();
-void S9xReset();
-void S9xSoftReset();
-void S9xDoHBlankProcessing_SFX();
-void S9xDoHBlankProcessing_NoSFX();
-void S9xClearIRQ(uint32_t);
-void S9xSetIRQ(uint32_t);
+void S9xMainLoop(void);
+void S9xReset(void);
+void S9xSoftReset(void);
+void S9xDoHBlankProcessing_SFX(void);
+void S9xDoHBlankProcessing_NoSFX(void);
+void S9xClearIRQ(uint32_t source);
+void S9xSetIRQ(uint32_t source);
 
-extern SOpcodes S9xOpcodesE1 [256];
+extern SOpcodes S9xOpcodesE1   [256];
 extern SOpcodes S9xOpcodesM1X1 [256];
 extern SOpcodes S9xOpcodesM1X0 [256];
 extern SOpcodes S9xOpcodesM0X1 [256];

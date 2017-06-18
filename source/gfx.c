@@ -29,8 +29,8 @@ extern LargePixelRenderer DrawLargePixelPtr;
 
 extern SBG BG;
 
-extern struct SLineData LineData[240];
-extern struct SLineMatrixData LineMatrixData [240];
+extern SLineData LineData[240];
+extern SLineMatrixData LineMatrixData [240];
 
 extern uint8_t  Mode7Depths [2];
 
@@ -38,8 +38,7 @@ extern uint8_t  Mode7Depths [2];
    ((a) & ((1 << 10) - 1)) + (((((a) & (1 << 13)) ^ (1 << 13)) - (1 << 13)) >> 3)
 
 #define ON_MAIN(N) \
-(GFX.r212c & (1 << (N)) && \
- !(PPU.BG_Forced & (1 << (N))))
+(GFX.r212c & (1 << (N)))
 
 #define SUB_OR_ADD(N) \
 (GFX.r2131 & (1 << (N)))
@@ -47,8 +46,7 @@ extern uint8_t  Mode7Depths [2];
 #define ON_SUB(N) \
 ((GFX.r2130 & 0x30) != 0x30 && \
  (GFX.r2130 & 2) && \
- (GFX.r212d & (1 << N)) && \
- !(PPU.BG_Forced & (1 << (N))))
+ (GFX.r212d & (1 << N)))
 
 #define ANYTHING_ON_SUB \
 ((GFX.r2130 & 0x30) != 0x30 && \
@@ -61,6 +59,7 @@ extern uint8_t  Mode7Depths [2];
 #define FIX_INTERLACE(SCREEN, DO_DEPTH, DEPTH) \
     uint32_t y; \
     if (IPPU.DoubleHeightPixels && ((PPU.BGMode != 5 && PPU.BGMode != 6) || !IPPU.Interlace)) \
+    { \
         for (y = GFX.StartY; y <= GFX.EndY; y++) \
         { \
             /* memmove converted: Same malloc, non-overlapping addresses [Neb] */ \
@@ -73,7 +72,8 @@ extern uint8_t  Mode7Depths [2];
                          DEPTH + y * GFX.PPL, \
                          GFX.PPLx2>>1); \
             } \
-        }
+        } \
+    }
 
 
 #define BLACK BUILD_PIXEL(0,0,0)
@@ -266,7 +266,6 @@ bool S9xInitGFX()
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
    GFX.DepthDelta = GFX.SubZBuffer - GFX.ZBuffer;
 
-   PPU.BG_Forced = 0;
    IPPU.OBJChanged = true;
 
    IPPU.DirectColourMapsNeedRebuild = true;
@@ -274,16 +273,8 @@ bool S9xInitGFX()
    DrawTilePtr = DrawTile16;
    DrawClippedTilePtr = DrawClippedTile16;
    DrawLargePixelPtr = DrawLargePixel16;
-   if (Settings.SupportHiRes)
-   {
-      DrawHiResTilePtr = DrawTile16;
-      DrawHiResClippedTilePtr = DrawClippedTile16;
-   }
-   else
-   {
-      DrawHiResTilePtr = DrawTile16HalfWidth;
-      DrawHiResClippedTilePtr = DrawClippedTile16HalfWidth;
-   }
+   DrawHiResTilePtr = DrawTile16;
+   DrawHiResClippedTilePtr = DrawClippedTile16;
    GFX.PPL = GFX.Pitch >> 1;
    GFX.PPLx2 = GFX.Pitch;
    S9xFixColourBrightness();
@@ -437,9 +428,6 @@ void S9xBuildDirectColourMaps()
 
 void S9xStartScreenRefresh()
 {
-   if (GFX.InfoStringTimeout > 0 && --GFX.InfoStringTimeout == 0)
-      GFX.InfoString = NULL;
-
    if (IPPU.RenderThisFrame)
    {
       if (!S9xInitUpdate())
@@ -448,14 +436,11 @@ void S9xStartScreenRefresh()
          return;
       }
 
-      IPPU.RenderedFramesCount++;
       IPPU.PreviousLine = IPPU.CurrentLine = 0;
-      IPPU.MaxBrightness = PPU.Brightness;
-      IPPU.LatchedBlanking = PPU.ForcedBlanking;
 
       if (PPU.BGMode == 5 || PPU.BGMode == 6)
          IPPU.Interlace = (Memory.FillRAM[0x2133] & 1);
-      if (Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
+      if (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace)
       {
          IPPU.RenderedScreenWidth = 512;
          IPPU.DoubleWidthPixels = true;
@@ -478,14 +463,6 @@ void S9xStartScreenRefresh()
             GFX.PPLx2 = GFX.PPL << 1;
          }
       }
-      else if (!Settings.SupportHiRes && (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace))
-      {
-         IPPU.RenderedScreenWidth = 256;
-         IPPU.DoubleWidthPixels = false;
-         // Secret of Mana displays menus with mode 5.
-         // Make them readable.
-         IPPU.HalfWidthPixels = true;
-      }
       else
       {
          IPPU.RenderedScreenWidth = 256;
@@ -507,11 +484,7 @@ void S9xStartScreenRefresh()
    }
 
    if (++IPPU.FrameCount % Memory.ROMFramesPerSecond == 0)
-   {
-      IPPU.DisplayedRenderedFrameCount = IPPU.RenderedFramesCount;
-      IPPU.RenderedFramesCount = 0;
       IPPU.FrameCount = 0;
-   }
 }
 
 void RenderLine(uint8_t C)
@@ -525,7 +498,7 @@ void RenderLine(uint8_t C)
 
       if (PPU.BGMode == 7)
       {
-         struct SLineMatrixData* p = &LineMatrixData [C];
+         SLineMatrixData* p = &LineMatrixData [C];
          p->MatrixA = PPU.MatrixA;
          p->MatrixB = PPU.MatrixB;
          p->MatrixC = PPU.MatrixC;
@@ -555,14 +528,14 @@ void RenderLine(uint8_t C)
    {
       /* if we're not rendering this frame, we still need to update this */
       // XXX: Check ForceBlank? Or anything else?
-      if (IPPU.OBJChanged) S9xSetupOBJ();
+      if (IPPU.OBJChanged)
+         S9xSetupOBJ();
       PPU.RangeTimeOver |= GFX.OBJLines[C].RTOFlags;
    }
 }
 
 void S9xEndScreenRefresh()
 {
-   IPPU.HDMAStarted = false;
    if (IPPU.RenderThisFrame)
    {
       FLUSH_REDRAW();
@@ -577,18 +550,10 @@ void S9xEndScreenRefresh()
       GFX.PPL = GFX.PPLx2 >> 1;
    }
 
-#ifdef WANT_CHEATS
    S9xApplyCheats();
-#endif
 
    if (CPU.SRAMModified)
       CPU.SRAMModified = false;
-}
-
-void S9xSetInfoString(const char* string)
-{
-   GFX.InfoString = string;
-   GFX.InfoStringTimeout = 120;
 }
 
 static inline void SelectTileRenderer(bool normal)
@@ -698,12 +663,6 @@ void S9xSetupOBJ()
       LargeWidth = LargeHeight = 32;
       break;
    }
-   if (IPPU.InterlaceSprites)
-   {
-      SmallHeight >>= 1;
-      LargeHeight >>= 1;
-   }
-
    /* OK, we have three cases here. Either there's no priority, priority is
     * normal FirstSprite, or priority is FirstSprite+Y. The first two are
     * easy, the last is somewhat more ... interesting. So we split them up. */
@@ -892,7 +851,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
    struct
    {
       uint16_t Pos;
-      bool Value;
+      bool     Value;
    } Windows[7];
 
    int32_t clipcount = GFX.pCurrentClip->Count [4];
@@ -938,46 +897,31 @@ static void DrawOBJS(bool OnMain, uint8_t D)
       }
    }
 
-   if (Settings.SupportHiRes)
+   if (PPU.BGMode == 5 || PPU.BGMode == 6)
    {
-      if (PPU.BGMode == 5 || PPU.BGMode == 6)
+      // Bah, OnMain is never used except to determine if calling
+      // SelectTileRenderer is necessary. So let's hack it to false here
+      // to stop SelectTileRenderer from being called when it causes
+      // problems.
+      OnMain = false;
+      GFX.PixSize = 2;
+      if (IPPU.DoubleHeightPixels)
       {
-         // Bah, OnMain is never used except to determine if calling
-         // SelectTileRenderer is necessary. So let's hack it to false here
-         // to stop SelectTileRenderer from being called when it causes
-         // problems.
-         OnMain = false;
-         GFX.PixSize = 2;
-         if (IPPU.DoubleHeightPixels)
-         {
-            DrawTilePtr = DrawTile16x2x2;
-            DrawClippedTilePtr = DrawClippedTile16x2x2;
-         }
-         else
-         {
-            DrawTilePtr = DrawTile16x2;
-            DrawClippedTilePtr = DrawClippedTile16x2;
-         }
+         DrawTilePtr = DrawTile16x2x2;
+         DrawClippedTilePtr = DrawClippedTile16x2x2;
       }
       else
       {
-         DrawTilePtr = DrawTile16;
-         DrawClippedTilePtr = DrawClippedTile16;
+         DrawTilePtr = DrawTile16x2;
+         DrawClippedTilePtr = DrawClippedTile16x2;
       }
    }
-   else // if (!Settings.SupportHiRes)
+   else
    {
-      if (PPU.BGMode == 5 || PPU.BGMode == 6)
-      {
-         // Bah, OnMain is never used except to determine if calling
-         // SelectTileRenderer is necessary. So let's hack it to false here
-         // to stop SelectTileRenderer from being called when it causes
-         // problems.
-         OnMain = false;
-      }
       DrawTilePtr = DrawTile16;
       DrawClippedTilePtr = DrawClippedTile16;
    }
+
    GFX.Z1 = D + 2;
 
    uint32_t Y, Offset;
@@ -1941,8 +1885,6 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 
    case 5:
    case 6: // XXX: is also offset per tile.
-      if (!Settings.SupportHiRes)
-         SelectTileRenderer(true /* normal */);
       DrawBackgroundMode5(bg, Z1, Z2);
       return;
    }
@@ -2291,7 +2233,7 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 \
     Screen += GFX.StartY * GFX.Pitch; \
     uint8_t *Depth = GFX.DB + GFX.StartY * GFX.PPL; \
-    struct SLineMatrixData *l = &LineMatrixData [GFX.StartY]; \
+    SLineMatrixData *l = &LineMatrixData [GFX.StartY]; \
 \
     uint32_t Line; \
     for (Line = GFX.StartY; Line <= GFX.EndY; Line++, Screen += GFX.Pitch, Depth += GFX.PPL, l++) \
@@ -2482,7 +2424,7 @@ static void DrawBGMode7Background16Sub1_2(uint8_t* Screen, int32_t bg)
     \
     Screen += GFX.StartY * GFX.Pitch; \
     uint8_t *Depth = GFX.DB + GFX.StartY * GFX.PPL; \
-    struct SLineMatrixData *l = &LineMatrixData [GFX.StartY]; \
+    SLineMatrixData *l = &LineMatrixData [GFX.StartY]; \
     bool allowSimpleCase = false; \
     if (!l->MatrixB && !l->MatrixC && (l->MatrixA == 0x0100) && (l->MatrixD == 0x0100) \
         && !LineMatrixData[GFX.EndY].MatrixB && !LineMatrixData[GFX.EndY].MatrixC \
@@ -3063,19 +3005,9 @@ void S9xUpdateScreen()
    GFX.r212d = Memory.FillRAM [0x212d];
    GFX.r2130 = Memory.FillRAM [0x2130];
 
-#ifdef JP_FIX
-
-   GFX.Pseudo = (Memory.FillRAM [0x2133] & 8) != 0 &&
-                (GFX.r212c & 15) != (GFX.r212d & 15) &&
-                (GFX.r2131 == 0x3f);
-
-#else
-
    GFX.Pseudo = (Memory.FillRAM [0x2133] & 8) != 0 &&
                 (GFX.r212c & 15) != (GFX.r212d & 15) &&
                 (GFX.r2131 & 0x3f) == 0;
-
-#endif
 
    if (IPPU.OBJChanged)
       S9xSetupOBJ();
@@ -3096,9 +3028,7 @@ void S9xUpdateScreen()
    uint32_t starty = GFX.StartY;
    uint32_t endy = GFX.EndY;
 
-   if (Settings.SupportHiRes &&
-         (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace
-          || IPPU.DoubleHeightPixels))
+   if (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace || IPPU.DoubleHeightPixels)
    {
       if (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace)
       {
@@ -3158,27 +3088,6 @@ void S9xUpdateScreen()
          }
       }
    }
-   else if (!Settings.SupportHiRes)
-   {
-      if (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace)
-      {
-         if (!IPPU.HalfWidthPixels)
-         {
-            // The game has switched from lo-res to hi-res mode part way down
-            // the screen. Hi-res pixels must now be drawn at half width.
-            IPPU.HalfWidthPixels = true;
-         }
-      }
-      else
-      {
-         if (IPPU.HalfWidthPixels)
-         {
-            // The game has switched from hi-res to lo-res mode part way down
-            // the screen. Lo-res pixels must now be drawn at FULL width.
-            IPPU.HalfWidthPixels = false;
-         }
-      }
-   }
 
    uint32_t black = BLACK | (BLACK << 16);
 
@@ -3196,7 +3105,7 @@ void S9xUpdateScreen()
             (GFX.r2130 & 0x30) != 0x30 &&
             !((GFX.r2130 & 0x30) == 0x10 && IPPU.Clip[1].Count[5] == 0))
       {
-         struct ClipData* pClip;
+         ClipData* pClip;
 
          GFX.FixedColour = BUILD_PIXEL(IPPU.XB [PPU.FixedColourRed],
                                        IPPU.XB [PPU.FixedColourGreen],
@@ -3264,7 +3173,6 @@ void S9xUpdateScreen()
                   // because there is a colour window in effect clipping
                   // the main screen that will allow the sub-screen
                   // 'underneath' to show through.
-
                   uint32_t b = GFX.FixedColour | (GFX.FixedColour << 16);
                   uint32_t* p = (uint32_t*)(GFX.SubScreen + y * GFX.Pitch2);
                   uint32_t* q = (uint32_t*)((uint16_t*) p + IPPU.RenderedScreenWidth);
@@ -3593,30 +3501,24 @@ void S9xUpdateScreen()
          }
       }
    }
-   else
-   {
-   }
 
-   if (Settings.SupportHiRes)
+   if (PPU.BGMode != 5 && PPU.BGMode != 6 && IPPU.DoubleWidthPixels)
    {
-      if (PPU.BGMode != 5 && PPU.BGMode != 6 && IPPU.DoubleWidthPixels)
+      // Mixture of background modes used on screen - scale width
+      // of all non-mode 5 and 6 pixels.
+      uint32_t y;
+      for (y = starty; y <= endy; y++)
       {
-         // Mixture of background modes used on screen - scale width
-         // of all non-mode 5 and 6 pixels.
-         uint32_t y;
-         for (y = starty; y <= endy; y++)
-         {
-            int32_t x;
-            uint16_t* p = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + 255;
-            uint16_t* q = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + 510;
-            for (x = 255; x >= 0; x--, p--, q -= 2)
-               * q = *(q + 1) = *p;
-         }
+         int32_t x;
+         uint16_t* p = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + 255;
+         uint16_t* q = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + 510;
+         for (x = 255; x >= 0; x--, p--, q -= 2)
+            * q = *(q + 1) = *p;
       }
-
-      // Double the height of the pixels just drawn
-      FIX_INTERLACE(GFX.Screen, false, GFX.ZBuffer);
    }
+
+   // Double the height of the pixels just drawn
+   FIX_INTERLACE(GFX.Screen, false, GFX.ZBuffer);
 
    IPPU.PreviousLine = IPPU.CurrentLine;
 }

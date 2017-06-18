@@ -23,16 +23,16 @@ void S9xSetST011(uint32_t Address, uint8_t Byte);
 extern void (*SetSETA)(uint32_t, uint8_t);
 extern uint8_t(*GetSETA)(uint32_t);
 
-typedef struct SETA_ST010_STRUCT
+typedef struct
 {
-   uint8_t input_params[16];
+   uint8_t input_params [16];
    uint8_t output_params[16];
    uint8_t op_reg;
    uint8_t execute;
    bool    control_enable;
 } ST010_Regs;
 
-typedef struct SETA_ST011_STRUCT
+typedef struct
 {
    bool     waiting4command;
    uint8_t  status;
@@ -42,10 +42,10 @@ typedef struct SETA_ST011_STRUCT
    uint32_t out_count;
    uint32_t out_index;
    uint8_t  parameters [512];
-   uint8_t  output [512];
+   uint8_t  output     [512];
 } ST011_Regs;
 
-typedef struct SETA_ST018_STRUCT
+typedef struct
 {
    bool     waiting4command;
    uint8_t  status;
@@ -57,7 +57,7 @@ typedef struct SETA_ST018_STRUCT
    uint32_t out_count;
    uint32_t out_index;
    uint8_t  parameters [512];
-   uint8_t  output [512];
+   uint8_t  output     [512];
 } ST018_Regs;
 
 #endif

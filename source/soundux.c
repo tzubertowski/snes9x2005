@@ -74,8 +74,6 @@ uint32_t IncreaseERate   [32][10];
 uint32_t DecreaseERateExp[32][10];
 uint32_t KeyOffERate         [10];
 
-static int32_t noise_gen;
-
 #define FIXED_POINT 0x10000UL
 #define FIXED_POINT_REMAINDER 0xffffUL
 #define FIXED_POINT_SHIFT 16
@@ -113,7 +111,7 @@ void S9xAPUSetEndX(int32_t ch)
    APU.DSP [APU_ENDX] |= 1 << ch;
 }
 
-void S9xSetEnvRate(Channel* ch, uint32_t rate, int32_t direction, int32_t target, uint32_t  mode)
+void S9xSetEnvRate(Channel* ch, uint32_t rate, int32_t direction, int32_t target, uint32_t mode)
 {
    ch->envx_target = target;
 
@@ -186,7 +184,6 @@ void S9xSetEchoVolume(int16_t volume_left, int16_t volume_right)
 
 void S9xSetEchoEnable(uint8_t byte)
 {
-   SoundData.echo_channel_enable = byte;
    if (!SoundData.echo_write_enabled || Settings.DisableSoundEcho)
       byte = 0;
    if (byte && !SoundData.echo_enable)
@@ -214,8 +211,7 @@ void S9xSetEchoFeedback(int32_t feedback)
 
 void S9xSetEchoDelay(int32_t delay)
 {
-   SoundData.echo_buffer_size = (512 * delay * so.playback_rate) >> 15;
-   SoundData.echo_buffer_size <<= 1;
+   SoundData.echo_buffer_size = (delay * so.playback_rate) >> 5;
    if (SoundData.echo_buffer_size)
       SoundData.echo_ptr %= SoundData.echo_buffer_size;
    else
@@ -249,7 +245,6 @@ void S9xSetSoundKeyOff(int32_t channel)
 void S9xFixSoundAfterSnapshotLoad()
 {
    SoundData.echo_write_enabled = !(APU.DSP [APU_FLG] & 0x20);
-   SoundData.echo_channel_enable = APU.DSP [APU_EON];
    S9xSetEchoDelay(APU.DSP [APU_EDL] & 0xf);
    S9xSetEchoFeedback((int8_t) APU.DSP [APU_EFB]);
 
@@ -306,8 +301,7 @@ void S9xSetSoundADSR(int32_t channel, int32_t attack_ind, int32_t decay_ind, int
       S9xSetEnvRate(ch, attack_rate, 1, 127, 0);
       break;
    case SOUND_DECAY:
-      S9xSetEnvRate(ch, decay_rate, -1,
-                    (MAX_ENVELOPE_HEIGHT * (sustain_level + 1)) >> 3, 1 << 28);
+      S9xSetEnvRate(ch, decay_rate, -1, (MAX_ENVELOPE_HEIGHT * (sustain_level + 1)) >> 3, 1 << 28);
       break;
    case SOUND_SUSTAIN:
       S9xSetEnvRate(ch, sustain_rate, -1, 0, 2 << 28);
@@ -335,14 +329,12 @@ int32_t S9xGetEnvelopeHeight(int32_t channel)
          SNESGameFixes.SoundEnvelopeHeightReading2) &&
          SoundData.channels[channel].state != SOUND_SILENT &&
          SoundData.channels[channel].state != SOUND_GAIN)
-      return (SoundData.channels[channel].envx);
+      return SoundData.channels[channel].envx;
 
-   //siren fix from XPP
-   if (SNESGameFixes.SoundEnvelopeHeightReading2 &&
-         SoundData.channels[channel].state != SOUND_SILENT)
-      return (SoundData.channels[channel].envx);
+   if (SNESGameFixes.SoundEnvelopeHeightReading2 && SoundData.channels[channel].state != SOUND_SILENT)
+      return SoundData.channels[channel].envx;
 
-   return (0);
+   return 0;
 }
 
 void S9xSetSoundFrequency(int32_t channel, int32_t hertz) // hertz [0~64K<<1]
@@ -710,9 +702,9 @@ static inline void MixStereo(int32_t sample_count)
             else
             {
                // Snes9x 1.53's SPC_DSP.cpp, by blargg
-               int32_t feedback = (noise_gen << 13) ^ (noise_gen << 14);
-               noise_gen = (feedback & 0x4000) ^ (noise_gen >> 1);
-               ch->sample = (noise_gen << 17) >> 17;
+               int32_t feedback = (so.noise_gen << 13) ^ (so.noise_gen << 14);
+               so.noise_gen = (feedback & 0x4000) ^ (so.noise_gen >> 1);
+               ch->sample = (so.noise_gen << 17) >> 17;
                ch->interpolate = 0;
             }
 
@@ -740,12 +732,11 @@ static inline void MixStereo(int32_t sample_count)
 
          if (!ch->echo_buf_ptr)
             continue;
-         
+
          ch->echo_buf_ptr [I    ] += VL;
          ch->echo_buf_ptr [I + 1] += VR;
       }
-stereo_exit:
-      ;
+stereo_exit:;
    }
 }
 
@@ -862,13 +853,12 @@ void S9xResetSound(bool full)
    FilterTaps [6] = 0;
    FilterTaps [7] = 0;
    FilterTapDefinitionBitfield = 0;
-   noise_gen = 1;
+   so.noise_gen = 1;
 
    if (full)
    {
       SoundData.echo_enable = 0;
       SoundData.echo_write_enabled = 0;
-      SoundData.echo_channel_enable = 0;
       SoundData.pitch_mod = 0;
       SoundData.master_volume[0] = 0;
       SoundData.master_volume[1] = 0;

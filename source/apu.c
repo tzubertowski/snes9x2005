@@ -8,7 +8,7 @@
 #include "soundux.h"
 #include "cpuexec.h"
 
-extern int32_t  NoiseFreq       [32];
+extern int32_t NoiseFreq[32];
 
 bool S9xInitAPU()
 {
@@ -17,10 +17,10 @@ bool S9xInitAPU()
    if (!IAPU.RAM)
    {
       S9xDeinitAPU();
-      return (false);
+      return false;
    }
 
-   return (true);
+   return true;
 }
 
 void S9xDeinitAPU()
@@ -66,11 +66,9 @@ void S9xResetAPU()
    S9xAPUUnpackStatus();
    IAPU.Registers.PC = 0;
    IAPU.APUExecuting = Settings.APUEnabled;
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitAddress1 = NULL;
    IAPU.WaitAddress2 = NULL;
    IAPU.WaitCounter = 0;
-#endif
    APU.ShowROM = true;
    IAPU.RAM [0xf1] = 0x80;
 
@@ -246,7 +244,7 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_P_LOW + 0x50:
    case APU_P_LOW + 0x60:
    case APU_P_LOW + 0x70:
-      S9xSetSoundHertz(reg >> 4, ((byte + (APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) / 8);
+      S9xSetSoundHertz(reg >> 4, (((int16_t) byte + ((int16_t) APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) / 8);
       break;
    case APU_P_HIGH + 0x00:
    case APU_P_HIGH + 0x10:
@@ -256,7 +254,7 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_P_HIGH + 0x50:
    case APU_P_HIGH + 0x60:
    case APU_P_HIGH + 0x70:
-      S9xSetSoundHertz(reg >> 4, (((byte << 8) + APU.DSP [reg - 1]) & FREQUENCY_MASK) * 8);
+      S9xSetSoundHertz(reg >> 4, ((((int16_t) byte << 8) + (int16_t) APU.DSP [reg - 1]) & FREQUENCY_MASK) * 8);
       break;
    case APU_ADSR1 + 0x00:
    case APU_ADSR1 + 0x10:

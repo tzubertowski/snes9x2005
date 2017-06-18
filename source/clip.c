@@ -6,11 +6,11 @@
 #include "memmap.h"
 #include "ppu.h"
 
-struct Band
+typedef struct
 {
    uint32_t Left;
    uint32_t Right;
-};
+} Band;
 
 #define BAND_EMPTY(B) (B.Left >= B.Right)
 #define BANDS_INTERSECT(A,B) ((A.Left >= B.Left && A.Left < B.Right) || \
@@ -25,25 +25,17 @@ struct Band
 
 static int32_t IntCompare(const void* d1, const void* d2)
 {
-   if (*(uint32_t*) d1 > *(uint32_t*) d2)
-      return (1);
-   else if (*(uint32_t*) d1 < * (uint32_t*) d2)
-      return (-1);
-   return (0);
+   return (*(uint32_t*) d1 - * (uint32_t*) d2);
 }
 
 static int32_t BandCompare(const void* d1, const void* d2)
 {
-   if (((struct Band*) d1)->Left > ((struct Band*) d2)->Left)
-      return (1);
-   else if (((struct Band*) d1)->Left < ((struct Band*) d2)->Left)
-      return (-1);
-   return (0);
+   return (((Band*) d1)->Left - ((Band*) d2)->Left);
 }
 
 void ComputeClipWindows()
 {
-   struct ClipData* pClip = &IPPU.Clip [0];
+   ClipData* pClip = &IPPU.Clip [0];
    int32_t c, w, i;
 
    // Loop around the main screen then the sub-screen.
@@ -98,16 +90,15 @@ void ComputeClipWindows()
          if (w == 5 || pClip->Count [5] ||
                (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
          {
-            struct Band Win1[3];
-            struct Band Win2[3];
+            Band Win1[3];
+            Band Win2[3];
             uint32_t Window1Enabled = 0;
             uint32_t Window2Enabled = 0;
             bool invert = (w == 5 &&
                             ((c == 1 && (Memory.FillRAM [0x2130] & 0x30) == 0x10) ||
-                             (c == 0 && (Memory.FillRAM [0x2130] & 0xc0) == 0x40)));
+                            (c == 0 && (Memory.FillRAM [0x2130] & 0xc0) == 0x40)));
 
-            if (w == 5 ||
-                  (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
+            if (w == 5 || (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
             {
                if (PPU.ClipWindow1Enable [w])
                {
@@ -188,7 +179,7 @@ void ComputeClipWindows()
                // 1. <no range> (Left > Right. One band)
                // 2. |    ----------------             | (Left >= 0, Right <= 255, Left <= Right. One band)
                // 3. |------------           ----------| (Left1 == 0, Right1 < Left2; Left2 > Right1, Right2 == 255. Two bands)
-               struct Band Bands [6];
+               Band Bands [6];
                int32_t B = 0;
                switch (PPU.ClipWindowOverlapLogic [w] ^ 1)
                {
@@ -630,16 +621,15 @@ void ComputeClipWindows()
                {
                   // Intersect the colour window with the bg's
                   // own clip window.
-                  uint32_t i;
+                  uint32_t i, j;
                   for (i = 0; i < pClip->Count [w]; i++)
                   {
-                     uint32_t j;
                      for (j = 0; j < pClip->Count [5]; j++)
                      {
-                        if ((pClip->Left[i][w] >= pClip->Left[j][5]
-                              && pClip->Left[i][w] < pClip->Right[j][5])
-                              || (pClip->Left[j][5] >= pClip->Left[i][w]
-                                  && pClip->Left[j][5] < pClip->Right[i][w]))
+                        if ((pClip->Left[i][w] >= pClip->Left[j][5] &&
+                             pClip->Left[i][w] <  pClip->Right[j][5]) ||
+                            (pClip->Left[j][5] >= pClip->Left[i][w] &&
+                             pClip->Left[j][5] <  pClip->Right[i][w]))
                         {
                            // Found an intersection!
                            pClip->Left[i][w] = MAX(pClip->Left[i][w], pClip->Left[j][5]);

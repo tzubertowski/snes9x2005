@@ -1,7 +1,5 @@
 #include "../copyright"
 
-#ifdef WANT_CHEATS
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -18,8 +16,7 @@ void S9xInitCheatData()
    Cheat.FillRAM = Memory.FillRAM;
 }
 
-void S9xAddCheat(bool enable, bool save_current_value,
-                 uint32_t address, uint8_t byte)
+void S9xAddCheat(bool enable, bool save_current_value, uint32_t address, uint8_t byte)
 {
    if (Cheat.num_cheats < sizeof(Cheat.c) / sizeof(Cheat.c [0]))
    {
@@ -45,9 +42,8 @@ void S9xDeleteCheat(uint32_t which1)
          S9xRemoveCheat(which1);
 
       // memmove required: Overlapping addresses [Neb]
-      memmove(&Cheat.c [which1], &Cheat.c [which1 + 1],
-              sizeof(Cheat.c [0]) * (Cheat.num_cheats - which1 - 1));
-      Cheat.num_cheats--; //MK: This used to set it to 0??
+      memmove(&Cheat.c [which1], &Cheat.c [which1 + 1], sizeof(Cheat.c [0]) * (Cheat.num_cheats - which1 - 1));
+      Cheat.num_cheats--;
    }
 }
 
@@ -204,5 +200,3 @@ bool S9xSaveCheatFile(const char* filename)
    fclose(fs);
    return (true);
 }
-
-#endif

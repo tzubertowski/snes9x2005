@@ -10,11 +10,8 @@
 #define READ_DWORD(s)     (*(uint32_t *) (s))
 #define WRITE_WORD(s, d)  (*(uint16_t *) (s)) = (d)
 #define WRITE_DWORD(s, d) (*(uint32_t *) (s)) = (d)
-
-#define READ_3WORD(s)      (0x00ffffff & *(uint32_t *) (s))
+#define READ_3WORD(s)     ((*(uint32_t *) (s)) & 0x00ffffff)
 #define WRITE_3WORD(s, d) *(uint16_t *) (s) = (uint16_t)(d), *((uint8_t *) (s) + 2) = (uint8_t) ((d) >> 16)
-
-
 #else
 #define READ_WORD(s)      (*(uint8_t *) (s) | (*((uint8_t *) (s) + 1) << 8))
 #define READ_DWORD(s)     (*(uint8_t *) (s) | (*((uint8_t *) (s) + 1) << 8) | (*((uint8_t *) (s) + 2) << 16) | (*((uint8_t *) (s) + 3) << 24))
@@ -113,16 +110,16 @@ typedef struct
    uint8_t* C4RAM;
    bool     HiROM;
    bool     LoROM;
-   uint32_t SRAMMask;
+   uint16_t SRAMMask;
    uint8_t  SRAMSize;
-   uint8_t* Map [MEMMAP_NUM_BLOCKS];
-   uint8_t* WriteMap [MEMMAP_NUM_BLOCKS];
+   uint8_t* Map         [MEMMAP_NUM_BLOCKS];
+   uint8_t* WriteMap    [MEMMAP_NUM_BLOCKS];
    uint8_t  MemorySpeed [MEMMAP_NUM_BLOCKS];
-   uint8_t  BlockIsRAM [MEMMAP_NUM_BLOCKS];
-   uint8_t  BlockIsROM [MEMMAP_NUM_BLOCKS];
-   char     ROMName [ROM_NAME_LEN];
-   char     ROMId [5];
-   char     CompanyId [3];
+   uint8_t  BlockIsRAM  [MEMMAP_NUM_BLOCKS];
+   uint8_t  BlockIsROM  [MEMMAP_NUM_BLOCKS];
+   char     ROMName     [ROM_NAME_LEN];
+   char     ROMId       [5];
+   char     CompanyId   [3];
    uint8_t  ROMSpeed;
    uint8_t  ROMType;
    uint8_t  ROMSize;
@@ -132,12 +129,8 @@ typedef struct
    uint32_t CalculatedChecksum;
    uint32_t ROMChecksum;
    uint32_t ROMComplementChecksum;
-   uint8_t* SDD1Index;
-   uint8_t* SDD1Data;
-   uint32_t SDD1Entries;
    char     ROMFilename [_MAX_PATH];
    uint8_t  ROMRegion;
-   uint32_t ROMCRC32;
    uint8_t  ExtendedFormat;
    uint8_t* BSRAM;
 } CMemory;
@@ -147,7 +140,6 @@ void ResetSpeedMap();
 extern CMemory Memory;
 void S9xDeinterleaveMode2();
 
-#ifdef NO_INLINE_SET_GET
 uint8_t S9xGetByte(uint32_t Address);
 uint16_t S9xGetWord(uint32_t Address);
 void S9xSetByte(uint8_t Byte, uint32_t Address);
@@ -157,12 +149,5 @@ uint8_t* S9xGetMemPointer(uint32_t Address);
 uint8_t* GetBasePointer(uint32_t Address);
 
 extern uint8_t OpenBus;
-
-#else
-#ifndef INLINE
-#define INLINE static inline
-#endif
-#include "getset.h"
-#endif // NO_INLINE_SET_GET
 
 #endif // _memmap_h_

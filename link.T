@@ -2,5 +2,3 @@
    global: retro_*;
    local: *;
 };
-
-

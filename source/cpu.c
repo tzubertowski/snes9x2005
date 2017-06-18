@@ -15,11 +15,10 @@
 #include "spc7110.h"
 #include "obc1.h"
 
-extern struct FxInit_s SuperFX;
+extern FxInit_s SuperFX;
 
 void S9xResetSuperFX()
 {
-   SuperFX.vFlags = 0;
    FxReset(&SuperFX);
 }
 
@@ -57,9 +56,7 @@ void S9xResetCPU()
    CPU.V_Counter = 0;
    CPU.MemSpeed = SLOW_ONE_CYCLE;
    CPU.MemSpeedx2 = SLOW_ONE_CYCLE * 2;
-   CPU.AutoSaveTimer = 0;
    CPU.SRAMModified = false;
-   CPU.BRKTriggered = false;
    CPU.NMICycleCount = 0;
    CPU.IRQCycleCount = 0;
    S9xSetPCBase(ICPU.Registers.PC);
@@ -94,9 +91,7 @@ static void CommonS9xReset()
    if (Settings.C4)
       S9xInitC4();
 
-#ifdef WANT_CHEATS
    S9xInitCheatData();
-#endif
 }
 
 void S9xReset()

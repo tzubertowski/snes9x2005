@@ -38,9 +38,9 @@ char retro_save_directory[PATH_MAX];
 char retro_base_name[PATH_MAX];
 
 #ifdef _WIN32
-char slash = '\\';
+   char slash = '\\';
 #else
-char slash = '/';
+   char slash = '/';
 #endif
 
 static int32_t samples_per_frame = 0;
@@ -48,15 +48,16 @@ static int32_t samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
 
 #ifdef PERF_TEST
 #define RETRO_PERFORMANCE_INIT(name) \
-   retro_perf_tick_t current_ticks;\
-   static struct retro_perf_counter name = {#name};\
-   if (!name.registered) perf_cb.perf_register(&(name));\
-   current_ticks = name.total
+    retro_perf_tick_t current_ticks; \
+    static struct retro_perf_counter name = {#name}; \
+    if (!name.registered) \
+       perf_cb.perf_register(&(name)); \
+    current_ticks = name.total
 
 #define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
 #define RETRO_PERFORMANCE_STOP(name) \
-   perf_cb.perf_stop(&(name));\
-   current_ticks = name.total - current_ticks;
+    perf_cb.perf_stop(&(name)); \
+    current_ticks = name.total - current_ticks;
 #else
 #define RETRO_PERFORMANCE_INIT(name)
 #define RETRO_PERFORMANCE_START(name)
@@ -76,7 +77,6 @@ void retro_set_environment(retro_environment_t cb)
 
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
 }
-
 
 void retro_set_video_refresh(retro_video_refresh_t cb)
 {
@@ -102,37 +102,33 @@ void retro_set_input_state(retro_input_state_t cb)
    input_cb = cb;
 }
 
-void retro_set_controller_port_device(unsigned port, unsigned device) {}
+void retro_set_controller_port_device(unsigned in_port, unsigned device)
+{
+}
 
 unsigned retro_api_version()
 {
    return RETRO_API_VERSION;
 }
 
-void S9xMessage(const char* message)
-{
-   #define MAX_MESSAGE_LEN (36 * 3)
-
-   static char buffer [MAX_MESSAGE_LEN + 1];
-
-   printf("%s\n", message);
-   strncpy(buffer, message, MAX_MESSAGE_LEN);
-   buffer [MAX_MESSAGE_LEN] = 0;
-   S9xSetInfoString(buffer);
-}
-
 void S9xDeinitDisplay(void)
 {
 #ifdef DS2_DMA
-   if (GFX.Screen_buffer) AlignedFree(GFX.Screen, PtrAdj.GFXScreen);
+   if (GFX.Screen_buffer)
+      AlignedFree(GFX.Screen, PtrAdj.GFXScreen);
 #elif defined(_3DS)
-   if (GFX.Screen_buffer) linearFree(GFX.Screen_buffer);
+   if (GFX.Screen_buffer)
+      linearFree(GFX.Screen_buffer);
 #else
-   if (GFX.Screen_buffer) free(GFX.Screen_buffer);
+   if (GFX.Screen_buffer)
+      free(GFX.Screen_buffer);
 #endif
-   if (GFX.SubScreen_buffer) free(GFX.SubScreen_buffer);
-   if (GFX.ZBuffer_buffer) free(GFX.ZBuffer_buffer);
-   if (GFX.SubZBuffer_buffer) free(GFX.SubZBuffer_buffer);
+   if (GFX.SubScreen_buffer)
+      free(GFX.SubScreen_buffer);
+   if (GFX.ZBuffer_buffer)
+      free(GFX.ZBuffer_buffer);
+   if (GFX.SubZBuffer_buffer)
+      free(GFX.SubZBuffer_buffer);
 
    GFX.Screen = NULL;
    GFX.Screen_buffer = NULL;
@@ -174,9 +170,9 @@ bool S9xInitUpdate()
 {
    return (true);
 }
+
 #ifndef __WIN32__
-void _makepath(char* path, const char* drive, const char* dir,
-               const char* fname, const char* ext)
+void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext)
 {
    if (dir && *dir)
    {
@@ -196,48 +192,46 @@ void _makepath(char* path, const char* drive, const char* dir,
    }
 }
 
-void _splitpath(const char* path, char* drive, char* dir, char* fname,
-                char* ext)
+void _splitpath (const char* path, char* drive, char* dir, char* fname, char* ext)
 {
-   *drive = 0;
-
-   char* slash = strrchr((char*)path, '/');
+   const char* slash = strrchr(path, '/');
    if (!slash)
       slash = strrchr((char*)path, '\\');
 
-   char* dot = strrchr((char*)path, '.');
+   const char* dot   = strrchr(path, '.');
 
    if (dot && slash && dot < slash)
       dot = NULL;
 
    if (!slash)
    {
-      strcpy(dir, "");
+      *dir = 0;
       strcpy(fname, path);
       if (dot)
       {
-         * (fname + (dot - path)) = 0;
+         fname[dot - path] = 0;
          strcpy(ext, dot + 1);
       }
       else
-         strcpy(ext, "");
+         *ext = 0;
    }
    else
    {
       strcpy(dir, path);
-      * (dir + (slash - path)) = 0;
+      dir[slash - path] = 0;
       strcpy(fname, slash + 1);
       if (dot)
       {
-         * (fname + (dot - slash) - 1) = 0;
+         fname[dot - slash - 1] = 0;
          strcpy(ext, dot + 1);
       }
       else
-         strcpy(ext, "");
+         *ext = 0;
    }
 }
 #endif
-const char* S9xGetFilename(const char* ex)
+
+const char* S9xGetFilename(const char* in)
 {
    static char filename [PATH_MAX + 1];
    char drive [_MAX_DRIVE + 1];
@@ -245,9 +239,8 @@ const char* S9xGetFilename(const char* ex)
    char fname [_MAX_FNAME + 1];
    char ext [_MAX_EXT + 1];
    _splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-   _makepath(filename, drive, dir, fname, ex);
-
-   return (filename);
+   _makepath(filename, drive, dir, fname, in);
+   return filename;
 }
 
 void GetBaseName(const char* ex)
@@ -283,7 +276,6 @@ void init_sfc_setting(void)
    Settings.ControllerOption = SNES_JOYPAD;
 
    Settings.Transparency = true;
-   Settings.SupportHiRes = true;
 #ifdef USE_BLARGG_APU
    Settings.SoundSync = false;
 #endif
@@ -312,7 +304,7 @@ void retro_init(void)
    struct retro_log_callback log;
    enum retro_pixel_format rgb565;
    static const struct retro_variable vars[] = {
-      { "catsfc_VideoMode",   "Video Mode; auto|NTSC|PAL" },
+      { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
       { NULL, NULL },
    };
 
@@ -320,6 +312,10 @@ void retro_init(void)
       log_cb = log.log;
    else
       log_cb = NULL;
+
+   // State that the core supports achievements.
+   bool achievements = true;
+   environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &achievements);
 
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if (environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
@@ -338,6 +334,7 @@ void retro_init(void)
    S9xInitSound();
 #endif
    environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
+   CPU.SaveStateVersion = 0;
 }
 
 void retro_deinit(void)
@@ -514,7 +511,6 @@ char* osd_GetPackDir()
    _splitpath(Memory.ROMFilename, drive, dir, name, ext);
    _makepath(filename, drive, dir, NULL, NULL);
 
-
    if (!strncmp((char*)&Memory.ROM [0xffc0], "SUPER POWER LEAG 4   ", 21))
    {
       if (getenv("SPL4PACK"))
@@ -547,7 +543,7 @@ char* osd_GetPackDir()
    return filename;
 }
 
-unsigned retro_get_region(void)
+unsigned retro_get_region()
 {
    return Settings.PAL ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
@@ -731,25 +727,20 @@ bool retro_unserialize(const void* data, size_t size)
 
 void retro_cheat_reset(void)
 {
-#ifdef WANT_CHEATS
    S9xDeleteCheats();
    S9xApplyCheats();
-#endif
 }
 
-#ifdef WANT_CHEATS
 extern SCheatData Cheat;
-#endif
 
 void retro_cheat_set(unsigned index, bool enabled, const char* code)
 {
-#ifdef WANT_CHEATS
    uint32_t address;
    uint8_t val;
-   
+
    bool sram;
-   uint8_t bytes[3];//used only by GoldFinger, ignored for now 
-   
+   uint8_t bytes[3];//used only by GoldFinger, ignored for now
+
    if (S9xGameGenieToRaw(code, &address, &val)!=NULL &&
        S9xProActionReplayToRaw(code, &address, &val)!=NULL &&
        S9xGoldFingerToRaw(code, &address, &sram, &val, bytes)!=NULL)
@@ -760,85 +751,84 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
       return; // cheat added in weird order, ignore
    if (index == Cheat.num_cheats)
       Cheat.num_cheats++;
-   
+
    Cheat.c[index].address = address;
    Cheat.c[index].byte = val;
    Cheat.c[index].enabled = enabled;
-   
+
    Cheat.c[index].saved = false; // it'll be saved next time cheats run anyways
-   
+
    Settings.ApplyCheats = true;
    S9xApplyCheats();
-#endif
 }
 
 static void init_descriptors(void)
 {
    struct retro_input_descriptor desc[] = {
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "A" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "X" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Y" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "L" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "R" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,   "Select" },
-      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,    "Start" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT,  "D-Pad Right" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,      "X" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,      "Y" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+      { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
 
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "A" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "X" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Y" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "L" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "R" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,   "Select" },
-      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,    "Start" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT,  "D-Pad Right" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,      "X" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,      "Y" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+      { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
 
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "A" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "X" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Y" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "L" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "R" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,   "Select" },
-      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,    "Start" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT,  "D-Pad Right" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,      "X" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,      "Y" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+      { 2, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
 
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "A" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "X" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Y" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "L" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "R" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,   "Select" },
-      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,    "Start" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT,  "D-Pad Right" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,      "X" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,      "Y" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+      { 3, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
 
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "D-Pad Left" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "D-Pad Up" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "D-Pad Down" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "B" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "A" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,     "X" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,     "Y" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,     "L" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,     "R" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT,   "Select" },
-      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,    "Start" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT,  "D-Pad Right" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,      "B" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,      "A" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X,      "X" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y,      "Y" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L,      "L" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R,      "R" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+      { 4, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START,  "Start" },
 
       { 0 },
    };
@@ -859,12 +849,11 @@ bool retro_load_game(const struct retro_game_info* game)
 #ifdef LOAD_FROM_MEMORY_TEST
    if (!LoadROM(game))
 #else
-      if (!LoadROM(game->path))
+   if (!LoadROM(game->path))
 #endif
-         return false;
+      return false;
 
-   Settings.FrameTime = (Settings.PAL ? Settings.FrameTimePAL :
-         Settings.FrameTimeNTSC);
+   Settings.FrameTime = (Settings.PAL ? Settings.FrameTimePAL : Settings.FrameTimeNTSC);
 
    retro_get_system_av_info(&av_info);
 
@@ -877,8 +866,7 @@ bool retro_load_game(const struct retro_game_info* game)
    return true;
 }
 
-bool retro_load_game_special(unsigned game_type,
-                             const struct retro_game_info* info, size_t num_info)
+bool retro_load_game_special(unsigned game_type, const struct retro_game_info* info, size_t num_info)
 {
    return false;
 }
@@ -889,7 +877,7 @@ void retro_unload_game(void)
 
 void* retro_get_memory_data(unsigned type)
 {
-   uint8_t* data = NULL;
+   uint8_t* data;
 
    switch(type)
    {
@@ -903,6 +891,7 @@ void* retro_get_memory_data(unsigned type)
          data = Memory.VRAM;
          break;
       default:
+         data = NULL;
          break;
    }
 

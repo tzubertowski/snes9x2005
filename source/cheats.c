@@ -1,7 +1,5 @@
 #include "../copyright"
 
-#ifdef WANT_CHEATS
-
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -16,9 +14,9 @@ static bool S9xAllHex(const char* code, int32_t len)
       if ((code [i] < '0' || code [i] > '9') &&
           (code [i] < 'a' || code [i] > 'f') &&
           (code [i] < 'A' || code [i] > 'F'))
-         return (false);
+         return false;
 
-   return (true);
+   return true;
 }
 
 const char* S9xProActionReplayToRaw(const char* code, uint32_t* address, uint8_t* byte)
@@ -26,23 +24,23 @@ const char* S9xProActionReplayToRaw(const char* code, uint32_t* address, uint8_t
    uint32_t data = 0;
    if (strlen(code) != 8 || !S9xAllHex(code, 8) ||
          sscanf(code, "%x", &data) != 1)
-      return ("Invalid Pro Action Replay code - should be 8 hex digits in length.");
+      return "Invalid Pro Action Replay code - should be 8 hex digits in length.";
 
    *address = data >> 8;
    *byte = (uint8_t) data;
-   return (NULL);
+   return NULL;
 }
 
 const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, uint8_t* num_bytes, uint8_t bytes[3])
 {
    char tmp [15];
    if (strlen(code) != 14)
-      return ("Invalid Gold Finger code should be 14 hex digits in length.");
+      return "Invalid Gold Finger code should be 14 hex digits in length.";
 
    strncpy(tmp, code, 5);
    tmp [5] = 0;
    if (sscanf(tmp, "%x", address) != 1)
-      return ("Invalid Gold Finger code.");
+      return "Invalid Gold Finger code.";
 
    int32_t i;
    for (i = 0; i < 3; i++)
@@ -56,7 +54,7 @@ const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, 
    }
    *num_bytes = i;
    *sram = code [13] == '1';
-   return (NULL);
+   return NULL;
 }
 
 const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte)
@@ -64,7 +62,7 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
    char new_code [12];
 
    if (strlen(code) != 9 || *(code + 4) != '-' || !S9xAllHex(code, 4) || !S9xAllHex(code + 5, 4))
-      return ("Invalid Game Genie(tm) code - should be 'xxxx-xxxx'.");
+      return "Invalid Game Genie(tm) code - should be 'xxxx-xxxx'.";
 
    strcpy(new_code, "0x");
    strncpy(new_code + 2, code, 4);
@@ -88,7 +86,7 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
          }
       }
       if (j == 16)
-         return ("Invalid hex-character in Game Genie(tm) code");
+         return "Invalid hex-character in Game Genie(tm) code";
    }
    uint32_t data = 0;
    sscanf(new_code, "%x", &data);
@@ -371,5 +369,3 @@ void S9xOutputCheatSearchResults(SCheatData* d)
          printf("IRAM: %05x: %02x\n", i, d->FillRAM [i + 0x3000]);
    }
 }
-
-#endif

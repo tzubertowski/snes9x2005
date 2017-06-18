@@ -111,9 +111,9 @@ int16_t _atan2(int16_t x, int16_t y)
    int32_t absAtan;
 
    if (x1 > y1)
-      absAtan = atantbl[(unsigned char)((y1 << 8) / x1)];
+      absAtan = atantbl[(uint8_t)((y1 << 8) / x1)];
    else
-      absAtan = atantbl[(unsigned char)((x1 << 8) / y1)];
+      absAtan = atantbl[(uint8_t)((x1 << 8) / y1)];
 
    if ((x >= 0) ^ (y >= 0))
       return -absAtan;

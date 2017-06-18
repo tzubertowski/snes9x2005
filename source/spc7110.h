@@ -32,7 +32,7 @@ void SPC7110Load(char*);
 void SPC7110Open(char*);
 void SPC7110Grab(char*);
 
-typedef struct SPC7110RTC
+typedef struct
 {
    uint8_t reg[16];
    int16_t index;
@@ -41,7 +41,7 @@ typedef struct SPC7110RTC
    time_t  last_used;
 } S7RTC;
 
-typedef struct SPC7110EmuVars
+typedef struct
 {
    uint8_t  reg4800;
    uint8_t  reg4801;
