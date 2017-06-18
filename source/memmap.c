@@ -29,7 +29,7 @@
 #define MAP_RONLY_SRAM_OR_NONE (Memory.SRAMSize == 0 ? (uint8_t*) MAP_NONE : (uint8_t*) MAP_RONLY_SRAM)
 
 #include "fxemu.h"
-extern struct FxInit_s SuperFX;
+extern FxInit_s SuperFX;
 
 static int32_t retry_count = 0;
 static uint8_t bytes0x2000 [0x2000];
@@ -925,11 +925,9 @@ again:
       Tales = true;
 
    InitROM(Tales);
-#ifdef WANT_CHEATS
    S9xLoadCheatFile(S9xGetFilename("cht"));
    S9xInitCheatData();
    S9xApplyCheats();
-#endif
    S9xReset();
    return true;
 }
@@ -3125,6 +3123,4 @@ void ParseSNESHeader(uint8_t* RomHeader)
       sprintf(Memory.CompanyId, "%02X", RomHeader[0x2A]);
 }
 
-#undef INLINE
-#define INLINE
 #include "getset.h"

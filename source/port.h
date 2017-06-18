@@ -4,7 +4,6 @@
 #define _PORT_H_
 
 #include <limits.h>
-
 #include <string.h>
 #include <sys/types.h>
 
@@ -24,23 +23,23 @@
 #define PATH_MAX 1024
 #endif
 
-#define _MAX_DIR PATH_MAX
+#define _MAX_DIR   PATH_MAX
 #define _MAX_DRIVE 1
 #define _MAX_FNAME PATH_MAX
-#define _MAX_EXT PATH_MAX
-#define _MAX_PATH PATH_MAX
+#define _MAX_EXT   PATH_MAX
+#define _MAX_PATH  PATH_MAX
 
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext);
 void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
 #else /* __WIN32__ */
-#define strcasecmp stricmp
+#define strcasecmp  stricmp
 #define strncasecmp strnicmp
 #endif
 
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
 
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || \
+#if defined(__i386__)  || defined(__i486__) || defined(__i586__) || \
     defined(__WIN32__) || defined(__alpha__)
 #define FAST_LSB_WORD_ACCESS
 #elif defined(__MIPSEL__)

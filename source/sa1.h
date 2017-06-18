@@ -43,7 +43,7 @@ typedef struct
    uint32_t      WaitCounter;
    uint8_t*      WaitByteAddress1;
    uint8_t*      WaitByteAddress2;
-   uint8_t*      Map [MEMMAP_NUM_BLOCKS];
+   uint8_t*      Map      [MEMMAP_NUM_BLOCKS];
    uint8_t*      WriteMap [MEMMAP_NUM_BLOCKS];
    int16_t       op1;
    int16_t       op2;
@@ -104,8 +104,7 @@ static inline void S9xSA1UnpackStatus()
 static inline void S9xSA1PackStatus()
 {
    SA1.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
-   SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) |
-                      (SA1._Negative & 0x80) | (SA1._Overflow << 6);
+   SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) | (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
 static inline void S9xSA1FixCycles()

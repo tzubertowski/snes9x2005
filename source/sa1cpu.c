@@ -47,7 +47,6 @@
 #define StackRelative SA1StackRelative
 #define StackRelativeIndirectIndexed SA1StackRelativeIndirectIndexed
 
-#undef VAR_CYCLES
 #define SA1_OPCODES
 
 #include "cpuops.c"
@@ -74,9 +73,7 @@ void S9xSA1MainLoop()
 
    for (i = 0; i < 3 && SA1.Executing; i++)
    {
-#ifdef CPU_SHUTDOWN
       SA1.PCAtOpcodeStart = SA1.PC;
-#endif
       (*SA1.S9xOpcodes [*SA1.PC++].S9xOpcode)();
    }
 }

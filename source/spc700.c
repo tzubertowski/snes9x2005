@@ -8,20 +8,7 @@
 #include "display.h"
 #include "cpuexec.h"
 #include "apu.h"
-
-// SPC700/Sound DSP chips have a 24.57MHz crystal on their PCB.
-
-#ifdef NO_INLINE_SET_GET
-uint8_t S9xAPUGetByteZ(uint8_t address);
-uint8_t S9xAPUGetByte(uint32_t address);
-void S9xAPUSetByteZ(uint8_t, uint8_t address);
-void S9xAPUSetByte(uint8_t, uint32_t address);
-
-#else
-#undef INLINE
-#define INLINE static inline
 #include "apumem.h"
-#endif
 
 int8_t   Int8 = 0;
 int16_t  Int16 = 0;
@@ -35,120 +22,115 @@ uint32_t Work32 = 0;
 #define OP1 (*(IAPU.PC + 1))
 #define OP2 (*(IAPU.PC + 2))
 
-#ifdef SPC700_SHUTDOWN
 #define APUShutdown() \
     if (Settings.Shutdown && (IAPU.PC == IAPU.WaitAddress1 || IAPU.PC == IAPU.WaitAddress2)) \
     { \
-   if (IAPU.WaitCounter == 0) \
-   { \
-       if (!ICPU.CPUExecuting) \
-      APU.Cycles = CPU.Cycles = CPU.NextEvent; \
+       if (IAPU.WaitCounter == 0) \
+       { \
+          if (!ICPU.CPUExecuting) \
+          APU.Cycles = CPU.Cycles = CPU.NextEvent; \
+          else \
+          IAPU.APUExecuting = false; \
+       } \
+       else if (IAPU.WaitCounter >= 2) \
+          IAPU.WaitCounter = 1; \
        else \
-      IAPU.APUExecuting = false; \
-   } \
-   else \
-   if (IAPU.WaitCounter >= 2) \
-       IAPU.WaitCounter = 1; \
-   else \
-       IAPU.WaitCounter--; \
+          IAPU.WaitCounter--; \
     }
-#else
-#define APUShutdown()
-#endif
 
-#define APUSetZN8(b)\
+#define APUSetZN8(b) \
     IAPU._Zero = (b);
 
-#define APUSetZN16(w)\
+#define APUSetZN16(w) \
     IAPU._Zero = ((w) != 0) | ((w) >> 8);
 
-#define TCALL(n)\
+#define TCALL(n) \
 {\
     SPC700_PushW (IAPU.PC - IAPU.RAM + 1); \
     IAPU.PC = IAPU.RAM + S9xAPUGetByte(0xffc0 + ((15 - n) << 1)) + \
-        (S9xAPUGetByte(0xffc1 + ((15 - n) << 1)) << 8); \
+       (S9xAPUGetByte(0xffc1 + ((15 - n) << 1)) << 8); \
 }
 
-#define SBC(a,b)\
-Int16 = (int16_t) (a) - (int16_t) (b) + (int16_t) (APUCheckCarry ()) - 1;\
-IAPU._Carry = Int16 >= 0;\
-if ((((a) ^ (b)) & 0x80) && (((a) ^ (uint8_t) Int16) & 0x80))\
-    APUSetOverflow ();\
-else \
-    APUClearOverflow (); \
-APUSetHalfCarry ();\
-if(((a) ^ (b) ^ (uint8_t) Int16) & 0x10)\
-    APUClearHalfCarry ();\
-(a) = (uint8_t) Int16;\
-APUSetZN8 ((uint8_t) Int16);
+#define SBC(a,b) \
+    Int16 = (int16_t) (a) - (int16_t) (b) + (int16_t) (APUCheckCarry ()) - 1; \
+    IAPU._Carry = Int16 >= 0; \
+    if ((((a) ^ (b)) & 0x80) && (((a) ^ (uint8_t) Int16) & 0x80)) \
+       APUSetOverflow (); \
+    else \
+       APUClearOverflow (); \
+    APUSetHalfCarry (); \
+    if(((a) ^ (b) ^ (uint8_t) Int16) & 0x10) \
+       APUClearHalfCarry (); \
+    (a) = (uint8_t) Int16; \
+    APUSetZN8 ((uint8_t) Int16)
 
-#define ADC(a,b)\
-Work16 = (a) + (b) + APUCheckCarry();\
-IAPU._Carry = Work16 >= 0x100; \
-if (~((a) ^ (b)) & ((b) ^ (uint8_t) Work16) & 0x80)\
-    APUSetOverflow ();\
-else \
-    APUClearOverflow (); \
-APUClearHalfCarry ();\
-if(((a) ^ (b) ^ (uint8_t) Work16) & 0x10)\
-    APUSetHalfCarry ();\
-(a) = (uint8_t) Work16;\
-APUSetZN8 ((uint8_t) Work16);
+#define ADC(a,b) \
+    Work16 = (a) + (b) + APUCheckCarry(); \
+    IAPU._Carry = Work16 >= 0x100; \
+    if (~((a) ^ (b)) & ((b) ^ (uint8_t) Work16) & 0x80) \
+       APUSetOverflow (); \
+    else \
+       APUClearOverflow (); \
+    APUClearHalfCarry (); \
+    if(((a) ^ (b) ^ (uint8_t) Work16) & 0x10) \
+       APUSetHalfCarry (); \
+    (a) = (uint8_t) Work16; \
+    APUSetZN8 ((uint8_t) Work16)
 
-#define CMP(a,b)\
-Int16 = (int16_t) (a) - (int16_t) (b);\
-IAPU._Carry = Int16 >= 0;\
-APUSetZN8 ((uint8_t) Int16);
+#define CMP(a,b) \
+    Int16 = (int16_t) (a) - (int16_t) (b); \
+    IAPU._Carry = Int16 >= 0; \
+    APUSetZN8((uint8_t) Int16);
 
-#define ASL(b)\
+#define ASL(b) \
     IAPU._Carry = ((b) & 0x80) != 0; \
-    (b) <<= 1;\
+    (b) <<= 1; \
     APUSetZN8 (b);
-#define LSR(b)\
-    IAPU._Carry = (b) & 1;\
-    (b) >>= 1;\
+#define LSR(b) \
+    IAPU._Carry = (b) & 1; \
+    (b) >>= 1; \
     APUSetZN8 (b);
-#define ROL(b)\
+#define ROL(b) \
     Work16 = ((b) << 1) | APUCheckCarry (); \
     IAPU._Carry = Work16 >= 0x100; \
     (b) = (uint8_t) Work16; \
     APUSetZN8 (b);
-#define ROR(b)\
+#define ROR(b) \
     Work16 = (b) | ((uint16_t) APUCheckCarry () << 8); \
     IAPU._Carry = (uint8_t) Work16 & 1; \
     Work16 >>= 1; \
     (b) = (uint8_t) Work16; \
     APUSetZN8 (b);
 
-#define Push(b)\
-    *(IAPU.RAM + 0x100 + IAPU.Registers.S) = b;\
+#define Push(b) \
+    *(IAPU.RAM + 0x100 + IAPU.Registers.S) = b; \
     IAPU.Registers.S--;
 
-#define Pop(b)\
-    IAPU.Registers.S++;\
+#define Pop(b) \
+    IAPU.Registers.S++; \
     (b) = *(IAPU.RAM + 0x100 + IAPU.Registers.S);
 
 #ifdef FAST_LSB_WORD_ACCESS
-#define SPC700_PushW(w)\
+#define SPC700_PushW(w) \
     if (IAPU.Registers.S == 0) {\
-        *(IAPU.RAM + 0x1ff) = (w);\
-        *(IAPU.RAM + 0x100) = ((w) >> 8);\
+       *(IAPU.RAM + 0x1ff) = (w); \
+       *(IAPU.RAM + 0x100) = ((w) >> 8); \
     } else { \
-        *(uint16_t *) (IAPU.RAM + 0xff + IAPU.Registers.S) = w;\
+       *(uint16_t *) (IAPU.RAM + 0xff + IAPU.Registers.S) = w; \
     }\
     IAPU.Registers.S -= 2;
-#define PopW(w)\
-    IAPU.Registers.S += 2;\
-    if (IAPU.Registers.S == 0)\
-       (w) = *(IAPU.RAM + 0x1ff) | (*(IAPU.RAM + 0x100) << 8);\
+#define PopW(w) \
+    IAPU.Registers.S += 2; \
+    if (IAPU.Registers.S == 0) \
+       (w) = *(IAPU.RAM + 0x1ff) | (*(IAPU.RAM + 0x100) << 8); \
     else \
        (w) = *(uint16_t *) (IAPU.RAM + 0xff + IAPU.Registers.S);
 #else
-#define SPC700_PushW(w)\
-    *(IAPU.RAM + 0xff + IAPU.Registers.S) = w;\
-    *(IAPU.RAM + 0x100 + IAPU.Registers.S) = ((w) >> 8);\
+#define SPC700_PushW(w) \
+    *(IAPU.RAM + 0xff + IAPU.Registers.S) = w; \
+    *(IAPU.RAM + 0x100 + IAPU.Registers.S) = ((w) >> 8); \
     IAPU.Registers.S -= 2;
-#define PopW(w)\
+#define PopW(w) \
     IAPU.Registers.S += 2; \
     if(IAPU.Registers.S == 0) \
        (w) = *(IAPU.RAM + 0x1ff) | (*(IAPU.RAM + 0x100) << 8); \
@@ -156,56 +138,56 @@ APUSetZN8 ((uint8_t) Int16);
        (w) = *(IAPU.RAM + 0xff + IAPU.Registers.S) + (*(IAPU.RAM + 0x100 + IAPU.Registers.S) << 8);
 #endif
 
-#define Relative()\
-    Int8 = OP1;\
+#define Relative() \
+    Int8 = OP1; \
     Int16 = (int16_t) (IAPU.PC + 2 - IAPU.RAM) + Int8;
 
-#define Relative2()\
-    Int8 = OP2;\
+#define Relative2() \
+    Int8 = OP2; \
     Int16 = (int16_t) (IAPU.PC + 3 - IAPU.RAM) + Int8;
 
 #ifdef FAST_LSB_WORD_ACCESS
-#define IndexedXIndirect()\
+#define IndexedXIndirect() \
     IAPU.Address = *(uint16_t *) (IAPU.DirectPage + ((OP1 + IAPU.Registers.X) & 0xff));
 
-#define Absolute()\
+#define Absolute() \
     IAPU.Address = *(uint16_t *) (IAPU.PC + 1);
 
-#define AbsoluteX()\
+#define AbsoluteX() \
     IAPU.Address = *(uint16_t *) (IAPU.PC + 1) + IAPU.Registers.X;
 
-#define AbsoluteY()\
+#define AbsoluteY() \
     IAPU.Address = *(uint16_t *) (IAPU.PC + 1) + IAPU.Registers.YA.B.Y;
 
-#define MemBit()\
-    IAPU.Address = *(uint16_t *) (IAPU.PC + 1);\
-    IAPU.Bit = (uint8_t)(IAPU.Address >> 13);\
+#define MemBit() \
+    IAPU.Address = *(uint16_t *) (IAPU.PC + 1); \
+    IAPU.Bit = (uint8_t)(IAPU.Address >> 13); \
     IAPU.Address &= 0x1fff;
 
-#define IndirectIndexedY()\
+#define IndirectIndexedY() \
     IAPU.Address = *(uint16_t *) (IAPU.DirectPage + OP1) + IAPU.Registers.YA.B.Y;
 #else
-#define IndexedXIndirect()\
+#define IndexedXIndirect() \
     IAPU.Address = *(IAPU.DirectPage + ((OP1 + IAPU.Registers.X) & 0xff)) + \
-        (*(IAPU.DirectPage + ((OP1 + IAPU.Registers.X + 1) & 0xff)) << 8);
-#define Absolute()\
+       (*(IAPU.DirectPage + ((OP1 + IAPU.Registers.X + 1) & 0xff)) << 8);
+#define Absolute() \
     IAPU.Address = OP1 + (OP2 << 8);
 
-#define AbsoluteX()\
+#define AbsoluteX() \
     IAPU.Address = OP1 + (OP2 << 8) + IAPU.Registers.X;
 
-#define AbsoluteY()\
+#define AbsoluteY() \
     IAPU.Address = OP1 + (OP2 << 8) + IAPU.Registers.YA.B.Y;
 
-#define MemBit()\
-    IAPU.Address = OP1 + (OP2 << 8);\
-    IAPU.Bit = (int8_t) (IAPU.Address >> 13);\
+#define MemBit() \
+    IAPU.Address = OP1 + (OP2 << 8); \
+    IAPU.Bit = (int8_t) (IAPU.Address >> 13); \
     IAPU.Address &= 0x1fff;
 
-#define IndirectIndexedY()\
+#define IndirectIndexedY() \
     IAPU.Address = *(IAPU.DirectPage + OP1) + \
-        (*(IAPU.DirectPage + OP1 + 1) << 8) + \
-        IAPU.Registers.YA.B.Y;
+       (*(IAPU.DirectPage + OP1 + 1) << 8) + \
+       IAPU.Registers.YA.B.Y;
 #endif
 
 void Apu00()
@@ -819,7 +801,6 @@ void Apu4E()
 void Apu0F()
 {
    // BRK
-
    SPC700_PushW(IAPU.PC + 1 - IAPU.RAM);
    S9xAPUPackStatus();
    Push(IAPU.Registers.P);
@@ -1436,11 +1417,7 @@ void Apu3D()
    // INC X
    IAPU.Registers.X++;
    APUSetZN8(IAPU.Registers.X);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -1449,11 +1426,7 @@ void ApuFC()
    // INC Y
    IAPU.Registers.YA.B.Y++;
    APUSetZN8(IAPU.Registers.YA.B.Y);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -1462,11 +1435,7 @@ void Apu1D()
    // DEC X
    IAPU.Registers.X--;
    APUSetZN8(IAPU.Registers.X);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -1475,11 +1444,7 @@ void ApuDC()
    // DEC Y
    IAPU.Registers.YA.B.Y--;
    APUSetZN8(IAPU.Registers.YA.B.Y);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -1489,11 +1454,7 @@ void ApuAB()
    Work8 = S9xAPUGetByteZ(OP1) + 1;
    S9xAPUSetByteZ(Work8, OP1);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 2;
 }
 
@@ -1504,11 +1465,7 @@ void ApuAC()
    Work8 = S9xAPUGetByte(IAPU.Address) + 1;
    S9xAPUSetByte(Work8, IAPU.Address);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 3;
 }
 
@@ -1518,11 +1475,7 @@ void ApuBB()
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X) + 1;
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 2;
 }
 
@@ -1531,11 +1484,7 @@ void ApuBC()
    // INC A
    IAPU.Registers.YA.B.A++;
    APUSetZN8(IAPU.Registers.YA.B.A);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -1545,11 +1494,7 @@ void Apu8B()
    Work8 = S9xAPUGetByteZ(OP1) - 1;
    S9xAPUSetByteZ(Work8, OP1);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 2;
 }
 
@@ -1560,11 +1505,7 @@ void Apu8C()
    Work8 = S9xAPUGetByte(IAPU.Address) - 1;
    S9xAPUSetByte(Work8, IAPU.Address);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 3;
 }
 
@@ -1574,11 +1515,7 @@ void Apu9B()
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X) - 1;
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
    APUSetZN8(Work8);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC += 2;
 }
 
@@ -1587,11 +1524,7 @@ void Apu9C()
    // DEC A
    IAPU.Registers.YA.B.A--;
    APUSetZN8(IAPU.Registers.YA.B.A);
-
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitCounter++;
-#endif
-
    IAPU.PC++;
 }
 
@@ -2008,7 +1941,7 @@ void Apu9E()
 
       if (yva >= x)
          yva ^= 1;
-      
+
       if (yva & 1)
          yva = (yva - x) & 0x1ffff;
    }
@@ -2459,12 +2392,6 @@ void ApuFB()
    IAPU.PC += 2;
 }
 
-#ifdef NO_INLINE_SET_GET
-#undef INLINE
-#define INLINE
-#include "apumem.h"
-#endif
-
 void (*S9xApuOpcodes[256])() =
 {
    Apu00, Apu01, Apu02, Apu03, Apu04, Apu05, Apu06, Apu07,
@@ -2500,5 +2427,4 @@ void (*S9xApuOpcodes[256])() =
    ApuF0, ApuF1, ApuF2, ApuF3, ApuF4, ApuF5, ApuF6, ApuF7,
    ApuF8, ApuF9, ApuFA, ApuFB, ApuFC, ApuFD, ApuFE, ApuFF
 };
-
 #endif

@@ -69,12 +69,12 @@
 #define SET_LE32( addr, data )  (void) (*(uint32_t*) (addr) = (data))
 #endif
 #else
-static INLINE uint32_t get_le16( void const* p )
+static inline uint32_t get_le16( void const* p )
 {
    return (uint32_t) ((uint8_t const*) p) [1] << 8 | (uint32_t) ((uint8_t const*) p) [0];
 }
 
-static INLINE uint32_t get_le32( void const* p )
+static inline uint32_t get_le32( void const* p )
 {
    return (uint32_t) ((uint8_t const*) p) [3] << 24 |
       (uint32_t) ((uint8_t const*) p) [2] << 16 |
@@ -82,13 +82,13 @@ static INLINE uint32_t get_le32( void const* p )
       (uint32_t) ((uint8_t const*) p) [0];
 }
 
-static INLINE void set_le16( void* p, uint32_t n )
+static inline void set_le16( void* p, uint32_t n )
 {
    ((uint8_t*) p) [1] = (uint8_t) (n >> 8);
    ((uint8_t*) p) [0] = (uint8_t) n;
 }
 
-static INLINE void set_le32( void* p, uint32_t n )
+static inline void set_le32( void* p, uint32_t n )
 {
    ((uint8_t*) p) [0] = (uint8_t) n;
    ((uint8_t*) p) [1] = (uint8_t) (n >> 8);

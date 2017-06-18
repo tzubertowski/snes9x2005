@@ -2,10 +2,7 @@
 
 #include "snes9x.h"
 #include "dsp1.h"
-#include "missing.h"
 #include "memmap.h"
-#include <math.h>
-
 #include "dsp1emu.c"
 #include "dsp2emu.c"
 
@@ -124,9 +121,9 @@ void DSP1SetByte(uint8_t byte, uint16_t address)
          case 0x32:
             DSP1.in_count = 7;
             break;
-         case 0x3a:
-         case 0x2a:
          case 0x1a:
+         case 0x2a:
+         case 0x3a:
             DSP1.command = 0x1a;
             DSP1.in_count = 1;
             break;
@@ -786,7 +783,7 @@ typedef struct
    uint32_t out_count;
    uint32_t out_index;
    uint8_t  parameters [512];
-   uint8_t  output [512];
+   uint8_t  output     [512];
 } SDSP4;
 
 SDSP4 DSP4;
@@ -826,38 +823,36 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
 
             switch (DSP4.command)
             {
-            case 0x0000:
-               DSP4.in_count = 4;
-               break;
-            case 0x0001:
-               DSP4.in_count = 36;
-               break;
             case 0x0003:
             case 0x0005:
             case 0x0006:
+            case 0x000E:
                DSP4.in_count = 0;
                break;
-            case 0x0007:
-               DSP4.in_count = 22;
-               break;
-            case 0x0008:
-               DSP4.in_count = 72;
-               break;
-            case 0x0009:
-               DSP4.in_count = 14;
+            case 0x0000:
+               DSP4.in_count = 4;
                break;
             case 0x000A:
             case 0x000B:
                DSP4.in_count = 6;
                break;
+            case 0x0011:
+               DSP4.in_count = 8;
+               break;
+            case 0x0009:
+               DSP4.in_count = 14;
+               break;
+            case 0x0007:
+               DSP4.in_count = 22;
+               break;
             case 0x000D:
                DSP4.in_count = 34;
                break;
-            case 0x000E:
-               DSP4.in_count = 0;
+            case 0x0001:
+               DSP4.in_count = 36;
                break;
-            case 0x0011:
-               DSP4.in_count = 8;
+            case 0x0008:
+               DSP4.in_count = 72;
                break;
             default:
                DSP4.waiting4command = true;

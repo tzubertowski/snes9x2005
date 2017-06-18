@@ -119,7 +119,6 @@ static inline void ADC16()
    else
    {
       uint32_t Ans32 = ICPU.Registers.A.W + Work16 + CheckCarry();
-
       ICPU._Carry = Ans32 > 0xffff;
 
       if (~(ICPU.Registers.A.W ^ Work16) & (Work16 ^ (uint16_t) Ans32) & 0x8000)
@@ -251,9 +250,7 @@ static inline void A_DEC16()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    ICPU.Registers.A.W--;
    SetZN16(ICPU.Registers.A.W);
 }
@@ -263,9 +260,7 @@ static inline void A_DEC8()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    ICPU.Registers.AL--;
    SetZN8(ICPU.Registers.AL);
 }
@@ -275,9 +270,7 @@ static inline void DEC16()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    uint16_t Work16 = S9xGetWord(OpAddress) - 1;
    S9xSetByte(Work16 >> 8, OpAddress + 1);
    S9xSetByte(Work16 & 0xFF, OpAddress);
@@ -289,9 +282,7 @@ static inline void DEC8()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    uint8_t Work8 = S9xGetByte(OpAddress) - 1;
    S9xSetByte(Work8, OpAddress);
    SetZN8(Work8);
@@ -314,9 +305,7 @@ static inline void A_INC16()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    ICPU.Registers.A.W++;
    SetZN16(ICPU.Registers.A.W);
 }
@@ -326,9 +315,7 @@ static inline void A_INC8()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    ICPU.Registers.AL++;
    SetZN8(ICPU.Registers.AL);
 }
@@ -338,9 +325,7 @@ static inline void INC16()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    uint16_t Work16 = S9xGetWord(OpAddress) + 1;
    S9xSetByte(Work16 >> 8, OpAddress + 1);
    S9xSetByte(Work16 & 0xFF, OpAddress);
@@ -352,9 +337,7 @@ static inline void INC8()
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-#ifdef CPU_SHUTDOWN
    CPU.WaitAddress = NULL;
-#endif
    uint8_t Work8 = S9xGetByte(OpAddress) + 1;
    S9xSetByte(Work8, OpAddress);
    SetZN8(Work8);

@@ -13,7 +13,7 @@
 
 extern uint8_t OpenBus;
 
-INLINE uint8_t S9xGetByte(uint32_t Address)
+inline uint8_t S9xGetByte(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
@@ -23,10 +23,8 @@ INLINE uint8_t S9xGetByte(uint32_t Address)
 
    if (GetAddress >= (uint8_t*) MAP_LAST)
    {
-#ifdef CPU_SHUTDOWN
       if (Memory.BlockIsRAM [block])
          CPU.WaitAddress = CPU.PCAtOpcodeStart;
-#endif
       return (*(GetAddress + (Address & 0xffff)));
    }
 
@@ -67,7 +65,7 @@ INLINE uint8_t S9xGetByte(uint32_t Address)
    }
 }
 
-INLINE uint16_t S9xGetWord(uint32_t Address)
+inline uint16_t S9xGetWord(uint32_t Address)
 {
    if ((Address & 0x0fff) == 0x0fff)
    {
@@ -82,10 +80,8 @@ INLINE uint16_t S9xGetWord(uint32_t Address)
 
    if (GetAddress >= (uint8_t*) MAP_LAST)
    {
-#ifdef CPU_SHUTDOWN
       if (Memory.BlockIsRAM [block])
          CPU.WaitAddress = CPU.PCAtOpcodeStart;
-#endif
 #ifdef FAST_LSB_WORD_ACCESS
       return (*(uint16_t*)(GetAddress + (Address & 0xffff)));
 #else
@@ -145,11 +141,9 @@ INLINE uint16_t S9xGetWord(uint32_t Address)
    }
 }
 
-INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
+inline void S9xSetByte(uint8_t Byte, uint32_t Address)
 {
-#if defined(CPU_SHUTDOWN)
    CPU.WaitAddress = NULL;
-#endif
    int32_t block;
    uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
 
@@ -158,7 +152,6 @@ INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
 
    if (SetAddress >= (uint8_t*) MAP_LAST)
    {
-#ifdef CPU_SHUTDOWN
       SetAddress += Address & 0xffff;
       if (SetAddress == SA1.WaitByteAddress1 ||
             SetAddress == SA1.WaitByteAddress2)
@@ -167,9 +160,6 @@ INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
          SA1.WaitCounter = 0;
       }
       *SetAddress = Byte;
-#else
-      *(SetAddress + (Address & 0xffff)) = Byte;
-#endif
       return;
    }
 
@@ -226,7 +216,7 @@ INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
    }
 }
 
-INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
+inline void S9xSetWord(uint16_t Word, uint32_t Address)
 {
    if ((Address & 0x0FFF) == 0x0FFF)
    {
@@ -235,9 +225,7 @@ INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
       return;
    }
 
-#if defined(CPU_SHUTDOWN)
    CPU.WaitAddress = NULL;
-#endif
    int32_t block;
    uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
 
@@ -246,7 +234,6 @@ INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
 
    if (SetAddress >= (uint8_t*) MAP_LAST)
    {
-#ifdef CPU_SHUTDOWN
       SetAddress += Address & 0xffff;
       if (SetAddress == SA1.WaitByteAddress1 ||
             SetAddress == SA1.WaitByteAddress2)
@@ -259,14 +246,6 @@ INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
 #else
       *SetAddress = (uint8_t) Word;
       *(SetAddress + 1) = Word >> 8;
-#endif
-#else
-#ifdef FAST_LSB_WORD_ACCESS
-      *(uint16_t*)(SetAddress + (Address & 0xffff)) = Word;
-#else
-      *(SetAddress + (Address & 0xffff)) = (uint8_t) Word;
-      *(SetAddress + ((Address + 1) & 0xffff)) = Word >> 8;
-#endif
 #endif
       return;
    }
@@ -348,7 +327,7 @@ INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
    }
 }
 
-INLINE uint8_t* GetBasePointer(uint32_t Address)
+inline uint8_t* GetBasePointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -382,7 +361,7 @@ INLINE uint8_t* GetBasePointer(uint32_t Address)
    }
 }
 
-INLINE uint8_t* S9xGetMemPointer(uint32_t Address)
+inline uint8_t* S9xGetMemPointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -419,7 +398,7 @@ INLINE uint8_t* S9xGetMemPointer(uint32_t Address)
    }
 }
 
-INLINE void S9xSetPCBase(uint32_t Address)
+inline void S9xSetPCBase(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];

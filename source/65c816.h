@@ -20,11 +20,11 @@
 #define Zero        2
 #define IRQ         4
 #define Decimal     8
-#define IndexFlag  16
-#define MemoryFlag 32
-#define Overflow   64
-#define Negative  128
-#define Emulation 256
+#define IndexFlag   16
+#define MemoryFlag  32
+#define Overflow    64
+#define Negative    128
+#define Emulation   256
 
 #define SetCarry()       (ICPU._Carry = 1)
 #define ClearCarry()     (ICPU._Carry = 0)

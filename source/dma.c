@@ -1,41 +1,25 @@
 #include "../copyright"
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "snes9x.h"
-
 #include "memmap.h"
 #include "ppu.h"
 #include "cpuexec.h"
-#include "missing.h"
 #include "dma.h"
 #include "apu.h"
 #include "sa1.h"
 #include "spc7110.h"
-
-#ifdef SDD1_DECOMP
 #include "sdd1emu.h"
-#endif
 
-#ifdef SDD1_DECOMP
 static uint8_t sdd1_decode_buffer[0x10000];
-#endif
 
 extern int32_t HDMA_ModeByteCounts [8];
 extern uint8_t* HDMAMemPointers [8];
 extern uint8_t* HDMABasePointers [8];
 
-#ifdef SETA010_HDMA_FROM_CART
-uint32_t HDMARawPointers[8]; // Cart address space pointer
-#endif
-
 /**********************************************************************************************/
 /* S9xDoDMA()                                                                                   */
 /* This function preforms the general dma transfer                                            */
 /**********************************************************************************************/
-
 void S9xDoDMA(uint8_t Channel)
 {
    uint8_t Work;
@@ -49,7 +33,6 @@ void S9xDoDMA(uint8_t Channel)
    uint8_t* spc7110_dma = NULL;
    bool s7_wrap = false;
    SDMA* d = &DMA[Channel];
-
 
    int32_t count = d->TransferBytes;
 
@@ -76,8 +59,6 @@ void S9xDoDMA(uint8_t Channel)
          FLUSH_REDRAW();
       break;
    }
-   // S-DD1
-#ifdef SDD1_DECOMP
    if (Settings.SDD1)
    {
       if (d->AAddressFixed && Memory.FillRAM [0x4801] > 0)
@@ -97,7 +78,6 @@ void S9xDoDMA(uint8_t Channel)
 
       Memory.FillRAM [0x4801] = 0;
    }
-#endif   
    if (Settings.SPC7110 && (d->AAddress == 0x4800 || d->ABank == 0x50))
    {
       uint32_t i;
@@ -519,7 +499,6 @@ void S9xDoDMA(uint8_t Channel)
             d->AAddress += inc;
             --count;
             break;
-
          case 1:
          case 5:
             Work = S9xGetPPU(0x2100 + d->BAddress);
@@ -533,7 +512,6 @@ void S9xDoDMA(uint8_t Channel)
             d->AAddress += inc;
             count--;
             break;
-
          case 3:
          case 7:
             Work = S9xGetPPU(0x2100 + d->BAddress);
@@ -593,15 +571,13 @@ void S9xDoDMA(uint8_t Channel)
       while (count);
    }
 #ifndef USE_BLARGG_APU
-#ifdef SPC700_C
    IAPU.APUExecuting = Settings.APUEnabled;
    APU_EXECUTE();
-#endif
 #endif
    if (Settings.SuperFX)
       while (CPU.Cycles > CPU.NextEvent)
          S9xDoHBlankProcessing_SFX();
-   else /* if (!Settings.SuperFX) */
+   else
       while (CPU.Cycles > CPU.NextEvent)
          S9xDoHBlankProcessing_NoSFX();
 
@@ -633,20 +609,18 @@ void S9xStartHDMA()
    if (Settings.DisableHDMA)
       IPPU.HDMA = 0;
    else
-      missing.hdma_this_frame = IPPU.HDMA = Memory.FillRAM [0x420c];
+      IPPU.HDMA = Memory.FillRAM [0x420c];
 
    //per anomie timing post
    if (IPPU.HDMA != 0)
       CPU.Cycles += ONE_CYCLE * 3;
-
-   IPPU.HDMAStarted = true;
 
    uint8_t i;
    for (i = 0; i < 8; i++)
    {
       if (IPPU.HDMA & (1 << i))
       {
-         CPU.Cycles += SLOW_ONE_CYCLE ;
+         CPU.Cycles += SLOW_ONE_CYCLE;
          DMA [i].LineCount = 0;
          DMA [i].FirstLine = true;
          DMA [i].Address = DMA [i].AAddress;
@@ -654,9 +628,6 @@ void S9xStartHDMA()
             CPU.Cycles += (SLOW_ONE_CYCLE << 2);
       }
       HDMAMemPointers [i] = NULL;
-#ifdef SETA010_HDMA_FROM_CART
-      HDMARawPointers [i] = 0;
-#endif
    }
 }
 
@@ -694,11 +665,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
             /* XXX: instead of p->BAddress == 0x18, make S9xSetPPU fail
              * XXX: writes to $2118/9 when appropriate
              */
-#ifdef SETA010_HDMA_FROM_CART
-            if (!p->LineCount)
-#else
             if (!p->LineCount || p->BAddress == 0x18)
-#endif
             {
                byte &= ~mask;
                p->IndirectAddress += HDMAMemPointers [d] - HDMABasePointers [d];
@@ -708,7 +675,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
             }
 
             p->Address++;
-            p->FirstLine = 1;
+            p->FirstLine = true;
             if (p->HDMAIndirectAddressing)
             {
                p->IndirectBank = Memory.FillRAM [0x4307 + (d << 4)];
@@ -722,11 +689,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
                p->IndirectBank = p->ABank;
                p->IndirectAddress = p->Address;
             }
-            HDMABasePointers [d] = HDMAMemPointers [d] =
-                                      S9xGetMemPointer((p->IndirectBank << 16) + p->IndirectAddress);
-#ifdef SETA010_HDMA_FROM_CART
-            HDMARawPointers [d] = (p->IndirectBank << 16) + p->IndirectAddress;
-#endif
+            HDMABasePointers [d] = HDMAMemPointers [d] = S9xGetMemPointer((p->IndirectBank << 16) + p->IndirectAddress);
          }
          else
             CPU.Cycles += SLOW_ONE_CYCLE;
@@ -738,9 +701,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
                p->IndirectBank = p->ABank;
                p->IndirectAddress = p->Address;
             }
-#ifdef SETA010_HDMA_FROM_CART
-            HDMARawPointers [d] = (p->IndirectBank << 16) + p->IndirectAddress;
-#endif
+
             if (!(HDMABasePointers [d] = HDMAMemPointers [d] =
                                             S9xGetMemPointer((p->IndirectBank << 16) + p->IndirectAddress)))
             {
@@ -763,88 +724,49 @@ uint8_t S9xDoHDMA(uint8_t byte)
          {
          case 0:
             CPU.Cycles += SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]++), 0x2100 + p->BAddress);
-            HDMAMemPointers [d]++;
-#else
             S9xSetPPU(*HDMAMemPointers [d]++, 0x2100 + p->BAddress);
-#endif
             break;
          case 5:
             CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 1), 0x2101 + p->BAddress);
-            HDMARawPointers [d] += 2;
-#else
             S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
-#endif
             HDMAMemPointers [d] += 2;
          /* fall through */
          case 1:
             CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 1), 0x2101 + p->BAddress);
-            HDMARawPointers [d] += 2;
-#else
             S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
-#endif
             HDMAMemPointers [d] += 2;
             break;
          case 2:
          case 6:
             CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 1), 0x2100 + p->BAddress);
-            HDMARawPointers [d] += 2;
-#else
             S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
-#endif
             HDMAMemPointers [d] += 2;
             break;
          case 3:
          case 7:
             CPU.Cycles += 4 * SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 1), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 2), 0x2101 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 3), 0x2101 + p->BAddress);
-            HDMARawPointers [d] += 4;
-#else
             S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2101 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2101 + p->BAddress);
-#endif
             HDMAMemPointers [d] += 4;
             break;
          case 4:
             CPU.Cycles += 4 * SLOW_ONE_CYCLE;
-#ifdef SETA010_HDMA_FROM_CART
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d]), 0x2100 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 1), 0x2101 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 2), 0x2102 + p->BAddress);
-            S9xSetPPU(S9xGetByte(HDMARawPointers [d] + 3), 0x2103 + p->BAddress);
-            HDMARawPointers [d] += 4;
-#else
             S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2102 + p->BAddress);
             S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2103 + p->BAddress);
-#endif
             HDMAMemPointers [d] += 4;
             break;
          }
          if (!p->HDMAIndirectAddressing)
             p->Address += HDMA_ModeByteCounts [p->TransferMode];
          p->IndirectAddress += HDMA_ModeByteCounts [p->TransferMode];
-         /* XXX: Check for p->IndirectAddress crossing a mapping boundry,
+         /* XXX: Check for p->IndirectAddress crossing a mapping boundary,
           * XXX: and invalidate HDMAMemPointers[d]
           */
          p->FirstLine = false;
@@ -852,7 +774,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
       }
    }
    CPU.InDMA = false;
-   return (byte);
+   return byte;
 }
 
 void S9xResetDMA()

@@ -5,13 +5,6 @@
 #ifndef _SPC700_H_
 #define _SPC700_H_
 
-#ifdef SPCTOOL
-#define NO_CHANNEL_STRUCT
-#include "spctool/dsp.h"
-#include "spctool/spc700.h"
-#include "spctool/soundmod.h"
-#endif
-
 #define Carry       1
 #define Zero        2
 #define Interrupt   4
@@ -43,10 +36,6 @@
 #define APUCheckOverflow() (IAPU._Overflow)
 #define APUCheckNegative() (IAPU._Zero & 0x80)
 
-#define APUClearFlags(f) (IAPU.Registers.P &= ~(f))
-#define APUSetFlags(f)   (IAPU.Registers.P |=  (f))
-#define APUCheckFlag(f)  (IAPU.Registers.P &   (f))
-
 typedef union
 {
    struct
@@ -73,21 +62,6 @@ typedef struct
 // Needed by ILLUSION OF GAIA
 #define ONE_APU_CYCLE 21
 
-#ifdef SPCTOOL
-int32_t ESPC(int32_t);
-
-#define APU_EXECUTE() \
-{ \
-    int32_t l = (CPU.Cycles - APU.Cycles) / 14; \
-    if (l > 0) \
-    { \
-        l -= _EmuSPC(l); \
-        APU.Cycles += l * 14; \
-    } \
-}
-
-#else
-
 #define APU_EXECUTE1() \
 { \
     APU.Cycles += S9xAPUCycles [*IAPU.PC]; \
@@ -100,8 +74,6 @@ if (IAPU.APUExecuting) \
    while (APU.Cycles <= CPU.Cycles) \
       APU_EXECUTE1(); \
 }
-#endif
 
 #endif
-
 #endif

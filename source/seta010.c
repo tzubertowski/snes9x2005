@@ -577,10 +577,8 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          int16_t xpos_max = ST010_WORD(0x00C2);
 
          // current coordinates and direction
-         int32_t ypos = Memory.SRAM[0xC4] | (Memory.SRAM[0xC5] << 8) |
-                      (Memory.SRAM[0xC6] << 16) | (Memory.SRAM[0xC7] << 24);
-         int32_t xpos = Memory.SRAM[0xC8] | (Memory.SRAM[0xC9] << 8) |
-                      (Memory.SRAM[0xCA] << 16) | (Memory.SRAM[0xCB] << 24);
+         int32_t ypos = Memory.SRAM[0xC4] | (Memory.SRAM[0xC5] << 8) | (Memory.SRAM[0xC6] << 16) | (Memory.SRAM[0xC7] << 24);
+         int32_t xpos = Memory.SRAM[0xC8] | (Memory.SRAM[0xC9] << 8) | (Memory.SRAM[0xCA] << 16) | (Memory.SRAM[0xCB] << 24);
          uint16_t rot = Memory.SRAM[0xCC] | (Memory.SRAM[0xCD] << 8);
 
          // physics

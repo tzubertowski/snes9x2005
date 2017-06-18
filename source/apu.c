@@ -66,11 +66,9 @@ void S9xResetAPU()
    S9xAPUUnpackStatus();
    IAPU.Registers.PC = 0;
    IAPU.APUExecuting = Settings.APUEnabled;
-#ifdef SPC700_SHUTDOWN
    IAPU.WaitAddress1 = NULL;
    IAPU.WaitAddress2 = NULL;
    IAPU.WaitCounter = 0;
-#endif
    APU.ShowROM = true;
    IAPU.RAM [0xf1] = 0x80;
 

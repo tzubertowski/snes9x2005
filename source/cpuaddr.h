@@ -195,7 +195,7 @@ static inline void DirectIndexedX(bool read)
 #endif
 }
 
-static void DirectIndexedY(bool read)
+static inline void DirectIndexedY(bool read)
 {
    if (read)
       OpenBus = *CPU.PC;

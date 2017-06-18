@@ -8,12 +8,8 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#ifndef INLINE
 #ifdef PSP
-#define INLINE __attribute((force_inline))
-#else
-#define INLINE inline
-#endif
+#define inline __attribute((force_inline))
 #endif
 
 #include "blargg_endian.h"
@@ -40,32 +36,29 @@ details. You should have received a copy of the GNU Lesser General Public
 License along with this module; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
-/* if ( io < -32768 ) io = -32768; */
-/* if ( io >  32767 ) io =  32767; */
-#define CLAMP16( io )\
-{\
-   if ( (int16_t) io != io )\
-      io = (io >> 31) ^ 0x7FFF;\
+#define CLAMP16(io) \
+{ \
+   if ((int16_t) io != io) \
+      io = (io >> 31) ^ 0x7FFF; \
 }
 
 /* Access global DSP register */
-#define REG(n)      dsp_m.regs [R_##n]
+#define REG(n) dsp_m.regs [R_##n]
 
 /* Access voice DSP register */
-#define VREG(r,n)   r [V_##n]
+#define VREG(r,n) r [V_##n]
 
-#define WRITE_SAMPLES( l, r, out ) \
+#define WRITE_SAMPLES(l, r, out) \
 {\
-   out [0] = l;\
-   out [1] = r;\
-   out += 2;\
-   if ( out >= dsp_m.out_end )\
-   {\
-      out       = dsp_m.extra;\
-      dsp_m.out_end = &dsp_m.extra [EXTRA_SIZE];\
-   }\
-}\
-
+   out [0] = l; \
+   out [1] = r; \
+   out += 2; \
+   if ( out >= dsp_m.out_end ) \
+   { \
+      out       = dsp_m.extra; \
+      dsp_m.out_end = &dsp_m.extra [EXTRA_SIZE]; \
+   } \
+}
 
 /* Volume registers and efb are signed! Easy to forget int8_t cast. */
 /* Prefixes are to avoid accidental use of locals with same names. */
@@ -74,31 +67,31 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 static int16_t gauss [512] =
 {
-   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,
-   2,   2,   3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   5,   5,   5,   5,
-   6,   6,   6,   6,   7,   7,   7,   8,   8,   8,   9,   9,   9,  10,  10,  10,
-  11,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,  15,  16,  16,  17,  17,
-  18,  19,  19,  20,  20,  21,  21,  22,  23,  23,  24,  24,  25,  26,  27,  27,
-  28,  29,  29,  30,  31,  32,  32,  33,  34,  35,  36,  36,  37,  38,  39,  40,
-  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
-  58,  59,  60,  61,  62,  64,  65,  66,  67,  69,  70,  71,  73,  74,  76,  77,
-  78,  80,  81,  83,  84,  86,  87,  89,  90,  92,  94,  95,  97,  99, 100, 102,
- 104, 106, 107, 109, 111, 113, 115, 117, 118, 120, 122, 124, 126, 128, 130, 132,
- 134, 137, 139, 141, 143, 145, 147, 150, 152, 154, 156, 159, 161, 163, 166, 168,
- 171, 173, 175, 178, 180, 183, 186, 188, 191, 193, 196, 199, 201, 204, 207, 210,
- 212, 215, 218, 221, 224, 227, 230, 233, 236, 239, 242, 245, 248, 251, 254, 257,
- 260, 263, 267, 270, 273, 276, 280, 283, 286, 290, 293, 297, 300, 304, 307, 311,
- 314, 318, 321, 325, 328, 332, 336, 339, 343, 347, 351, 354, 358, 362, 366, 370,
- 374, 378, 381, 385, 389, 393, 397, 401, 405, 410, 414, 418, 422, 426, 430, 434,
- 439, 443, 447, 451, 456, 460, 464, 469, 473, 477, 482, 486, 491, 495, 499, 504,
- 508, 513, 517, 522, 527, 531, 536, 540, 545, 550, 554, 559, 563, 568, 573, 577,
- 582, 587, 592, 596, 601, 606, 611, 615, 620, 625, 630, 635, 640, 644, 649, 654,
- 659, 664, 669, 674, 678, 683, 688, 693, 698, 703, 708, 713, 718, 723, 728, 732,
- 737, 742, 747, 752, 757, 762, 767, 772, 777, 782, 787, 792, 797, 802, 806, 811,
- 816, 821, 826, 831, 836, 841, 846, 851, 855, 860, 865, 870, 875, 880, 884, 889,
- 894, 899, 904, 908, 913, 918, 923, 927, 932, 937, 941, 946, 951, 955, 960, 965,
- 969, 974, 978, 983, 988, 992, 997,1001,1005,1010,1014,1019,1023,1027,1032,1036,
+0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,
+2,   2,   3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   5,   5,   5,   5,
+6,   6,   6,   6,   7,   7,   7,   8,   8,   8,   9,   9,   9,   10,  10,  10,
+11,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,  15,  16,  16,  17,  17,
+18,  19,  19,  20,  20,  21,  21,  22,  23,  23,  24,  24,  25,  26,  27,  27,
+28,  29,  29,  30,  31,  32,  32,  33,  34,  35,  36,  36,  37,  38,  39,  40,
+41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,
+58,  59,  60,  61,  62,  64,  65,  66,  67,  69,  70,  71,  73,  74,  76,  77,
+78,  80,  81,  83,  84,  86,  87,  89,  90,  92,  94,  95,  97,  99,  100, 102,
+104, 106, 107, 109, 111, 113, 115, 117, 118, 120, 122, 124, 126, 128, 130, 132,
+134, 137, 139, 141, 143, 145, 147, 150, 152, 154, 156, 159, 161, 163, 166, 168,
+171, 173, 175, 178, 180, 183, 186, 188, 191, 193, 196, 199, 201, 204, 207, 210,
+212, 215, 218, 221, 224, 227, 230, 233, 236, 239, 242, 245, 248, 251, 254, 257,
+260, 263, 267, 270, 273, 276, 280, 283, 286, 290, 293, 297, 300, 304, 307, 311,
+314, 318, 321, 325, 328, 332, 336, 339, 343, 347, 351, 354, 358, 362, 366, 370,
+374, 378, 381, 385, 389, 393, 397, 401, 405, 410, 414, 418, 422, 426, 430, 434,
+439, 443, 447, 451, 456, 460, 464, 469, 473, 477, 482, 486, 491, 495, 499, 504,
+508, 513, 517, 522, 527, 531, 536, 540, 545, 550, 554, 559, 563, 568, 573, 577,
+582, 587, 592, 596, 601, 606, 611, 615, 620, 625, 630, 635, 640, 644, 649, 654,
+659, 664, 669, 674, 678, 683, 688, 693, 698, 703, 708, 713, 718, 723, 728, 732,
+737, 742, 747, 752, 757, 762, 767, 772, 777, 782, 787, 792, 797, 802, 806, 811,
+816, 821, 826, 831, 836, 841, 846, 851, 855, 860, 865, 870, 875, 880, 884, 889,
+894, 899, 904, 908, 913, 918, 923, 927, 932, 937, 941, 946, 951, 955, 960, 965,
+969, 974, 978, 983, 988, 992, 997, 1001,1005,1010,1014,1019,1023,1027,1032,1036,
 1040,1045,1049,1053,1057,1061,1066,1070,1074,1078,1082,1086,1090,1094,1098,1102,
 1106,1109,1113,1117,1121,1125,1128,1132,1136,1139,1143,1146,1150,1153,1157,1160,
 1164,1167,1170,1174,1177,1180,1183,1186,1190,1193,1196,1199,1202,1205,1207,1210,
@@ -110,7 +103,7 @@ static int16_t gauss [512] =
 
 /* Gaussian interpolation */
 
-static INLINE int32_t dsp_interpolate( dsp_voice_t *v )
+static inline int32_t dsp_interpolate( dsp_voice_t *v )
 {
    int32_t offset, out, *in;
    int16_t *fwd, *rev;
@@ -140,7 +133,7 @@ static INLINE int32_t dsp_interpolate( dsp_voice_t *v )
 static uint32_t const counter_rates [32] =
 {
    SIMPLE_COUNTER_RANGE + 1, /* never fires */
-          2048, 1536,
+         2048, 1536,
    1280, 1024,  768,
     640,  512,  384,
     320,  256,  192,
@@ -171,14 +164,14 @@ static uint32_t const counter_offsets [32] =
 };
 
 #define RUN_COUNTERS() \
-   if ( --dsp_m.counter < 0 ) \
+   if (--dsp_m.counter < 0) \
       dsp_m.counter = SIMPLE_COUNTER_RANGE - 1;
 
 #define READ_COUNTER(rate) (((uint32_t) dsp_m.counter + counter_offsets [rate]) % counter_rates [rate])
 
 /* Envelope */
 
-static INLINE void dsp_run_envelope( dsp_voice_t* const v )
+static inline void dsp_run_envelope( dsp_voice_t* const v )
 {
    int32_t env, rate, env_data;
 
@@ -252,7 +245,7 @@ static INLINE void dsp_run_envelope( dsp_voice_t* const v )
 
 /* BRR Decoding */
 
-static INLINE void dsp_decode_brr( dsp_voice_t* v )
+static inline void dsp_decode_brr( dsp_voice_t* v )
 {
    int32_t nybbles, *pos, *end, header;
 
@@ -327,7 +320,7 @@ static INLINE void dsp_decode_brr( dsp_voice_t* v )
    if ( (dsp_m.every_other_sample ^= 1) != 0 ) \
       dsp_m.new_kon &= ~dsp_m.kon; /* clears KON 63 clocks after it was last read */
 
-static INLINE void dsp_misc_30()
+static inline void dsp_misc_30()
 {
    if ( dsp_m.every_other_sample )
    {
@@ -347,13 +340,13 @@ static INLINE void dsp_misc_30()
 
 /* Voices */
 
-static INLINE void dsp_voice_V1( dsp_voice_t* const v )
+static inline void dsp_voice_V1( dsp_voice_t* const v )
 {
    dsp_m.t_dir_addr = dsp_m.t_dir * 0x100 + dsp_m.t_srcn * 4;
    dsp_m.t_srcn = v->regs[V_SRCN];
 }
 
-static INLINE void dsp_voice_V2( dsp_voice_t* const v )
+static inline void dsp_voice_V2( dsp_voice_t* const v )
 {
    uint8_t *entry;
 
@@ -369,12 +362,12 @@ static INLINE void dsp_voice_V2( dsp_voice_t* const v )
    dsp_m.t_pitch = v->regs [V_PITCHL];
 }
 
-static INLINE void dsp_voice_V3a( dsp_voice_t* const v )
+static inline void dsp_voice_V3a( dsp_voice_t* const v )
 {
    dsp_m.t_pitch += (v->regs [V_PITCHH] & 0x3F) << 8;
 }
 
-static INLINE void dsp_voice_V3b( dsp_voice_t* const v )
+static inline void dsp_voice_V3b( dsp_voice_t* const v )
 {
    dsp_m.t_brr_byte = dsp_m.ram [(v->brr_addr + v->brr_offset) & 0xffff];
    dsp_m.t_brr_header = dsp_m.ram [v->brr_addr];
@@ -460,7 +453,7 @@ static void dsp_voice_V3c( dsp_voice_t* const v )
    }
 }
 
-static INLINE void dsp_voice_output( dsp_voice_t const* v, int32_t ch )
+static inline void dsp_voice_output( dsp_voice_t const* v, int32_t ch )
 {
    int32_t amp;
 
@@ -479,7 +472,7 @@ static INLINE void dsp_voice_output( dsp_voice_t const* v, int32_t ch )
    }
 }
 
-static INLINE void dsp_voice_V4( dsp_voice_t* const v )
+static inline void dsp_voice_V4( dsp_voice_t* const v )
 {
    /* Decode BRR */
    dsp_m.t_looped = 0;
@@ -511,7 +504,7 @@ static INLINE void dsp_voice_V4( dsp_voice_t* const v )
    dsp_voice_output( v, 0 );
 }
 
-static INLINE void dsp_voice_V5( dsp_voice_t* const v )
+static inline void dsp_voice_V5( dsp_voice_t* const v )
 {
    int32_t endx_buf;
    /* Output right */
@@ -526,13 +519,13 @@ static INLINE void dsp_voice_V5( dsp_voice_t* const v )
    dsp_m.endx_buf = (uint8_t) endx_buf;
 }
 
-static INLINE void dsp_voice_V6( dsp_voice_t* const v )
+static inline void dsp_voice_V6( dsp_voice_t* const v )
 {
    (void) v; /* avoid compiler warning about unused v */
    dsp_m.outx_buf = (uint8_t) (dsp_m.t_output >> 8);
 }
 
-static INLINE void dsp_voice_V7( dsp_voice_t* const v )
+static inline void dsp_voice_V7( dsp_voice_t* const v )
 {
    /* Update ENDX */
    dsp_m.regs[R_ENDX] = dsp_m.endx_buf;
@@ -540,20 +533,20 @@ static INLINE void dsp_voice_V7( dsp_voice_t* const v )
    dsp_m.envx_buf = v->t_envx_out;
 }
 
-static INLINE void dsp_voice_V8( dsp_voice_t* const v )
+static inline void dsp_voice_V8( dsp_voice_t* const v )
 {
    /* Update OUTX */
    v->regs [V_OUTX] = dsp_m.outx_buf;
 }
 
-static INLINE void dsp_voice_V9( dsp_voice_t* const v )
+static inline void dsp_voice_V9( dsp_voice_t* const v )
 {
    v->regs [V_ENVX] = dsp_m.envx_buf;
 }
 
 /* Most voices do all these in one clock, so make a handy composite */
 
-static INLINE void dsp_voice_V3( dsp_voice_t* const v )
+static inline void dsp_voice_V3( dsp_voice_t* const v )
 {
    dsp_voice_V3a( v );
    dsp_voice_V3b( v );
@@ -606,7 +599,7 @@ static void dsp_voice_V9_V6_V3( dsp_voice_t* const v )
    ECHO_FIR( 0 ) [ch] = ECHO_FIR( 8 ) [ch] = s >> 1; \
 }
 
-static INLINE void dsp_echo_22()
+static inline void dsp_echo_22()
 {
    int32_t l, r;
 
@@ -624,7 +617,7 @@ static INLINE void dsp_echo_22()
    dsp_m.t_echo_in [1] = r;
 }
 
-static INLINE void dsp_echo_23()
+static inline void dsp_echo_23()
 {
    int32_t l, r;
 
@@ -637,7 +630,7 @@ static INLINE void dsp_echo_23()
    ECHO_READ(1);
 }
 
-static INLINE void dsp_echo_24()
+static inline void dsp_echo_24()
 {
    int32_t l, r;
 
@@ -648,7 +641,7 @@ static INLINE void dsp_echo_24()
    dsp_m.t_echo_in [1] += r;
 }
 
-static INLINE void dsp_echo_25()
+static inline void dsp_echo_25()
 {
    int32_t l = dsp_m.t_echo_in [0] + (((dsp_m.echo_hist_pos [6 + 1]) [0] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
    int32_t r = dsp_m.t_echo_in [1] + (((dsp_m.echo_hist_pos [6 + 1]) [1] * (int8_t) dsp_m.regs [R_FIR + 6 * 0x10]) >> 6);
@@ -674,7 +667,7 @@ static INLINE void dsp_echo_25()
    CLAMP16( var ); \
 }
 
-static INLINE void dsp_echo_26()
+static inline void dsp_echo_26()
 {
    int32_t l, r;
 
@@ -690,7 +683,7 @@ static INLINE void dsp_echo_26()
    dsp_m.t_echo_out [1] = r & ~1;
 }
 
-static INLINE void dsp_echo_27()
+static inline void dsp_echo_27()
 {
    int32_t l, r;
    int16_t *out;
@@ -733,7 +726,7 @@ static INLINE void dsp_echo_27()
    } \
    dsp_m.t_echo_out [ch] = 0;
 
-static INLINE void dsp_echo_29()
+static inline void dsp_echo_29()
 {
    dsp_m.t_esa = dsp_m.regs [R_ESA];
 
@@ -1253,7 +1246,7 @@ void spc_enable_rom( int32_t enable )
       dsp_run( clock_count ); \
    }
 
-static INLINE void spc_dsp_write( int32_t data, int32_t time )
+static inline void spc_dsp_write( int32_t data, int32_t time )
 {
    int32_t addr;
 
@@ -2907,7 +2900,7 @@ static int32_t  r_left[4], r_right[4];
 #define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 #define SHORT_CLAMP(n) ((int16_t) CLAMP((n), -32768, 32767))
 
-static INLINE int32_t hermite (int32_t mu1, int32_t a, int32_t b, int32_t c, int32_t d)
+static inline int32_t hermite (int32_t mu1, int32_t a, int32_t b, int32_t c, int32_t d)
 {
    int32_t mu2, mu3, m0, m1, a0, a1, a2, a3;
 
@@ -3013,7 +3006,7 @@ static void resampler_new(int32_t num_samples)
    resampler_clear();
 }
 
-static INLINE bool resampler_push(int16_t *src, int32_t num_samples)
+static inline bool resampler_push(int16_t *src, int32_t num_samples)
 {
    int32_t bytes, end, first_write_size;
    uint8_t  *src_ring;
@@ -3037,7 +3030,7 @@ static INLINE bool resampler_push(int16_t *src, int32_t num_samples)
    return true;
 }
 
-static INLINE void resampler_resize (int32_t num_samples)
+static inline void resampler_resize (int32_t num_samples)
 {
    free(rb_buffer);
    rb_buffer_size = rb_size;
@@ -3438,8 +3431,5 @@ void S9xAPULoadState (const uint8_t *block)
    ptr += sizeof(int32_t);
    spc_remainder = GET_LE32(ptr);
 }
-
-#undef  INLINE
-#define INLINE static inline
 
 #endif

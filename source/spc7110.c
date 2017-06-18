@@ -46,7 +46,7 @@ void (*Copy7110)() = NULL;
 
 //size and offset of the pack data
 //offset and size of reads from pack
-typedef struct SPC7110DecompressionLocationStruct
+typedef struct
 {
    uint32_t offset;
    uint32_t size;
@@ -55,7 +55,7 @@ typedef struct SPC7110DecompressionLocationStruct
 } Data7110;
 
 //this maps an index.bin table to the decompression pack
-typedef struct SPC7110DecompressionIndexStruct
+typedef struct
 {
    int32_t  table;
    bool     is_file;
@@ -63,7 +63,7 @@ typedef struct SPC7110DecompressionIndexStruct
 } Index7110;
 
 //this contains all the data for the decompression pack.
-typedef struct SPC7110DecompressionPackStructure
+typedef struct
 {
    uint8_t*  binfiles[MAX_TABLES];
    Index7110 tableEnts[MAX_TABLES];
