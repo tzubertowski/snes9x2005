@@ -23,24 +23,27 @@ extern uint8_t* HDMABasePointers [8];
 void S9xDoDMA(uint8_t Channel)
 {
    uint8_t Work;
+   int32_t count;
+   int32_t inc;
+   SDMA* d;
+   bool in_sa1_dma = false;
+   uint8_t* in_sdd1_dma = NULL;
+   uint8_t* spc7110_dma = NULL;
+   bool s7_wrap = false;
 
    if (Channel > 7 || CPU.InDMA)
       return;
 
    CPU.InDMA = true;
-   bool in_sa1_dma = false;
-   uint8_t* in_sdd1_dma = NULL;
-   uint8_t* spc7110_dma = NULL;
-   bool s7_wrap = false;
-   SDMA* d = &DMA[Channel];
+   d = &DMA[Channel];
 
-   int32_t count = d->TransferBytes;
+   count = d->TransferBytes;
 
    // Prepare for custom chip DMA
    if (count == 0)
       count = 0x10000;
 
-   int32_t inc = d->AAddressFixed ? 0 : (!d->AAddressDecrement ? 1 : -1);
+   inc = d->AAddressFixed ? 0 : (!d->AAddressDecrement ? 1 : -1);
 
    if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80 && !d->TransferDirection)
    {
@@ -63,11 +66,13 @@ void S9xDoDMA(uint8_t Channel)
    {
       if (d->AAddressFixed && Memory.FillRAM [0x4801] > 0)
       {
+         uint8_t *in_ptr;
+
          // XXX: Should probably verify that we're DMAing from ROM?
          // And somewhere we should make sure we're not running across a mapping boundary too.
          inc = !d->AAddressDecrement ? 1 : -1;
 
-         uint8_t *in_ptr = GetBasePointer(((d->ABank << 16) | d->AAddress));
+         in_ptr = GetBasePointer(((d->ABank << 16) | d->AAddress));
          if (in_ptr)
          {
                in_ptr += d->AAddress;
@@ -81,6 +86,7 @@ void S9xDoDMA(uint8_t Channel)
    if (Settings.SPC7110 && (d->AAddress == 0x4800 || d->ABank == 0x50))
    {
       uint32_t i;
+      int32_t icount;
       i = (s7r.reg4805 | (s7r.reg4806 << 8));
       i *= s7r.AlignBy;
       i += s7r.bank50Internal;
@@ -89,13 +95,16 @@ void S9xDoDMA(uint8_t Channel)
          spc7110_dma = &s7r.bank50[i];
       else
       {
+         uint32_t j;
+
          spc7110_dma = (uint8_t*)malloc(d->TransferBytes);
-         uint32_t j = DECOMP_BUFFER_SIZE - i;
+         j = DECOMP_BUFFER_SIZE - i;
          memcpy(spc7110_dma, &s7r.bank50[i], j);
          memcpy(&spc7110_dma[j], s7r.bank50, d->TransferBytes - j);
          s7_wrap = true;
       }
-      int32_t icount = s7r.reg4809 | (s7r.reg480A << 8);
+
+      icount = s7r.reg4809 | (s7r.reg480A << 8);
       icount -= d->TransferBytes;
       s7r.reg4809 = 0x00ff & icount;
       s7r.reg480A = (0xff00 & icount) >> 8;
@@ -107,6 +116,7 @@ void S9xDoDMA(uint8_t Channel)
    }
    if (d->BAddress == 0x18 && SA1.in_char_dma && (d->ABank & 0xf0) == 0x40)
    {
+      int32_t i;
       // Perform packed bitmap to PPU character format conversion on the
       // data before transmitting it to V-RAM via-DMA.
       int32_t num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
@@ -124,7 +134,6 @@ void S9xDoDMA(uint8_t Channel)
       uint32_t char_count = inc / bytes_per_char;
 
       in_sa1_dma = true;
-      int32_t i;
 
       switch (depth)
       {
@@ -225,6 +234,9 @@ void S9xDoDMA(uint8_t Channel)
 
    if (!d->TransferDirection)
    {
+      uint8_t* base;
+      uint16_t p;
+
       /* XXX: DMA is potentially broken here for cases where we DMA across
        * XXX: memmap boundries. A possible solution would be to re-call
        * XXX: GetBasePointer whenever we cross a boundry, and when
@@ -240,8 +252,8 @@ void S9xDoDMA(uint8_t Channel)
       //reflects extra cycle used by DMA
       CPU.Cycles += SLOW_ONE_CYCLE * (count + 1);
 
-      uint8_t* base = GetBasePointer((d->ABank << 16) + d->AAddress);
-      uint16_t p = d->AAddress;
+      base = GetBasePointer((d->ABank << 16) + d->AAddress);
+      p    = d->AAddress;
 
       if (!base)
          base = Memory.ROM;
@@ -606,6 +618,8 @@ update_address:
 
 void S9xStartHDMA()
 {
+   uint8_t i;
+
    if (Settings.DisableHDMA)
       IPPU.HDMA = 0;
    else
@@ -615,7 +629,6 @@ void S9xStartHDMA()
    if (IPPU.HDMA != 0)
       CPU.Cycles += ONE_CYCLE * 3;
 
-   uint8_t i;
    for (i = 0; i < 8; i++)
    {
       if (IPPU.HDMA & (1 << i))
@@ -633,23 +646,26 @@ void S9xStartHDMA()
 
 uint8_t S9xDoHDMA(uint8_t byte)
 {
+   uint8_t mask;
    SDMA* p = &DMA [0];
-
    int32_t d = 0;
 
    CPU.InDMA = true;
    CPU.Cycles += ONE_CYCLE * 3;
-   uint8_t mask;
+
    for (mask = 1; mask; mask <<= 1, p++, d++)
    {
       if (byte & mask)
       {
          if (!p->LineCount)
          {
+            uint8_t line;
+
             //remember, InDMA is set.
             //Get/Set incur no charges!
             CPU.Cycles += SLOW_ONE_CYCLE;
-            uint8_t line = S9xGetByte((p->ABank << 16) + p->Address);
+            line        = S9xGetByte((p->ABank << 16) + p->Address);
+
             if (line == 0x80)
             {
                p->Repeat = true;

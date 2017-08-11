@@ -3,21 +3,23 @@
 #ifndef _CPUADDR_H_
 #define _CPUADDR_H_
 
+#include <retro_inline.h>
+
 extern int32_t OpAddress;
 
-static inline void Immediate8()
+static INLINE void Immediate8(void)
 {
    OpAddress = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC++;
 }
 
-static inline void Immediate16()
+static INLINE void Immediate16()
 {
    OpAddress = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC += 2;
 }
 
-static inline void Relative()
+static INLINE void Relative()
 {
    int8_t Int8 = *CPU.PC++;
 #ifndef SA1_OPCODES
@@ -26,7 +28,7 @@ static inline void Relative()
    OpAddress = ((int32_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
 }
 
-static inline void RelativeLong()
+static INLINE void RelativeLong()
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = *(uint16_t*) CPU.PC;
@@ -41,7 +43,7 @@ static inline void RelativeLong()
    OpAddress &= 0xffff;
 }
 
-static inline void AbsoluteIndexedIndirect(bool read)
+static INLINE void AbsoluteIndexedIndirect(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = (ICPU.Registers.X.W + * (uint16_t*) CPU.PC) & 0xffff;
@@ -58,7 +60,7 @@ static inline void AbsoluteIndexedIndirect(bool read)
       OpenBus = (uint8_t)(OpAddress >> 8);
 }
 
-static inline void AbsoluteIndirectLong(bool read)
+static INLINE void AbsoluteIndirectLong(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = *(uint16_t*) CPU.PC;
@@ -76,7 +78,7 @@ static inline void AbsoluteIndirectLong(bool read)
       OpAddress = S9xGetWord(OpAddress) | (S9xGetByte(OpAddress + 2) << 16);
 }
 
-static inline void AbsoluteIndirect(bool read)
+static INLINE void AbsoluteIndirect(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = *(uint16_t*) CPU.PC;
@@ -94,7 +96,7 @@ static inline void AbsoluteIndirect(bool read)
    OpAddress += ICPU.ShiftedPB;
 }
 
-static inline void Absolute(bool read)
+static INLINE void Absolute(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = *(uint16_t*) CPU.PC + ICPU.ShiftedDB;
@@ -109,7 +111,7 @@ static inline void Absolute(bool read)
 #endif
 }
 
-static inline void AbsoluteLong(bool read)
+static INLINE void AbsoluteLong(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = (*(uint32_t*) CPU.PC) & 0xffffff;
@@ -129,7 +131,7 @@ static inline void AbsoluteLong(bool read)
 #endif
 }
 
-static inline void Direct(bool read)
+static INLINE void Direct(bool read)
 {
    if (read)
       OpenBus = *CPU.PC;
@@ -139,7 +141,7 @@ static inline void Direct(bool read)
 #endif
 }
 
-static inline void DirectIndirectIndexed(bool read)
+static INLINE void DirectIndirectIndexed(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
@@ -155,7 +157,7 @@ static inline void DirectIndirectIndexed(bool read)
    // XXX: else Add one cycle if crosses page boundary
 }
 
-static inline void DirectIndirectIndexedLong(bool read)
+static INLINE void DirectIndirectIndexedLong(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
@@ -168,7 +170,7 @@ static inline void DirectIndirectIndexedLong(bool read)
       OpAddress = S9xGetWord(OpAddress) + (S9xGetByte(OpAddress + 2) << 16) + ICPU.Registers.Y.W;
 }
 
-static inline void DirectIndexedIndirect(bool read)
+static INLINE void DirectIndexedIndirect(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.D.W + ICPU.Registers.X.W) & 0xffff;
@@ -184,7 +186,7 @@ static inline void DirectIndexedIndirect(bool read)
 #endif
 }
 
-static inline void DirectIndexedX(bool read)
+static INLINE void DirectIndexedX(bool read)
 {
    if (read)
       OpenBus = *CPU.PC;
@@ -195,7 +197,7 @@ static inline void DirectIndexedX(bool read)
 #endif
 }
 
-static inline void DirectIndexedY(bool read)
+static INLINE void DirectIndexedY(bool read)
 {
    if (read)
       OpenBus = *CPU.PC;
@@ -206,7 +208,7 @@ static inline void DirectIndexedY(bool read)
 #endif
 }
 
-static inline void AbsoluteIndexedX(bool read)
+static INLINE void AbsoluteIndexedX(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.X.W;
@@ -223,7 +225,7 @@ static inline void AbsoluteIndexedX(bool read)
    // XXX: else is cross page boundary add one cycle
 }
 
-static inline void AbsoluteIndexedY(bool read)
+static INLINE void AbsoluteIndexedY(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = ICPU.ShiftedDB + *(uint16_t*) CPU.PC + ICPU.Registers.Y.W;
@@ -240,7 +242,7 @@ static inline void AbsoluteIndexedY(bool read)
    // XXX: else is cross page boundary add one cycle
 }
 
-static inline void AbsoluteLongIndexedX(bool read)
+static INLINE void AbsoluteLongIndexedX(bool read)
 {
 #ifdef FAST_LSB_WORD_ACCESS
     OpAddress = (*(uint32_t*) CPU.PC + ICPU.Registers.X.W) & 0xffffff;
@@ -260,7 +262,7 @@ static inline void AbsoluteLongIndexedX(bool read)
 #endif
 }
 
-static inline void DirectIndirect(bool read)
+static INLINE void DirectIndirect(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
@@ -273,7 +275,7 @@ static inline void DirectIndirect(bool read)
    OpAddress += ICPU.ShiftedDB;
 }
 
-static inline void DirectIndirectLong(bool read)
+static INLINE void DirectIndirectLong(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.D.W) & 0xffff;
@@ -286,7 +288,7 @@ static inline void DirectIndirectLong(bool read)
       OpAddress = S9xGetWord(OpAddress) + (S9xGetByte(OpAddress + 2) << 16);
 }
 
-static inline void StackRelative(bool read)
+static INLINE void StackRelative(bool read)
 {
    if (read)
       OpenBus = *CPU.PC;
@@ -296,7 +298,7 @@ static inline void StackRelative(bool read)
 #endif
 }
 
-static inline void StackRelativeIndirectIndexed(bool read)
+static INLINE void StackRelativeIndirectIndexed(bool read)
 {
    OpenBus = *CPU.PC;
    OpAddress = (*CPU.PC++ + ICPU.Registers.S.W) & 0xffff;

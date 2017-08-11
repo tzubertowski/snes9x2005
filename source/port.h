@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/types.h>
+#include <retro_inline.h>
 
 #ifdef PSP
 #define PIXEL_FORMAT BGR555
@@ -23,11 +24,25 @@
 #define PATH_MAX 1024
 #endif
 
+#ifndef _MAX_DIR
 #define _MAX_DIR   PATH_MAX
+#endif
+
+#ifndef _MAX_DRIVE
 #define _MAX_DRIVE 1
+#endif
+
+#ifndef _MAX_FNAME
 #define _MAX_FNAME PATH_MAX
+#endif
+
+#ifndef _MAX_EXT
 #define _MAX_EXT   PATH_MAX
+#endif
+
+#ifndef _MAX_PATH
 #define _MAX_PATH  PATH_MAX
+#endif
 
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext);
 void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
@@ -55,7 +70,7 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext
 #define MAX(A,B) ((A) > (B) ?  (A) : (B))
 
 /* Integer square root by Halleck's method, with Legalize's speedup */
-static inline int32_t _isqrt(int32_t val)
+static INLINE int32_t _isqrt(int32_t val)
 {
    int32_t squaredbit, remainder, root;
 

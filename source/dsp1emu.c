@@ -301,24 +301,28 @@ const int16_t DSP1_SinTable[256] =
 
 int16_t DSP1_Sin(int16_t Angle)
 {
+   int32_t S;
+
    if (Angle < 0)
    {
       if (Angle == -32768) return 0;
       return -DSP1_Sin(-Angle);
    }
-   int32_t S = DSP1_SinTable[Angle >> 8] + (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[0x40 + (Angle >> 8)] >> 15);
+   S = DSP1_SinTable[Angle >> 8] + (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[0x40 + (Angle >> 8)] >> 15);
    if (S > 32767) S = 32767;
    return (int16_t) S;
 }
 
 int16_t DSP1_Cos(int16_t Angle)
 {
+   int32_t S;
+
    if (Angle < 0)
    {
       if (Angle == -32768) return -32768;
       Angle = -Angle;
    }
-   int32_t S = DSP1_SinTable[0x40 + (Angle >> 8)] - (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[Angle >> 8] >> 15);
+   S = DSP1_SinTable[0x40 + (Angle >> 8)] - (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[Angle >> 8] >> 15);
    if (S < -32768) S = -32767;
    return (int16_t) S;
 }

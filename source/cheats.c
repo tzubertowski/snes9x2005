@@ -33,6 +33,7 @@ const char* S9xProActionReplayToRaw(const char* code, uint32_t* address, uint8_t
 
 const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, uint8_t* num_bytes, uint8_t bytes[3])
 {
+   int32_t i;
    char tmp [15];
    if (strlen(code) != 14)
       return "Invalid Gold Finger code should be 14 hex digits in length.";
@@ -42,12 +43,11 @@ const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, 
    if (sscanf(tmp, "%x", address) != 1)
       return "Invalid Gold Finger code.";
 
-   int32_t i;
    for (i = 0; i < 3; i++)
    {
+      int32_t byte;
       strncpy(tmp, code + 5 + i * 2, 2);
       tmp [2] = 0;
-      int32_t byte;
       if (sscanf(tmp, "%x", &byte) != 1)
          break;
       bytes [i] = (uint8_t) byte;
@@ -60,6 +60,10 @@ const char* S9xGoldFingerToRaw(const char* code, uint32_t* address, bool* sram, 
 const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte)
 {
    char new_code [12];
+   static char* real_hex  = "0123456789ABCDEF";
+   static char* genie_hex = "DF4709156BC8A23E";
+   uint32_t data = 0;
+   int32_t i;
 
    if (strlen(code) != 9 || *(code + 4) != '-' || !S9xAllHex(code, 4) || !S9xAllHex(code + 5, 4))
       return "Invalid Game Genie(tm) code - should be 'xxxx-xxxx'.";
@@ -68,15 +72,11 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
    strncpy(new_code + 2, code, 4);
    strcpy(new_code + 6, code + 5);
 
-   static char* real_hex  = "0123456789ABCDEF";
-   static char* genie_hex = "DF4709156BC8A23E";
-
-   int32_t i;
    for (i = 2; i < 10; i++)
    {
+      int32_t j;
       if (islower(new_code [i]))
          new_code [i] = toupper(new_code [i]);
-      int32_t j;
       for (j = 0; j < 16; j++)
       {
          if (new_code [i] == genie_hex [j])
@@ -88,7 +88,6 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
       if (j == 16)
          return "Invalid hex-character in Game Genie(tm) code";
    }
-   uint32_t data = 0;
    sscanf(new_code, "%x", &data);
    *byte = (uint8_t)(data >> 24);
    *address = ((data & 0x003c00) << 10) +
@@ -148,6 +147,7 @@ void S9xSearchForChange(SCheatData* d, S9xCheatComparisonType cmp,
                         S9xCheatDataSize size, bool is_signed, bool update)
 {
    int32_t l;
+   int32_t i;
 
    switch (size)
    {
@@ -166,7 +166,6 @@ void S9xSearchForChange(SCheatData* d, S9xCheatComparisonType cmp,
       break;
    }
 
-   int32_t i;
    if (is_signed)
    {
       for (i = 0; i < 0x20000 - l; i++)
@@ -250,6 +249,7 @@ void S9xSearchForValue(SCheatData* d, S9xCheatComparisonType cmp,
                        bool is_signed, bool update)
 {
    int32_t l;
+   int32_t i;
 
    switch (size)
    {
@@ -268,7 +268,6 @@ void S9xSearchForValue(SCheatData* d, S9xCheatComparisonType cmp,
       break;
    }
 
-   int32_t i;
 
    if (is_signed)
    {

@@ -8,6 +8,8 @@
 #include "port.h"
 #include "spc700.h"
 
+#include <retro_inline.h>
+
 typedef struct
 {
    uint8_t*      PC;
@@ -47,14 +49,14 @@ typedef struct
 SAPU APU;
 SIAPU IAPU;
 
-static inline void S9xAPUUnpackStatus(void)
+static INLINE void S9xAPUUnpackStatus(void)
 {
    IAPU._Zero     = ((IAPU.Registers.P & Zero) == 0) | (IAPU.Registers.P & Negative);
    IAPU._Carry    = (IAPU.Registers.P & Carry);
    IAPU._Overflow = IAPU.Registers.P & Overflow;
 }
 
-static inline void S9xAPUPackStatus(void)
+static INLINE void S9xAPUPackStatus(void)
 {
    IAPU.Registers.P &= ~(Zero | Negative | Carry | Overflow);
    if (IAPU._Carry)

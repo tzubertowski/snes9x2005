@@ -205,6 +205,27 @@ else ifeq ($(platform), gcw0)
 	LIBM :=
 	LOAD_FROM_MEMORY_TEST = 0
 	CFLAGS += -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
+
+# Windows MSVC 2010 x86
+else ifeq ($(platform), windows_msvc2010_x86)
+	CC  = cl.exe
+	CXX = cl.exe
+
+PATH := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/bin"):$(PATH)
+PATH := $(PATH):$(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../IDE")
+INCLUDE := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/include")
+LIB := $(shell IFS=$$'\n'; cygpath -w "$(VS100COMNTOOLS)../../VC/lib")
+BIN := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/bin")
+
+WindowsSdkDir := $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')lib
+WindowsSdkDir ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')lib
+
+export INCLUDE := $(INCLUDE)
+export LIB := $(LIB);$(WindowsSdkDir)
+TARGET := $(TARGET_NAME)_libretro.dll
+PSS_STYLE :=2
+LDFLAGS += -DLL
+OLD_GCC = 1
 else
 	TARGET := $(TARGET_NAME)_libretro.dll
 	CC = gcc
@@ -220,6 +241,32 @@ LIBRETRO_DIR := .
 
 include Makefile.common
 
+ifeq ($(OLD_GCC), 1)
+	WARNINGS := -Wall
+else ifeq ($(NO_GCC), 1)
+	WARNINGS :=
+else
+	WARNINGS := \
+		-Wall \
+		-Wno-sign-compare \
+		-Wno-unused-variable \
+		-Wno-unused-function \
+		-Wno-uninitialized \
+		-Wno-strict-aliasing \
+		-Wno-overflow \
+		-fno-strict-overflow
+endif
+
+ifeq ($(DEBUG),1)
+	FLAGS += -O0 -g
+else
+	FLAGS += -O2 -DNDEBUG
+endif
+
+ifeq ($(PERF_TEST),1)
+	FLAGS += -DPERF_TEST
+endif
+
 ifeq ($(platform), psp1)
 	INCFLAGS += -I$(shell psp-config --pspsdk-path)/include
 endif
@@ -232,6 +279,16 @@ FLAGS += $(fpic)
 
 CXXFLAGS += $(FLAGS)
 CFLAGS += $(FLAGS)
+
+ifneq (,$(findstring msvc,$(platform)))
+	OBJOUT = -Fo
+	LINKOUT = -out:
+	LD = link.exe
+else
+	OBJOUT   = -o
+	LINKOUT  = -o 
+	LD = $(CC)
+endif
 
 ifeq ($(platform), theos_ios)
 	COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
@@ -248,10 +305,10 @@ else
 endif
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -c $(OBJOUT)$@ $< $(CXXFLAGS)
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c $(OBJOUT)$@ $< $(CFLAGS)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

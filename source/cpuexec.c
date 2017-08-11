@@ -366,9 +366,10 @@ void S9xDoHBlankProcessing_SFX()
 
          if (!PPU.ForcedBlanking)
          {
+            uint8_t tmp = 0;
+
             PPU.OAMAddr = PPU.SavedOAMAddr;
 
-            uint8_t tmp = 0;
             if (PPU.OAMPriorityRotation)
                tmp = (PPU.OAMAddr & 0xFE) >> 1;
             if ((PPU.OAMFlip & 1) || PPU.FirstSprite != tmp)
@@ -499,9 +500,10 @@ void S9xDoHBlankProcessing_NoSFX()
 
          if (!PPU.ForcedBlanking)
          {
+            uint8_t tmp = 0;
+
             PPU.OAMAddr = PPU.SavedOAMAddr;
 
-            uint8_t tmp = 0;
             if (PPU.OAMPriorityRotation)
                tmp = (PPU.OAMAddr & 0xFE) >> 1;
             if ((PPU.OAMFlip & 1) || PPU.FirstSprite != tmp)

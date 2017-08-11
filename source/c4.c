@@ -55,14 +55,19 @@ const int16_t C4MulTable[256] =
 
 int16_t C4_Sin(int16_t Angle)
 {
+   int32_t S;
+   int16_t AngleS7;
+
    if (Angle < 0)
    {
       if (Angle == -32768)
          return 0;
       return -C4_Sin(-Angle);
    }
-   int16_t AngleS7 = Angle >> 7;
-   int32_t S = C4SinTable[AngleS7] + (C4MulTable[Angle & 0xff] * C4SinTable[0x80 + AngleS7] >> 15);
+
+   AngleS7 = Angle >> 7;
+   S       = C4SinTable[AngleS7] + (C4MulTable[Angle & 0xff] * C4SinTable[0x80 + AngleS7] >> 15);
+
    if (S > 32767)
       S = 32767;
    return (int16_t) S;
@@ -70,14 +75,17 @@ int16_t C4_Sin(int16_t Angle)
 
 int16_t C4_Cos(int16_t Angle)
 {
+   int32_t S;
+   int16_t AngleS7;
+
    if (Angle < 0)
    {
       if (Angle == -32768)
          return -32768;
       Angle = -Angle;
    }
-   int16_t AngleS7 = Angle >> 7;
-   int32_t S = C4SinTable[0x80 + AngleS7] - (C4MulTable[Angle & 0xff] * C4SinTable[AngleS7] >> 15);
+   AngleS7 = Angle >> 7;
+   S       = C4SinTable[0x80 + AngleS7] - (C4MulTable[Angle & 0xff] * C4SinTable[AngleS7] >> 15);
    if (S < -32768)
       S = -32767;
    return (int16_t) S;
@@ -104,11 +112,13 @@ const int16_t atantbl[256] = {
 
 int16_t _atan2(int16_t x, int16_t y)
 {
+   int32_t absAtan;
+   int32_t x1, y1;
    if (x == 0)
       return 0;
 
-   int32_t x1 = ABS(x), y1 = ABS(y);
-   int32_t absAtan;
+   x1 = ABS(x);
+   y1 = ABS(y);
 
    if (x1 > y1)
       absAtan = atantbl[(uint8_t)((y1 << 8) / x1)];

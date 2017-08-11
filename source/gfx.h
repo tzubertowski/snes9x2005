@@ -7,6 +7,8 @@
 #include "ppu.h"
 #include "snes9x.h"
 
+#include <retro_inline.h>
+
 void S9xStartScreenRefresh(void);
 void S9xDrawScanLine(uint8_t Line);
 void S9xEndScreenRefresh(void);
@@ -145,7 +147,7 @@ extern uint8_t mul_brightness [16][32];
 #define SUB_SCREEN_DEPTH 0
 #define MAIN_SCREEN_DEPTH 32
 
-static inline uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
+static INLINE uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
 {
    if (C1 == 0)
       return C2;

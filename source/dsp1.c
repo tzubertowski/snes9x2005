@@ -624,6 +624,10 @@ uint8_t DSP1GetByte(uint16_t address)
 
 void DSP2SetByte(uint8_t byte, uint16_t address)
 {
+#ifndef FAST_LSB_WORD_ACCESS
+   uint32_t temp;
+#endif
+
    if ((address & 0xf000) == 0x6000 ||
          (address >= 0x8000 && address < 0xc000))
    {
@@ -715,7 +719,6 @@ void DSP2SetByte(uint8_t byte, uint16_t address)
 #ifdef FAST_LSB_WORD_ACCESS
             *(uint32_t*)DSP1.output = DSP2Op09Word1 * DSP2Op09Word2;
 #else
-            uint32_t temp;
             temp = DSP2Op09Word1 * DSP2Op09Word2;
             DSP1.output[0] = temp & 0xFF;
             DSP1.output[1] = (temp >> 8) & 0xFF;
@@ -941,10 +944,11 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
          // internal memory management (06)
          case 0x0005:
          {
+            int32_t lcv;
+
             // clear OAM tables
             op06_index = 0;
             op06_offset = 0;
-            int32_t lcv;
             for (lcv = 0; lcv < 32; lcv++)
                op06_OAM[lcv] = 0;
             break;
@@ -959,8 +963,9 @@ void DSP4SetByte(uint8_t byte, uint16_t address)
          // sprite OAM post-table data
          case 0x0006:
          {
-            DSP4.out_count = 32;
             int32_t lcv;
+
+            DSP4.out_count = 32;
             for (lcv = 0; lcv < 32; lcv++)
                DSP4.output[lcv] = op06_OAM[lcv];
          }

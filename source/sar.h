@@ -4,6 +4,7 @@
 #define _SAR_H_
 
 #include <stdint.h>
+#include <retro_inline.h>
 
 #include "port.h"
 
@@ -14,7 +15,7 @@
 #define SAR64(b, n) ((b) >> (n))
 #else
 
-static inline int8_t SAR8(const int8_t b, const int32_t n)
+static INLINE int8_t SAR8(const int8_t b, const int32_t n)
 {
 #ifndef RIGHTSHIFT_INT8_IS_SAR
    if (b < 0)
@@ -23,7 +24,7 @@ static inline int8_t SAR8(const int8_t b, const int32_t n)
    return b >> n;
 }
 
-static inline int16_t SAR16(const int16_t b, const int32_t n)
+static INLINE int16_t SAR16(const int16_t b, const int32_t n)
 {
 #ifndef RIGHTSHIFT_INT16_IS_SAR
    if (b < 0)
@@ -32,7 +33,7 @@ static inline int16_t SAR16(const int16_t b, const int32_t n)
    return b >> n;
 }
 
-static inline int32_t SAR32(const int32_t b, const int32_t n)
+static INLINE int32_t SAR32(const int32_t b, const int32_t n)
 {
 #ifndef RIGHTSHIFT_INT32_IS_SAR
    if (b < 0)
@@ -41,7 +42,7 @@ static inline int32_t SAR32(const int32_t b, const int32_t n)
    return b >> n;
 }
 
-static inline int64_t SAR64(const int64_t b, const int32_t n)
+static INLINE int64_t SAR64(const int64_t b, const int32_t n)
 {
 #ifndef RIGHTSHIFT_INT64_IS_SAR
    if (b < 0)

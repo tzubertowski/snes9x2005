@@ -16,6 +16,8 @@
 #include "cpumacro.h"
 #include "apu.h"
 
+#include <retro_inline.h>
+
 int32_t OpAddress;
 
 /* ADC *************************************************************************************** */
@@ -2411,7 +2413,7 @@ static void Op0CM0(void)
 #endif
 
 #ifndef SA1_OPCODES
-static inline void CPUShutdown(void)
+static INLINE void CPUShutdown(void)
 {
    if (Settings.Shutdown && CPU.PC == CPU.WaitAddress)
    {
@@ -2444,7 +2446,7 @@ static inline void CPUShutdown(void)
    }
 }
 #else
-static inline void CPUShutdown(void)
+static INLINE void CPUShutdown(void)
 {
    if (Settings.Shutdown && CPU.PC == CPU.WaitAddress)
    {
@@ -2460,7 +2462,7 @@ static inline void CPUShutdown(void)
 #endif
 
 // From the speed-hacks branch of CatSFC
-static inline void ForceShutdown(void)
+static INLINE void ForceShutdown(void)
 {
 #ifndef SA1_OPCODES
    CPU.WaitAddress = NULL;
@@ -3338,11 +3340,12 @@ static void OpBBX0(void)
 /* XCE *************************************************************************************** */
 static void OpFB(void)
 {
+   uint8_t A1, A2;
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-   uint8_t A1 = ICPU._Carry;
-   uint8_t A2 = ICPU.Registers.PH;
+   A1 = ICPU._Carry;
+   A2 = ICPU.Registers.PH;
    ICPU._Carry = A2 & 1;
    ICPU.Registers.PH = A1;
 
@@ -3890,11 +3893,12 @@ static void OpCB(void)
 static void OpDB(void)
 {
 #ifndef NO_SPEEDHACKS
+   int8_t BranchOffset;
    uint8_t NextByte = *CPU.PC++;
 
    ForceShutdown();
 
-   int8_t BranchOffset = (NextByte & 0x7F) | ((NextByte & 0x40) << 1);
+   BranchOffset = (NextByte & 0x7F) | ((NextByte & 0x40) << 1);
    // ^ -64 .. +63, sign extend bit 6 into 7 for unpacking
    OpAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
@@ -3941,11 +3945,12 @@ static void OpDB(void)
 static void Op42(void)
 {
 #ifndef NO_SPEEDHACKS
+   int8_t BranchOffset;
    uint8_t NextByte = *CPU.PC++;
 
    ForceShutdown();
 
-   int8_t BranchOffset = 0xF0 | (NextByte & 0xF); // always negative
+   BranchOffset = 0xF0 | (NextByte & 0xF); // always negative
    OpAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
    switch (NextByte & 0xF0)

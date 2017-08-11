@@ -47,6 +47,11 @@ void DSP4_Op06(bool size, bool msb)
 
 void DSP4_Op01()
 {
+   int16_t plane;
+
+   int16_t index, lcv;
+   int16_t py_dy, px_dx;
+   int16_t y_out, x_out;
    uint16_t command;
 
    DSP4.waiting4command = false;
@@ -123,11 +128,6 @@ DSP4_WAIT(1) resume1:
       // process one iteration of projection
 
       // inspect inputs
-      int16_t plane;
-
-      int16_t index, lcv;
-      int16_t py_dy, px_dx;
-      int16_t y_out, x_out;
 
 resume2:
       plane = DSP4_READ_WORD(0);
@@ -241,6 +241,10 @@ resume2:
 void DSP4_Op07()
 {
    uint16_t command;
+   int16_t plane;
+   int16_t index, lcv;
+   int16_t y_out, x_out;
+   int16_t py_dy, px_dx;
 
    DSP4.waiting4command = false;
 
@@ -308,11 +312,6 @@ DSP4_WAIT(1) resume1:
 
       ////////////////////////////////////////////////////
       // process one loop of projection
-
-      int16_t plane;
-      int16_t index, lcv;
-      int16_t y_out, x_out;
-      int16_t py_dy, px_dx;
 
 resume2:
       px_dx = 0;
@@ -404,6 +403,11 @@ resume2:
 void DSP4_Op08()
 {
    uint16_t command;
+   // used in envelope shaping
+   int16_t x1_final;
+   int16_t x2_final;
+   int16_t plane, x_left, y_left, x_right, y_right;
+   int16_t envelope1, envelope2;
 
    DSP4.waiting4command = false;
 
@@ -494,20 +498,16 @@ DSP4_WAIT(2) resume2:
       // debug
       ++block;
 
-      // used in envelope shaping
-      int16_t x1_final;
-      int16_t x2_final;
-
       // look at guidelines
-      int16_t plane = DSP4_READ_WORD(0x00);
-      int16_t x_left = DSP4_READ_WORD(0x02);
-      int16_t y_left = DSP4_READ_WORD(0x04);
-      int16_t x_right = DSP4_READ_WORD(0x06);
-      int16_t y_right = DSP4_READ_WORD(0x08);
+      plane = DSP4_READ_WORD(0x00);
+      x_left = DSP4_READ_WORD(0x02);
+      y_left = DSP4_READ_WORD(0x04);
+      x_right = DSP4_READ_WORD(0x06);
+      y_right = DSP4_READ_WORD(0x08);
 
       // envelope guidelines (one frame only)
-      int16_t envelope1 = DSP4_READ_WORD(0x0a);
-      int16_t envelope2 = DSP4_READ_WORD(0x0c);
+      envelope1 = DSP4_READ_WORD(0x0a);
+      envelope2 = DSP4_READ_WORD(0x0c);
 
       // ignore invalid data
       if ((uint16_t) plane == 0x8001) continue;
@@ -730,6 +730,11 @@ DSP4_WAIT(2) resume2:
 void DSP4_Op0D()
 {
    uint16_t command;
+   // inspect inputs
+   int16_t plane;
+   int16_t index, lcv;
+   int16_t py_dy, px_dx;
+   int16_t y_out, x_out;
 
    DSP4.waiting4command = false;
 
@@ -824,11 +829,6 @@ DSP4_WAIT(1) resume1:
       ////////////////////////////////////////////////////
       // project section of the track
 
-      // inspect inputs
-      int16_t plane;
-      int16_t index, lcv;
-      int16_t py_dy, px_dx;
-      int16_t y_out, x_out;
 
 resume2:
 
@@ -940,6 +940,9 @@ resume2:
 void DSP4_Op09()
 {
    uint16_t command;
+   bool clip;
+   int16_t sp_x, sp_y, sp_oam, sp_msb;
+   int16_t sp_dx, sp_dy;
 
    DSP4.waiting4command = false;
 
@@ -1055,6 +1058,7 @@ sprite_found:
          int16_t plane;
          int16_t car_left, car_right;
          int16_t focal_back;
+         int32_t height;
 
          // we already have 4 bytes we want
          DSP4.in_count = 6 + 12;
@@ -1096,7 +1100,6 @@ DSP4_WAIT(3) resume3:
          DSP4_WAIT(4)
 
          // store final values
-         int32_t height;
 
 resume4:
          height = DSP4_READ_WORD(0);
@@ -1175,10 +1178,6 @@ DSP4_WAIT(6) resume6:
 
          /////////////////////////////////////
          // process tile data
-
-         bool clip;
-         int16_t sp_x, sp_y, sp_oam, sp_msb;
-         int16_t sp_dx, sp_dy;
 
 resume7:
 

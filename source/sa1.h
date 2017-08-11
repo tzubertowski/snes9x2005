@@ -5,6 +5,7 @@
 
 #include "memmap.h"
 #include "cpuexec.h"
+#include <retro_inline.h>
 
 typedef struct
 {
@@ -85,15 +86,15 @@ extern SOpcodes S9xSA1OpcodesM0X1 [256];
 extern SOpcodes S9xSA1OpcodesM0X0 [256];
 extern SSA1 SA1;
 
-void S9xSA1MainLoop();
-void S9xSA1Init();
-void S9xFixSA1AfterSnapshotLoad();
+void S9xSA1MainLoop(void);
+void S9xSA1Init(void);
+void S9xFixSA1AfterSnapshotLoad(void);
 
 #define SNES_IRQ_SOURCE     (1 << 7)
 #define TIMER_IRQ_SOURCE    (1 << 6)
 #define DMA_IRQ_SOURCE      (1 << 5)
 
-static inline void S9xSA1UnpackStatus()
+static INLINE void S9xSA1UnpackStatus(void)
 {
    SA1._Zero = (SA1.Registers.PL & Zero) == 0;
    SA1._Negative = (SA1.Registers.PL & Negative);
@@ -101,13 +102,13 @@ static inline void S9xSA1UnpackStatus()
    SA1._Overflow = (SA1.Registers.PL & Overflow) >> 6;
 }
 
-static inline void S9xSA1PackStatus()
+static INLINE void S9xSA1PackStatus(void)
 {
    SA1.Registers.PL &= ~(Zero | Negative | Carry | Overflow);
    SA1.Registers.PL |= SA1._Carry | ((SA1._Zero == 0) << 1) | (SA1._Negative & 0x80) | (SA1._Overflow << 6);
 }
 
-static inline void S9xSA1FixCycles()
+static INLINE void S9xSA1FixCycles(void)
 {
    if (SA1CheckEmulation())
       SA1.S9xOpcodes = S9xSA1OpcodesE1;

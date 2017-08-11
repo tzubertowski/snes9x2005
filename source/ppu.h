@@ -1,7 +1,8 @@
-#include "../copyright"
-
 #ifndef _PPU_H_
 #define _PPU_H_
+
+#include "../copyright"
+#include <retro_inline.h>
 
 #define FIRST_VISIBLE_LINE 1
 
@@ -199,20 +200,20 @@ typedef struct
    bool     FirstLine;
 } SDMA;
 
-void S9xUpdateScreen();
-void S9xResetPPU();
-void S9xSoftResetPPU();
-void S9xFixColourBrightness();
-void S9xUpdateJoypads();
+void S9xUpdateScreen(void);
+void S9xResetPPU(void);
+void S9xSoftResetPPU(void);
+void S9xFixColourBrightness(void);
+void S9xUpdateJoypads(void);
 void S9xProcessMouse(int32_t which1);
-void S9xSuperFXExec();
+void S9xSuperFXExec(void);
 
 void S9xSetPPU(uint8_t Byte, uint16_t Address);
 uint8_t S9xGetPPU(uint16_t Address);
 void S9xSetCPU(uint8_t Byte, uint16_t Address);
 uint8_t S9xGetCPU(uint16_t Address);
 
-void S9xInitC4();
+void S9xInitC4(void);
 void S9xSetC4(uint8_t Byte, uint16_t Address);
 uint8_t S9xGetC4(uint16_t Address);
 void S9xSetC4RAM(uint8_t Byte, uint16_t Address);
@@ -241,27 +242,29 @@ extern SnesModel M2SNES;
 
 //Platform specific input functions used by PPU.CPP
 void JustifierButtons(uint32_t*);
-bool JustifierOffscreen();
+bool JustifierOffscreen(void);
 
-static inline void FLUSH_REDRAW()
+static INLINE void FLUSH_REDRAW(void)
 {
    if (IPPU.PreviousLine != IPPU.CurrentLine)
       S9xUpdateScreen();
 }
 
-static inline void REGISTER_2104(uint8_t byte)
+static INLINE void REGISTER_2104(uint8_t byte)
 {
    if (PPU.OAMAddr & 0x100)
    {
       int32_t addr = ((PPU.OAMAddr & 0x10f) << 1) + (PPU.OAMFlip & 1);
       if (byte != PPU.OAMData [addr])
       {
+         SOBJ* pObj = NULL;
+
          FLUSH_REDRAW();
          PPU.OAMData [addr] = byte;
          IPPU.OBJChanged = true;
 
          // X position high bit, and sprite size (x4)
-         SOBJ* pObj = &PPU.OBJ [(addr & 0x1f) * 4];
+         pObj = &PPU.OBJ [(addr & 0x1f) * 4];
 
          pObj->HPos = (pObj->HPos & 0xFF) | SignExtend[(byte >> 0) & 1];
          pObj++->Size = byte & 2;
@@ -296,12 +299,15 @@ static inline void REGISTER_2104(uint8_t byte)
    }
    else
    {
+      int32_t addr;
+      uint8_t lowbyte, highbyte;
+
       PPU.OAMWriteRegister &= 0x00ff;
-      uint8_t lowbyte = (uint8_t)(PPU.OAMWriteRegister);
-      uint8_t highbyte = byte;
+      lowbyte = (uint8_t)(PPU.OAMWriteRegister);
+      highbyte = byte;
       PPU.OAMWriteRegister |= byte << 8;
 
-      int32_t addr = (PPU.OAMAddr << 1);
+      addr = (PPU.OAMAddr << 1);
 
       if (lowbyte != PPU.OAMData [addr] ||
             highbyte != PPU.OAMData [addr + 1])
@@ -343,7 +349,7 @@ static inline void REGISTER_2104(uint8_t byte)
    Memory.FillRAM [0x2104] = byte;
 }
 
-static inline void REGISTER_2118(uint8_t Byte)
+static INLINE void REGISTER_2118(uint8_t Byte)
 {
    uint32_t address;
    if (PPU.VMA.FullGraphicCount)
@@ -363,7 +369,7 @@ static inline void REGISTER_2118(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2118_tile(uint8_t Byte)
+static INLINE void REGISTER_2118_tile(uint8_t Byte)
 {
    uint32_t address;
    uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
@@ -378,7 +384,7 @@ static inline void REGISTER_2118_tile(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2118_linear(uint8_t Byte)
+static INLINE void REGISTER_2118_linear(uint8_t Byte)
 {
    uint32_t address;
    Memory.VRAM[address = (PPU.VMA.Address << 1) & 0xFFFF] = Byte;
@@ -389,7 +395,7 @@ static inline void REGISTER_2118_linear(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2119(uint8_t Byte)
+static INLINE void REGISTER_2119(uint8_t Byte)
 {
    uint32_t address;
    if (PPU.VMA.FullGraphicCount)
@@ -409,7 +415,7 @@ static inline void REGISTER_2119(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2119_tile(uint8_t Byte)
+static INLINE void REGISTER_2119_tile(uint8_t Byte)
 {
    uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
    uint32_t address = ((((PPU.VMA.Address & ~PPU.VMA.Mask1) +
@@ -423,7 +429,7 @@ static inline void REGISTER_2119_tile(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2119_linear(uint8_t Byte)
+static INLINE void REGISTER_2119_linear(uint8_t Byte)
 {
    uint32_t address;
    Memory.VRAM[address = ((PPU.VMA.Address << 1) + 1) & 0xFFFF] = Byte;
@@ -434,7 +440,7 @@ static inline void REGISTER_2119_linear(uint8_t Byte)
       PPU.VMA.Address += PPU.VMA.Increment;
 }
 
-static inline void REGISTER_2122(uint8_t Byte)
+static INLINE void REGISTER_2122(uint8_t Byte)
 {
    if (PPU.CGFLIP)
    {
@@ -465,14 +471,14 @@ static inline void REGISTER_2122(uint8_t Byte)
    PPU.CGFLIP = !PPU.CGFLIP;
 }
 
-static inline void REGISTER_2180(uint8_t Byte)
+static INLINE void REGISTER_2180(uint8_t Byte)
 {
    Memory.RAM[PPU.WRAM++] = Byte;
    PPU.WRAM &= 0x1FFFF;
    Memory.FillRAM [0x2180] = Byte;
 }
 
-static inline uint8_t REGISTER_4212()
+static INLINE uint8_t REGISTER_4212(void)
 {
    uint8_t GetBank = 0;
    if (CPU.V_Counter >= PPU.ScreenHeight + FIRST_VISIBLE_LINE &&

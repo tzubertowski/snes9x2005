@@ -9,7 +9,7 @@
 
 extern SCheatData Cheat;
 
-void S9xInitCheatData()
+void S9xInitCheatData(void)
 {
    Cheat.RAM = Memory.RAM;
    Cheat.SRAM = Memory.SRAM;
@@ -47,7 +47,7 @@ void S9xDeleteCheat(uint32_t which1)
    }
 }
 
-void S9xDeleteCheats()
+void S9xDeleteCheats(void)
 {
    S9xRemoveCheats();
    Cheat.num_cheats = 0;
@@ -91,13 +91,15 @@ void S9xRemoveCheat(uint32_t which1)
 
 void S9xApplyCheat(uint32_t which1)
 {
+   int32_t block;
+   uint8_t *ptr;
    uint32_t address = Cheat.c [which1].address;
 
    if (!Cheat.c [which1].saved)
       Cheat.c [which1].saved_byte = S9xGetByte(address);
 
-   int32_t block = (address >> MEMMAP_SHIFT) & MEMMAP_MASK;
-   uint8_t* ptr = Memory.Map [block];
+   block = (address >> MEMMAP_SHIFT) & MEMMAP_MASK;
+   ptr   = Memory.Map [block];
 
    if (ptr >= (uint8_t*) MAP_LAST)
       *(ptr + (address & 0xffff)) = Cheat.c [which1].byte;
@@ -106,7 +108,7 @@ void S9xApplyCheat(uint32_t which1)
    Cheat.c [which1].saved = true;
 }
 
-void S9xApplyCheats()
+void S9xApplyCheats(void)
 {
    uint32_t i;
    if (Settings.ApplyCheats)
@@ -117,7 +119,7 @@ void S9xApplyCheats()
    }
 }
 
-void S9xRemoveCheats()
+void S9xRemoveCheats(void)
 {
    uint32_t i;
    for (i = 0; i < Cheat.num_cheats; i++)
@@ -127,10 +129,12 @@ void S9xRemoveCheats()
 
 bool S9xLoadCheatFile(const char* filename)
 {
+   uint8_t data [8 + MAX_SFCCHEAT_NAME];
+   FILE* fs = NULL;
+
    Cheat.num_cheats = 0;
 
-   FILE* fs = fopen(filename, "rb");
-   uint8_t data [8 + MAX_SFCCHEAT_NAME];
+   fs = fopen(filename, "rb");
 
    if (!fs)
       return (false);
@@ -159,19 +163,21 @@ bool S9xLoadCheatFile(const char* filename)
 
 bool S9xSaveCheatFile(const char* filename)
 {
+   uint32_t i;
+   uint8_t data [8 + MAX_SFCCHEAT_NAME];
+   FILE* fs = NULL;
+
    if (Cheat.num_cheats == 0)
    {
       (void) remove(filename);
       return (true);
    }
 
-   FILE* fs = fopen(filename, "wb");
-   uint8_t data [8 + MAX_SFCCHEAT_NAME];
+   fs = fopen(filename, "wb");
 
    if (!fs)
       return (false);
 
-   uint32_t i;
    for (i = 0; i < Cheat.num_cheats; i++)
    {
       memset(data, 0, 8 + MAX_SFCCHEAT_NAME);

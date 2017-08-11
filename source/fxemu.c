@@ -284,6 +284,8 @@ static void fx_writeRegisterSpaceAfterUse()
 /* Reset the FxChip */
 void FxReset(FxInit_s* psFxInfo)
 {
+   int32_t i;
+
    /* Clear all internal variables */
    memset(&GSU, 0, sizeof(FxRegs_s));
 
@@ -310,7 +312,6 @@ void FxReset(FxInit_s* psFxInfo)
    GSU.pvRegisters[0x3b] = 0;
 
    /* Make ROM bank table */
-   int32_t i;
    for (i = 0; i < 256; i++)
    {
       uint32_t b = i & 0x7f;
