@@ -39,45 +39,45 @@ bool LoadROM(const struct retro_game_info* game);
 bool LoadROM(const char*);
 #endif
 void InitROM(bool);
-bool S9xInitMemory();
-void S9xDeinitMemory();
-void FreeSDD1Data();
+bool S9xInitMemory(void);
+void S9xDeinitMemory(void);
+void FreeSDD1Data(void);
 
-void WriteProtectROM();
-void FixROMSpeed();
-void MapRAM();
-void MapExtraRAM();
+void WriteProtectROM(void);
+void FixROMSpeed(void);
+void MapRAM(void);
+void MapExtraRAM(void);
 
-void BSLoROMMap();
+void BSLoROMMap(void);
 void JumboLoROMMap(bool);
-void LoROMMap();
-void LoROM24MBSMap();
-void SRAM512KLoROMMap();
-void SRAM1024KLoROMMap();
-void SufamiTurboLoROMMap();
-void HiROMMap();
-void SuperFXROMMap();
+void LoROMMap(void);
+void LoROM24MBSMap(void);
+void SRAM512KLoROMMap(void);
+void SRAM1024KLoROMMap(void);
+void SufamiTurboLoROMMap(void);
+void HiROMMap(void);
+void SuperFXROMMap(void);
 void TalesROMMap(bool);
-void AlphaROMMap();
-void SA1ROMMap();
-void BSHiROMMap();
-void SPC7110HiROMMap();
+void AlphaROMMap(void);
+void SA1ROMMap(void);
+void BSHiROMMap(void);
+void SPC7110HiROMMap(void);
 void SPC7110Sram(uint8_t);
-void SetaDSPMap();
-void ApplyROMFixes();
-void DSPMap();
-void CapcomProtectLoROMMap();
+void SetaDSPMap(void);
+void ApplyROMFixes(void);
+void DSPMap(void);
+void CapcomProtectLoROMMap(void);
 
-const char* TVStandard();
-const char* Speed();
-const char* StaticRAMSize();
-const char* MapType();
-const char* MapMode();
-const char* KartContents();
-const char* Size();
-const char* Headers();
-const char* ROMID();
-const char* CompanyID();
+const char* TVStandard(void);
+const char* Speed(void);
+const char* StaticRAMSize(void);
+const char* MapType(void);
+const char* MapMode(void);
+const char* KartContents(void);
+const char* Size(void);
+const char* Headers(void);
+const char* ROMID(void);
+const char* CompanyID(void);
 void ParseSNESHeader(uint8_t*);
 
 enum
@@ -135,10 +135,10 @@ typedef struct
    uint8_t* BSRAM;
 } CMemory;
 
-void ResetSpeedMap();
+void ResetSpeedMap(void);
 
 extern CMemory Memory;
-void S9xDeinterleaveMode2();
+void S9xDeinterleaveMode2(void);
 
 uint8_t S9xGetByte(uint32_t Address);
 uint16_t S9xGetWord(uint32_t Address);

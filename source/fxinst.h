@@ -169,8 +169,8 @@ typedef struct
    uint32_t    vScreenRealHeight;        /* 128, 160, 192 or 256 */
    uint32_t    vPrevScreenHeight;
    uint32_t    vScreenSize;
-   void      (*pfPlot)();
-   void      (*pfRpix)();
+   void      (*pfPlot)(void);
+   void      (*pfRpix)(void);
    uint8_t*    pvRamBank;                /* Pointer to current RAM-bank */
    uint8_t*    pvRomBank;                /* Pointer to current ROM-bank */
    uint8_t*    pvPrgBank;                /* Pointer to current program ROM-bank */
@@ -340,8 +340,8 @@ typedef struct
     (*fx_apfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); \
 }
 
-extern void (*fx_apfOpcodeTable[])();
-extern void (*fx_apfPlotTable[])();
+extern void (*fx_apfOpcodeTable[])(void);
+extern void (*fx_apfPlotTable[])(void);
 
 uint32_t fx_run(uint32_t nInstructions);
 

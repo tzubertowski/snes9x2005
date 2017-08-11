@@ -15,14 +15,14 @@ void FxCacheWriteAccess(uint16_t vAddress)
       GSU.vCacheFlags |= 1 << ((vAddress & 0x1f0) >> 4);
 }
 
-void FxFlushCache()
+void FxFlushCache(void)
 {
    GSU.vCacheFlags = 0;
    GSU.vCacheBaseReg = 0;
    GSU.bCacheActive = false;
 }
 
-void fx_flushCache()
+void fx_flushCache(void)
 {
    GSU.vCacheFlags = 0;
    GSU.bCacheActive = false;
@@ -36,7 +36,7 @@ void fx_updateRamBank(uint8_t Byte)
    GSU.pvRamBank = GSU.apvRamBank[Byte & 0x3];
 }
 
-static void fx_readRegisterSpaceForCheck()
+static void fx_readRegisterSpaceForCheck(void)
 {
    R15 = GSU.pvRegisters[30];
    R15 |= ((uint32_t) GSU.pvRegisters[31]) << 8;
@@ -45,7 +45,7 @@ static void fx_readRegisterSpaceForCheck()
    GSU.vPrgBankReg = (uint32_t) GSU.pvRegisters[GSU_PBR];
 }
 
-static void fx_readRegisterSpaceForUse()
+static void fx_readRegisterSpaceForUse(void)
 {
    static uint32_t avHeight[] = { 128, 160, 192, 256 };
    static uint32_t avMult[] = { 16, 32, 32, 64 };
@@ -107,12 +107,12 @@ static void fx_readRegisterSpaceForUse()
    fx_computeScreenPointers();
 }
 
-void fx_dirtySCBR()
+void fx_dirtySCBR(void)
 {
    GSU.vSCBRDirty = true;
 }
 
-void fx_computeScreenPointers()
+void fx_computeScreenPointers(void)
 {
    if (GSU.vMode != GSU.vPrevMode || GSU.vPrevScreenHeight != GSU.vScreenHeight || GSU.vSCBRDirty)
    {
@@ -237,7 +237,7 @@ void fx_computeScreenPointers()
    }
 }
 
-static void fx_writeRegisterSpaceAfterCheck()
+static void fx_writeRegisterSpaceAfterCheck(void)
 {
    GSU.pvRegisters[30] = (uint8_t) R15;
    GSU.pvRegisters[31] = (uint8_t) (R15 >> 8);
@@ -246,7 +246,7 @@ static void fx_writeRegisterSpaceAfterCheck()
    GSU.pvRegisters[GSU_PBR] = (uint8_t) GSU.vPrgBankReg;
 }
 
-static void fx_writeRegisterSpaceAfterUse()
+static void fx_writeRegisterSpaceAfterUse(void)
 {
    int32_t i;
    uint8_t* p = GSU.pvRegisters;
@@ -348,7 +348,7 @@ void FxReset(FxInit_s* psFxInfo)
    fx_readRegisterSpaceForUse();
 }
 
-static bool fx_checkStartAddress()
+static bool fx_checkStartAddress(void)
 {
    /* Check if we start inside the cache */
    if (GSU.bCacheActive && R15 >= GSU.vCacheBaseReg && R15 < (GSU.vCacheBaseReg + 512))
@@ -406,38 +406,38 @@ int32_t FxEmulate(uint32_t nInstructions)
 }
 
 /* Errors */
-int32_t FxGetErrorCode()
+int32_t FxGetErrorCode(void)
 {
    return GSU.vErrorCode;
 }
 
-int32_t FxGetIllegalAddress()
+int32_t FxGetIllegalAddress(void)
 {
    return GSU.vIllegalAddress;
 }
 
 /* Access to internal registers */
-uint32_t FxGetColorRegister()
+uint32_t FxGetColorRegister(void)
 {
    return GSU.vColorReg & 0xff;
 }
 
-uint32_t FxGetPlotOptionRegister()
+uint32_t FxGetPlotOptionRegister(void)
 {
    return GSU.vPlotOptionReg & 0x1f;
 }
 
-uint32_t FxGetSourceRegisterIndex()
+uint32_t FxGetSourceRegisterIndex(void)
 {
    return GSU.pvSreg - GSU.avReg;
 }
 
-uint32_t FxGetDestinationRegisterIndex()
+uint32_t FxGetDestinationRegisterIndex(void)
 {
    return GSU.pvDreg - GSU.avReg;
 }
 
-uint8_t FxPipe()
+uint8_t FxPipe(void)
 {
    return GSU.vPipe;
 }

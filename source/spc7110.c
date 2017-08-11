@@ -28,7 +28,7 @@
 #endif
 
 const char* S9xGetFilename(const char*);
-char* osd_GetPackDir();
+char* osd_GetPackDir(void);
 //really not needed, but usually MS adds the _ to POSIX functions,
 //while *nix doesn't, so this was to "un-M$" the function.
 #define splitpath _splitpath
@@ -40,9 +40,9 @@ char* osd_GetPackDir();
 uint16_t cacheMegs = 5;
 
 //using function pointers to initialize cache management
-void (*CleanUp7110)() = NULL;
+void (*CleanUp7110)(void) = NULL;
 void (*LoadUp7110)(char*) = &SPC7110Load;
-void (*Copy7110)() = NULL;
+void (*Copy7110)(void) = NULL;
 
 //size and offset of the pack data
 //offset and size of reads from pack
@@ -77,10 +77,10 @@ char pfold[9];              // Hack variable for log naming (each game makes a d
 Pack7110* decompack = NULL; // Decompression pack uses a fair chunk of RAM, so dynalloc it.
 SPC7110Regs s7r;            // SPC7110 registers, about 33KB
 S7RTC rtc_f9;               // FEOEZ (and Shounen Jump no SHou) RTC
-void S9xUpdateRTC();        // S-RTC function hacked to work with the RTC
+void S9xUpdateRTC(void);        // S-RTC function hacked to work with the RTC
 
 //Emulate power on state
-void S9xSpc7110Init()
+void S9xSpc7110Init(void)
 {
    s7r.DataRomOffset = 0x00100000; //handy constant!
    s7r.DataRomSize = Memory.CalculatedSize - s7r.DataRomOffset;
@@ -140,7 +140,7 @@ void S9xSpc7110Init()
 }
 
 //full cache decompression routine (memcpy) Method 1
-void MovePackData()
+void MovePackData(void)
 {
    //log the last entry
    Data7110* log = &(decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
@@ -222,7 +222,7 @@ void MovePackData()
 
 // This is similar to the last function, but it keeps the last 5 accessed files open,
 // and reads the data directly. Method 2
-void ReadPackData()
+void ReadPackData(void)
 {
    static int32_t table_age_2;
    static int32_t table_age_3;
@@ -358,7 +358,7 @@ void ReadPackData()
 
 //Cache Method 3: some entries are cached, others are file handles.
 //use is_file to distinguish.
-void GetPackData()
+void GetPackData(void)
 {
    Data7110* log = &
                    (decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
@@ -1387,7 +1387,7 @@ int32_t S9xRTCDaysInMonth(int32_t month, int32_t year)
 /* Advance the RTC time                                                                 */
 /**********************************************************************************************/
 
-void  S9xUpdateRTC()
+void  S9xUpdateRTC(void)
 {
    time_t cur_systime;
    int32_t time_diff;
@@ -1745,7 +1745,7 @@ void SPC7110Grab(char* dirname)
 }
 
 //Cache 1 clean up function
-void Del7110Gfx()
+void Del7110Gfx(void)
 {
    int32_t i;
    if (Settings.SPC7110)
@@ -1770,7 +1770,7 @@ void Del7110Gfx()
 }
 
 //Cache2 cleanup function
-void Close7110Gfx()
+void Close7110Gfx(void)
 {
    int32_t i;
    if (Settings.SPC7110)
@@ -1795,7 +1795,7 @@ void Close7110Gfx()
 }
 
 //cache 3's clean-up code
-void Drop7110Gfx()
+void Drop7110Gfx(void)
 {
    int32_t i;
    if (Settings.SPC7110)
@@ -1828,7 +1828,7 @@ void Drop7110Gfx()
 }
 
 //emulate a reset.
-void S9xSpc7110Reset()
+void S9xSpc7110Reset(void)
 {
    s7r.reg4800 = 0;
    s7r.reg4801 = 0;
@@ -1886,7 +1886,7 @@ void S9xSpc7110Reset()
 //there's nothing really weird here, just
 //reading the old log, and writing a new one.
 //note the logs are explicitly little-endian, not host byte order.
-void Do7110Logging()
+void Do7110Logging(void)
 {
    uint8_t ent_temp;
    FILE* flog;

@@ -55,6 +55,6 @@ extern void fx_updateRamBank(uint8_t Byte);
 /* Return the number of bytes in an opcode */
 #define OPCODE_BYTES(op) ((((op) >= 0x05 && (op) <= 0xf) || ((op) >= 0xa0 && (op) <= 0xaf)) ? 2 : (((op) >= 0xf0) ? 3 : 1))
 
-extern void fx_computeScreenPointers();
+extern void fx_computeScreenPointers(void);
 
 #endif

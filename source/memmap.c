@@ -237,7 +237,7 @@ static char* Safe(const char* s)
 /* S9xInitMemory()                                                                                     */
 /* This function allocates and zeroes all the memory needed by the emulator                   */
 /**********************************************************************************************/
-bool S9xInitMemory()
+bool S9xInitMemory(void)
 {
    // DS2 DMA notes: These would do well to be allocated with 32 extra bytes
    // so they can be 32-byte aligned. [Neb]
@@ -288,7 +288,7 @@ bool S9xInitMemory()
    return true;
 }
 
-void S9xDeinitMemory()
+void S9xDeinitMemory(void)
 {
    if (Memory.RAM)
    {
@@ -569,9 +569,11 @@ bool LoadROM(
 #endif
       )
 {
+   int32_t hi_score, lo_score;
    int32_t TotalFileSize = 0;
    bool Interleaved = false;
    bool Tales = false;
+   const uint8_t* src;
 
    uint8_t* RomHeader = Memory.ROM;
    Memory.ExtendedFormat = NOPE;
@@ -594,7 +596,7 @@ again:
 
    Memory.HeaderCount = 0;
    TotalFileSize = game->size;
-   const uint8_t* src = game->data;
+   src = game->data;
    Memory.HeaderCount = 0;
 
    if ((((game->size & 0x1FFF) == 0x200) && !Settings.ForceNoHeader) || Settings.ForceHeader)
@@ -657,8 +659,8 @@ again:
    }
 #endif
 
-   int32_t hi_score = ScoreHiROM(true, 0);
-   int32_t lo_score = ScoreLoROM(true, 0);
+   hi_score = ScoreHiROM(true, 0);
+   lo_score = ScoreLoROM(true, 0);
 
    if (Memory.HeaderCount == 0 && !Settings.ForceNoHeader &&
        strncmp((char *) &Memory.ROM [0], "BANDAI SFC-ADX", 14) &&
@@ -933,13 +935,17 @@ again:
 }
 
 /* compatibility wrapper */
-void S9xDeinterleaveMode2()
+void S9xDeinterleaveMode2(void)
 {
    S9xDeinterleaveType2(true);
 }
 
 void S9xDeinterleaveType2(bool reset)
 {
+   uint32_t TmpAdj;
+   uint8_t *tmp;
+   uint8_t blocks [256];
+   int32_t i;
    int32_t nblocks = Memory.CalculatedSize >> 16;
    int32_t step = 64;
 
@@ -947,8 +953,6 @@ void S9xDeinterleaveType2(bool reset)
       step >>= 1;
 
    nblocks = step;
-   uint8_t blocks [256];
-   int32_t i;
 
    for (i = 0; i < nblocks * 2; i++)
    {
@@ -957,10 +961,9 @@ void S9xDeinterleaveType2(bool reset)
    }
 
 #ifdef DS2_DMA
-   uint32_t TmpAdj;
-   uint8_t* tmp = (uint8_t*) AlignedMalloc(0x10000, 32, &TmpAdj);
+   tmp = (uint8_t*) AlignedMalloc(0x10000, 32, &TmpAdj);
 #else
-   uint8_t* tmp = (uint8_t*) malloc(0x10000);
+   tmp = (uint8_t*) malloc(0x10000);
 #endif
 
    if (tmp)
@@ -975,6 +978,7 @@ void S9xDeinterleaveType2(bool reset)
          {
             if (blocks [j] == i)
             {
+               uint8_t b;
 #ifdef DS2_DMA
                ds2_DMAcopy_32Byte(2 /* channel: emu internal */, tmp,
                                   &Memory.ROM [blocks [j] * 0x10000], 0x10000);
@@ -1001,7 +1005,7 @@ void S9xDeinterleaveType2(bool reset)
                // memmove converted: Different mallocs [Neb]
                memcpy(&Memory.ROM [blocks [i] * 0x10000], tmp, 0x10000);
 #endif
-               uint8_t b = blocks [j];
+               b          = blocks [j];
                blocks [j] = blocks [i];
                blocks [i] = b;
                break;
@@ -1382,7 +1386,7 @@ void InitROM(bool Interleaved)
                           Settings.ForceInterleaved2 = false;
 }
 
-void FixROMSpeed()
+void FixROMSpeed(void)
 {
    int32_t c;
 
@@ -1394,7 +1398,7 @@ void FixROMSpeed()
          Memory.MemorySpeed [c] = (uint8_t) CPU.FastROMSpeed;
 }
 
-void ResetSpeedMap()
+void ResetSpeedMap(void)
 {
    int32_t i;
    memset(Memory.MemorySpeed, SLOW_ONE_CYCLE, 0x1000);
@@ -1444,7 +1448,7 @@ void map_index(uint32_t bank_s, uint32_t bank_e, uint32_t addr_s, uint32_t addr_
    }
 }
 
-void WriteProtectROM()
+void WriteProtectROM(void)
 {
    // memmove converted: Different mallocs [Neb]
    memcpy(Memory.WriteMap, Memory.Map, sizeof(Memory.Map));
@@ -1454,7 +1458,7 @@ void WriteProtectROM()
          Memory.WriteMap [c] = (uint8_t*) MAP_NONE;
 }
 
-void MapRAM()
+void MapRAM(void)
 {
    int32_t c, i;
 
@@ -1510,7 +1514,7 @@ void MapRAM()
    WriteProtectROM();
 }
 
-void MapExtraRAM()
+void MapExtraRAM(void)
 {
    int32_t c;
 
@@ -1544,7 +1548,7 @@ void MapExtraRAM()
    }
 }
 
-void LoROMMap()
+void LoROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -1607,7 +1611,7 @@ void LoROMMap()
    WriteProtectROM();
 }
 
-void DSPMap()
+void DSPMap(void)
 {
    switch (Settings.DSP)
    {
@@ -1647,7 +1651,7 @@ void DSPMap()
    }
 }
 
-void SetaDSPMap()
+void SetaDSPMap(void)
 {
    int32_t c;
    int32_t i;
@@ -1709,7 +1713,7 @@ void SetaDSPMap()
    WriteProtectROM();
 }
 
-void HiROMMap()
+void HiROMMap(void)
 {
    int32_t i;
    int32_t c;
@@ -1856,7 +1860,7 @@ void TalesROMMap(bool Interleaved)
    WriteProtectROM();
 }
 
-void AlphaROMMap()
+void AlphaROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -1899,7 +1903,7 @@ void AlphaROMMap()
    WriteProtectROM();
 }
 
-void DetectSuperFxRamSize()
+void DetectSuperFxRamSize(void)
 {
    if (Memory.ROM[0x7FDA] == 0x33)
       Memory.SRAMSize = Memory.ROM[0x7FBD];
@@ -1909,7 +1913,7 @@ void DetectSuperFxRamSize()
       Memory.SRAMSize = 5;
 }
 
-void SuperFXROMMap()
+void SuperFXROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -1995,7 +1999,7 @@ void SuperFXROMMap()
    WriteProtectROM();
 }
 
-void SA1ROMMap()
+void SA1ROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2074,7 +2078,7 @@ void SA1ROMMap()
    Memory.BWRAM = Memory.SRAM;
 }
 
-void LoROM24MBSMap()
+void LoROM24MBSMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2140,7 +2144,7 @@ void LoROM24MBSMap()
    WriteProtectROM();
 }
 
-void SufamiTurboLoROMMap()
+void SufamiTurboLoROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2210,7 +2214,7 @@ void SufamiTurboLoROMMap()
    WriteProtectROM();
 }
 
-void SRAM512KLoROMMap()
+void SRAM512KLoROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2253,7 +2257,7 @@ void SRAM512KLoROMMap()
    WriteProtectROM();
 }
 
-void SRAM1024KLoROMMap()
+void SRAM1024KLoROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2283,7 +2287,7 @@ void SRAM1024KLoROMMap()
    WriteProtectROM();
 }
 
-void CapcomProtectLoROMMap()
+void CapcomProtectLoROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2409,7 +2413,7 @@ void JumboLoROMMap(bool Interleaved)
    WriteProtectROM();
 }
 
-void SPC7110HiROMMap()
+void SPC7110HiROMMap(void)
 {
    int32_t c;
    int32_t i;
@@ -2505,22 +2509,22 @@ void SPC7110Sram(uint8_t newstate)
    }
 }
 
-const char* TVStandard()
+const char* TVStandard(void)
 {
    return Settings.PAL ? "PAL" : "NTSC";
 }
 
-const char* Speed()
+const char* Speed(void)
 {
    return Memory.ROMSpeed & 0x10 ? "120ns" : "200ns";
 }
 
-const char* MapType()
+const char* MapType(void)
 {
    return Memory.HiROM ? "HiROM" : "LoROM";
 }
 
-const char* StaticRAMSize()
+const char* StaticRAMSize(void)
 {
    static char tmp [20];
 
@@ -2530,7 +2534,7 @@ const char* StaticRAMSize()
    return tmp;
 }
 
-const char* Size()
+const char* Size(void)
 {
    static char tmp [20];
 
@@ -2540,7 +2544,7 @@ const char* Size()
    return tmp;
 }
 
-const char* KartContents()
+const char* KartContents(void)
 {
    static char tmp [30];
    static const char* CoPro [16] =
@@ -2592,14 +2596,14 @@ const char* KartContents()
    return tmp;
 }
 
-const char* MapMode()
+const char* MapMode(void)
 {
    static char tmp [4];
    sprintf(tmp, "%02x", Memory.ROMSpeed & ~0x10);
    return tmp;
 }
 
-const char* ROMID()
+const char* ROMID(void)
 {
    return Memory.ROMId;
 }
@@ -2614,7 +2618,7 @@ bool match_id(const char* str)
    return strncmp(Memory.ROMId, str, strlen(str)) == 0;
 }
 
-void ApplyROMFixes()
+void ApplyROMFixes(void)
 {
    /*
    HACKS NSRT can fix that we hadn't detected before.

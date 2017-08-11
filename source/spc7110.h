@@ -7,23 +7,23 @@
 #define DECOMP_BUFFER_SIZE 0x10000
 
 extern void (*LoadUp7110)(char*);
-extern void (*CleanUp7110)();
-extern void (*Copy7110)();
+extern void (*CleanUp7110)(void);
+extern void (*Copy7110)(void);
 
 extern uint16_t cacheMegs;
 
-void Del7110Gfx();
-void Close7110Gfx();
-void Drop7110Gfx();
+void Del7110Gfx(void);
+void Close7110Gfx(void);
+void Drop7110Gfx(void);
 uint8_t S9xGetSPC7110(uint16_t Address);
 uint8_t S9xGetSPC7110Byte(uint32_t Address);
 uint8_t* Get7110BasePtr(uint32_t);
 void S9xSetSPC7110(uint8_t data, uint16_t Address);
-void S9xSpc7110Init();
+void S9xSpc7110Init(void);
 uint8_t* Get7110BasePtr(uint32_t);
-void S9xSpc7110Reset();
-void S9xUpdateRTC();
-void Do7110Logging();
+void S9xSpc7110Reset(void);
+void S9xUpdateRTC(void);
+void Do7110Logging(void);
 int32_t S9xRTCDaysInMonth(int32_t month, int32_t year);
 
 //These are platform-dependant functions, but should work on

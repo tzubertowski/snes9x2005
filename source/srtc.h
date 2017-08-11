@@ -45,13 +45,13 @@ typedef struct
 
 extern SRTC_DATA rtc;
 
-void    S9xUpdateSrtcTime();
+void    S9xUpdateSrtcTime(void);
 void    S9xSetSRTC(uint8_t data, uint16_t Address);
 uint8_t S9xGetSRTC(uint16_t Address);
-void    S9xSRTCPreSaveState();
-void    S9xSRTCPostLoadState();
-void    S9xResetSRTC();
-void    S9xHardResetSRTC();
+void    S9xSRTCPreSaveState(void);
+void    S9xSRTCPostLoadState(void);
+void    S9xResetSRTC(void);
+void    S9xHardResetSRTC(void);
 
 #define SRTC_SRAM_PAD (4 + 8 + 1 + MAX_RTC_INDEX)
 

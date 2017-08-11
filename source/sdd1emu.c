@@ -1,5 +1,7 @@
 #include "../copyright"
 
+#include <retro_inline.h>
+
 /* S-DD1 decompressor
  *
  * Based on code and documentation by Andreas Naive, who deserves a great deal
@@ -84,7 +86,7 @@ static uint8_t run_table[128] =
    113, 49,  81,  17,  97,  33,  65,  1
 };
 
-static inline uint8_t GetCodeword(int32_t bits)
+static INLINE uint8_t GetCodeword(int32_t bits)
 {
    uint8_t tmp;
 
@@ -108,7 +110,7 @@ static inline uint8_t GetCodeword(int32_t bits)
    return run_table[tmp];
 }
 
-static inline uint8_t GolombGetBit(int32_t code_size)
+static INLINE uint8_t GolombGetBit(int32_t code_size)
 {
    if (!bit_ctr[code_size]) bit_ctr[code_size] = GetCodeword(code_size);
    bit_ctr[code_size]--;
@@ -120,7 +122,7 @@ static inline uint8_t GolombGetBit(int32_t code_size)
    return (bit_ctr[code_size] == 0) ? 1 : 0;
 }
 
-static inline uint8_t ProbGetBit(uint8_t context)
+static INLINE uint8_t ProbGetBit(uint8_t context)
 {
    uint8_t state = context_states[context];
    uint8_t bit = GolombGetBit(evolution_table[state].code_size);
@@ -146,7 +148,7 @@ static inline uint8_t ProbGetBit(uint8_t context)
    return context_MPS[context]; /* we know bit is 0, so don't bother xoring */
 }
 
-static inline uint8_t GetBit(uint8_t cur_bitplane)
+static INLINE uint8_t GetBit(uint8_t cur_bitplane)
 {
    uint8_t bit;
 

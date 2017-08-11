@@ -55,13 +55,13 @@ static int32_t month_keys[12] = { 1, 4, 4, 0, 2, 5, 0, 3, 6, 1, 4, 6 };
  *********************************************************************************************/
 
 
-void S9xResetSRTC()
+void S9xResetSRTC(void)
 {
    rtc.index = -1;
    rtc.mode = MODE_READ;
 }
 
-void S9xHardResetSRTC()
+void S9xHardResetSRTC(void)
 {
    memset(&rtc, 0, sizeof(rtc));
    rtc.index = -1;
@@ -74,10 +74,10 @@ void S9xHardResetSRTC()
 }
 
 /**********************************************************************************************/
-/* S9xSRTCComputeDayOfWeek()                                                                  */
+/* S9xSRTCComputeDayOfWeek(void)                                                                  */
 /* Return 0-6 for Sunday-Saturday                                                             */
 /**********************************************************************************************/
-uint32_t S9xSRTCComputeDayOfWeek()
+uint32_t S9xSRTCComputeDayOfWeek(void)
 {
    uint32_t year = rtc.data[10] * 10 + rtc.data[9];
    uint32_t month = rtc.data[8];
@@ -102,7 +102,7 @@ uint32_t S9xSRTCComputeDayOfWeek()
 
 
 /**********************************************************************************************/
-/* S9xSRTCDaysInMonth()                                                                       */
+/* S9xSRTCDaysInMonth(void)                                                                       */
 /* Return the number of days in a specific month for a certain year                           */
 /**********************************************************************************************/
 int32_t S9xSRTCDaysInMmonth(int32_t month, int32_t year)
@@ -140,10 +140,10 @@ int32_t S9xSRTCDaysInMmonth(int32_t month, int32_t year)
 
 
 /**********************************************************************************************/
-/* S9xUpdateSrtcTime()                                                                        */
+/* S9xUpdateSrtcTime(void)                                                                        */
 /* Advance the  S-RTC time if counting is enabled                                             */
 /**********************************************************************************************/
-void  S9xUpdateSrtcTime()
+void  S9xUpdateSrtcTime(void)
 {
    time_t  cur_systime;
    int32_t time_diff;
@@ -280,7 +280,7 @@ void  S9xUpdateSrtcTime()
 
 
 /**********************************************************************************************/
-/* S9xSetSRTC()                                                                               */
+/* S9xSetSRTC(void)                                                                               */
 /* This function sends data to the S-RTC used in Dai Kaijyu Monogatari II                     */
 /**********************************************************************************************/
 void S9xSetSRTC(uint8_t data, uint16_t Address)
@@ -382,7 +382,7 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
 }
 
 /**********************************************************************************************/
-/* S9xGetSRTC()                                                                               */
+/* S9xGetSRTC(void)                                                                               */
 /* This function retrieves data from the S-RTC                                                */
 /**********************************************************************************************/
 uint8_t S9xGetSRTC(uint16_t Address)
