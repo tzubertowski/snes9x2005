@@ -662,7 +662,7 @@ bool retro_unserialize(const void* data, size_t size)
    S9xReset();
 #ifndef USE_BLARGG_APU
    uint8_t* IAPU_RAM_current = IAPU.RAM;
-   uint32_t IAPU_RAM_offset;
+   uintptr_t IAPU_RAM_offset;
 #endif
    memcpy(&CPU, buffer, sizeof(CPU));
    buffer += sizeof(CPU);

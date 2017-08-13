@@ -81,8 +81,6 @@ uint32_t KeyOffERate         [10];
 #define VOL_DIV16 0x0080
 #define ENVX_SHIFT 24
 
-void DecodeBlockAsm(int8_t*, int16_t*, int32_t*, int32_t*);
-
 // F is channel's current frequency and M is the 16-bit modulation waveform
 // from the previous channel multiplied by the current envelope volume level.
 #define PITCH_MOD(F,M) ((F) * ((((uint32_t) (M)) + 0x800000) >> 16) >> 7)
@@ -211,7 +209,8 @@ void S9xSetEchoFeedback(int32_t feedback)
 
 void S9xSetEchoDelay(int32_t delay)
 {
-   SoundData.echo_buffer_size = (delay * so.playback_rate) >> 5;
+   SoundData.echo_buffer_size = (512 * delay * so.playback_rate) / 32000;
+   SoundData.echo_buffer_size <<= 1;
    if (SoundData.echo_buffer_size)
       SoundData.echo_ptr %= SoundData.echo_buffer_size;
    else
@@ -323,20 +322,6 @@ void S9xSetEnvelopeHeight(int32_t channel, int32_t level)
       S9xAPUSetEndOfSample(channel, ch);
 }
 
-int32_t S9xGetEnvelopeHeight(int32_t channel)
-{
-   if ((Settings.SoundEnvelopeHeightReading ||
-         SNESGameFixes.SoundEnvelopeHeightReading2) &&
-         SoundData.channels[channel].state != SOUND_SILENT &&
-         SoundData.channels[channel].state != SOUND_GAIN)
-      return SoundData.channels[channel].envx;
-
-   if (SNESGameFixes.SoundEnvelopeHeightReading2 && SoundData.channels[channel].state != SOUND_SILENT)
-      return SoundData.channels[channel].envx;
-
-   return 0;
-}
-
 void S9xSetSoundFrequency(int32_t channel, int32_t hertz) // hertz [0~64K<<1]
 {
    if (SoundData.channels[channel].type == SOUND_NOISE)
@@ -362,7 +347,7 @@ void DecodeBlock(Channel* ch)
    uint8_t shift;
    int8_t sample1, sample2;
 
-   if (ch->block_pointer >= 0x10000 - 9)
+   if (ch->block_pointer > 0x10000 - 9)
    {
       ch->last_block = true;
       ch->loop = false;

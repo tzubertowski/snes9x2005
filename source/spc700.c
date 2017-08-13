@@ -28,9 +28,9 @@ uint32_t Work32 = 0;
        if (IAPU.WaitCounter == 0) \
        { \
           if (!ICPU.CPUExecuting) \
-          APU.Cycles = CPU.Cycles = CPU.NextEvent; \
+             APU.Cycles = CPU.Cycles = CPU.NextEvent; \
           else \
-          IAPU.APUExecuting = false; \
+             IAPU.APUExecuting = false; \
        } \
        else if (IAPU.WaitCounter >= 2) \
           IAPU.WaitCounter = 1; \

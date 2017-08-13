@@ -61,8 +61,8 @@ void S9xResetAPU()
    APU.Cycles = 0;
    IAPU.Registers.YA.W = 0;
    IAPU.Registers.X = 0;
-   IAPU.Registers.S = 0xff;
-   IAPU.Registers.P = 0;
+   IAPU.Registers.S = 0xef;
+   IAPU.Registers.P = 0x02;
    S9xAPUUnpackStatus();
    IAPU.Registers.PC = 0;
    IAPU.APUExecuting = Settings.APUEnabled;
@@ -211,7 +211,8 @@ void S9xSetAPUDSP(uint8_t byte)
                   APU.DSP [APU_ENDX] &= ~mask;
                   S9xPlaySample(c);
                }
-               else KeyOn |= mask;
+               else
+                  KeyOn |= mask;
             }
          }
       }
@@ -244,7 +245,7 @@ void S9xSetAPUDSP(uint8_t byte)
    case APU_P_LOW + 0x50:
    case APU_P_LOW + 0x60:
    case APU_P_LOW + 0x70:
-      S9xSetSoundHertz(reg >> 4, (((int16_t) byte + ((int16_t) APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) / 8);
+      S9xSetSoundHertz(reg >> 4, ((((int16_t) byte + ((int16_t) APU.DSP [reg + 1] << 8)) & FREQUENCY_MASK) * 32000) >> 12);
       break;
    case APU_P_HIGH + 0x00:
    case APU_P_HIGH + 0x10:
@@ -442,7 +443,10 @@ uint8_t S9xGetAPUDSP()
    case APU_ENVX + 0x50:
    case APU_ENVX + 0x60:
    case APU_ENVX + 0x70:
-      return 0;
+   {
+      int32_t eVal = SoundData.channels [reg >> 4].envx;
+      return (eVal > 0x7F) ? 0x7F : (eVal < 0 ? 0 : eVal);
+   }
    default:
       break;
    }
