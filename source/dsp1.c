@@ -21,10 +21,7 @@ void S9xResetDSP1()
 
 uint8_t S9xGetDSP(uint16_t address)
 {
-   uint8_t t;
-
-   t = (*GetDSP)(address);
-   return (t);
+   return (*GetDSP)(address);
 }
 
 void S9xSetDSP(uint8_t byte, uint16_t address)
@@ -48,8 +45,7 @@ void DSP1SetByte(uint8_t byte, uint16_t address)
          DSP1.in_index = 0;
          DSP1.waiting4command = false;
          DSP1.first_parameter = true;
-         // Mario Kart uses 0x00, 0x02, 0x06, 0x0c, 0x28, 0x0a
-         switch (byte)
+         switch (byte) // Mario Kart uses 0x00, 0x02, 0x06, 0x0c, 0x28, 0x0a
          {
          case 0x07:
          case 0x0a:
@@ -628,8 +624,7 @@ void DSP2SetByte(uint8_t byte, uint16_t address)
    uint32_t temp;
 #endif
 
-   if ((address & 0xf000) == 0x6000 ||
-         (address >= 0x8000 && address < 0xc000))
+   if ((address & 0xf000) == 0x6000 || (address >= 0x8000 && address < 0xc000))
    {
       if (DSP1.waiting4command)
       {

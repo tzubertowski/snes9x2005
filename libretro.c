@@ -340,7 +340,7 @@ void retro_init(void)
 void retro_deinit(void)
 {
    if (Settings.SPC7110)
-      (*CleanUp7110)();
+      Del7110Gfx();
 
    S9xDeinitGFX();
    S9xDeinitDisplay();
@@ -499,50 +499,6 @@ void JustifierButtons(uint32_t* justifiers)
 {
 }
 
-char* osd_GetPackDir()
-{
-   static char filename[_MAX_PATH];
-   memset(filename, 0, _MAX_PATH);
-
-   char dir [_MAX_DIR + 1];
-   char drive [_MAX_DRIVE + 1];
-   char name [_MAX_FNAME + 1];
-   char ext [_MAX_EXT + 1];
-   _splitpath(Memory.ROMFilename, drive, dir, name, ext);
-   _makepath(filename, drive, dir, NULL, NULL);
-
-   if (!strncmp((char*)&Memory.ROM [0xffc0], "SUPER POWER LEAG 4   ", 21))
-   {
-      if (getenv("SPL4PACK"))
-         return getenv("SPL4PACK");
-      else
-         strcat(filename, "/SPL4-SP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "MOMOTETSU HAPPY      ", 21))
-   {
-      if (getenv("MDHPACK"))
-         return getenv("MDHPACK");
-      else
-         strcat(filename, "/SMHT-SP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "HU TENGAI MAKYO ZERO ", 21))
-   {
-      if (getenv("FEOEZPACK"))
-         return getenv("FEOEZPACK");
-      else
-         strcat(filename, "/FEOEZSP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "JUMP TENGAIMAKYO ZERO", 21))
-   {
-      if (getenv("SJNSPACK"))
-         return getenv("SJNSPACK");
-      else
-         strcat(filename, "/SJUMPSP7");
-   }
-   else strcat(filename, "/MISC-SP7");
-   return filename;
-}
-
 unsigned retro_get_region()
 {
    return Settings.PAL ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
@@ -577,11 +533,9 @@ void retro_get_system_av_info(struct retro_system_av_info* info)
    info->geometry.aspect_ratio = 4.0 / 3.0;
 
    if (!Settings.PAL)
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE *
-                          SNES_MAX_NTSC_VCOUNTER));
+      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_NTSC_VCOUNTER));
    else
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE *
-                          SNES_MAX_PAL_VCOUNTER));
+      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_PAL_VCOUNTER));
 
    info->timing.sample_rate = samplerate;
 }
@@ -597,18 +551,16 @@ size_t retro_serialize_size(void)
    return sizeof(CPU) + sizeof(ICPU) + sizeof(PPU) + sizeof(DMA) +
           0x10000 + 0x20000 + 0x20000 + 0x8000 +
 #ifndef USE_BLARGG_APU
-          sizeof(APU) + sizeof(IAPU) + 0x10000
+          sizeof(APU) + sizeof(IAPU) + 0x10000 +
 #else
-          SPC_SAVE_STATE_BLOCK_SIZE
+          SPC_SAVE_STATE_BLOCK_SIZE +
 #endif
-          + sizeof(SA1) +
-          sizeof(s7r) + sizeof(rtc_f9);
+          sizeof(SA1) + sizeof(s7r) + sizeof(rtc_f9);
 }
 
 bool retro_serialize(void* data, size_t size)
 {
    int32_t i;
-
    S9xUpdateRTC();
    S9xSRTCPreSaveState();
    uint8_t* buffer = data;
@@ -721,7 +673,6 @@ bool retro_unserialize(const void* data, size_t size)
    S9xUnpackStatus();
    S9xFixCycles();
    S9xReschedule();
-
    return true;
 }
 

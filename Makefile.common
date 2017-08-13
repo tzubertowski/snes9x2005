@@ -40,6 +40,7 @@ SOURCES_C := \
 	$(CORE_DIR)/soundux.c \
 	$(CORE_DIR)/spc700.c \
 	$(CORE_DIR)/spc7110.c \
+	$(CORE_DIR)/spc7110dec.c \
 	$(CORE_DIR)/srtc.c \
 	$(CORE_DIR)/tile.c \
 	$(CORE_DIR)/apu_blargg.c \

@@ -199,9 +199,6 @@ inline void S9xSetByte(uint8_t Byte, uint32_t Address)
    case MAP_C4:
       S9xSetC4(Byte, Address & 0xffff);
       return;
-   case MAP_SPC7110_DRAM:
-      s7r.bank50[(Address & 0xffff)] = (uint8_t) Byte;
-      break;
    case MAP_OBC_RAM:
       SetOBC1(Byte, Address & 0xFFFF);
       return;
@@ -297,10 +294,6 @@ inline void S9xSetWord(uint16_t Word, uint32_t Address)
 #endif
       CPU.SRAMModified = true;
       return;
-   case MAP_SPC7110_DRAM:
-      s7r.bank50[(Address & 0xffff)] = (uint8_t) Word;
-      s7r.bank50[((Address + 1) & 0xffff)] = (uint8_t) Word;
-      break;
    case MAP_SA1RAM:
       *(Memory.SRAM + (Address & 0xffff)) = (uint8_t) Word;
       *(Memory.SRAM + ((Address + 1) & 0xffff)) = (uint8_t)(Word >> 8);

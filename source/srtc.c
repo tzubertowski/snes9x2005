@@ -34,12 +34,10 @@ Index Description     Range (nibble)
 
 SRTC_DATA           rtc;
 
-
 static int32_t month_keys[12] = { 1, 4, 4, 0, 2, 5, 0, 3, 6, 1, 4, 6 };
 
 
 /*********************************************************************************************
- *
  * Note, if you are doing a save state for this game:
  *
  * On save:
@@ -50,8 +48,6 @@ static int32_t month_keys[12] = { 1, 4, 4, 0, 2, 5, 0, 3, 6, 1, 4, 6 };
  *
  * restore the rtc data structure
  *      rtc.system_timestamp = time (NULL);
- *
- *
  *********************************************************************************************/
 
 
@@ -68,9 +64,7 @@ void S9xHardResetSRTC(void)
    rtc.mode = MODE_READ;
    rtc.count_enable = false;
    rtc.needs_init = true;
-
-   // Get system timestamp
-   rtc.system_timestamp = time(NULL);
+   rtc.system_timestamp = time(NULL); // Get system timestamp
 }
 
 /**********************************************************************************************/
@@ -83,10 +77,9 @@ uint32_t S9xSRTCComputeDayOfWeek(void)
    uint32_t month = rtc.data[8];
    uint32_t day = rtc.data[7] * 10 + rtc.data[6];
    uint32_t day_of_week;
-
    year += (rtc.data[11] - 9) * 100;
 
-   // Range check the month for valid array indicies
+   // Range check the month for valid array indices
    if (month > 12)
       month = 1;
 
@@ -102,48 +95,37 @@ uint32_t S9xSRTCComputeDayOfWeek(void)
 
 
 /**********************************************************************************************/
-/* S9xSRTCDaysInMonth(void)                                                                       */
+/* S9xSRTCDaysInMonth()                                                                       */
 /* Return the number of days in a specific month for a certain year                           */
 /**********************************************************************************************/
 int32_t S9xSRTCDaysInMmonth(int32_t month, int32_t year)
 {
-   int32_t mdays;
-
-   switch (month)
+   switch(month)
    {
-   case 2:
-      if ((year % 4 == 0))        // DKJM2 only uses 199x - 22xx
-         mdays = 29;
-      else
-         mdays = 28;
-      break;
-
-   case 4:
-   case 6:
-   case 9:
-   case 11:
-      mdays = 30;
-      break;
-
-   default: // months 1,3,5,7,8,10,12
-      mdays = 31;
-      break;
+      case 2:
+         if((year % 4 == 0)) /* DKJM2 only uses 199x - 22xx */
+            return 29;
+         return 28;
+      case 4:
+      case 6:
+      case 9:
+      case 11:
+         return 30;
+      default:
+         return 31;
    }
-
-   return mdays;
 }
 
-
-#define DAYTICKS (60*60*24)
-#define HOURTICKS (60*60)
-#define MINUTETICKS 60
+#define MINUTETICKS  60
+#define HOURTICKS   (60 * MINUTETICKS)
+#define DAYTICKS    (24 * HOURTICKS)
 
 
 /**********************************************************************************************/
-/* S9xUpdateSrtcTime(void)                                                                        */
+/* S9xUpdateSrtcTime()                                                                        */
 /* Advance the  S-RTC time if counting is enabled                                             */
 /**********************************************************************************************/
-void  S9xUpdateSrtcTime(void)
+void S9xUpdateSrtcTime(void)
 {
    time_t  cur_systime;
    int32_t time_diff;
@@ -160,12 +142,6 @@ void  S9xUpdateSrtcTime(void)
    if (rtc.count_enable && !rtc.needs_init)
    {
       cur_systime = time(NULL);
-
-      // This method assumes one time_t clock tick is one second
-      //        which should work on PCs and GNU systems.
-      //        If your tick interval is different adjust the
-      //        DAYTICK, HOURTICK, and MINUTETICK defines
-
       time_diff = (int32_t)(cur_systime - rtc.system_timestamp);
       rtc.system_timestamp = cur_systime;
 
@@ -178,7 +154,6 @@ void  S9xUpdateSrtcTime(void)
          int32_t month;
          int32_t year;
          int32_t temp_days;
-
          int32_t year_hundreds;
          int32_t year_tens;
          int32_t year_ones;
@@ -238,7 +213,6 @@ void  S9xUpdateSrtcTime(void)
          {
             year =  rtc.data[10] * 10 + rtc.data[9];
             year += (1000 + rtc.data[11] * 100);
-
             month = rtc.data[8];
             days += (rtc.data[7] * 10 + rtc.data[6]);
             while (days > (temp_days = S9xSRTCDaysInMmonth(month, year)))
@@ -256,7 +230,6 @@ void  S9xUpdateSrtcTime(void)
             year_ones = year_tens % 10;
             year_tens /= 10;
             year_hundreds = (year - 1000) / 100;
-
             rtc.data[6] = days % 10;
             rtc.data[7] = days / 10;
             rtc.data[8] = month;
@@ -272,7 +245,6 @@ void  S9xUpdateSrtcTime(void)
          rtc.data[3] = minutes / 10;
          rtc.data[4] = hours % 10;
          rtc.data[5] = hours / 10;
-
          return;
       }
    }
@@ -287,25 +259,18 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
 {
    data &= 0x0F; // Data is only 4-bits, mask out unused bits.
 
-   if (data >= 0xD)
+   if (data >= 0xD) // It's an RTC command
    {
-      // It's an RTC command
-
       switch (data)
       {
       case 0xD:
          rtc.mode = MODE_READ;
          rtc.index = -1;
          break;
-
       case 0xE:
          rtc.mode = MODE_COMMAND;
          break;
-
       default:
-         // Ignore the write if it's an 0xF ???
-         // Probably should switch back to read mode -- but this
-         //  sequence never occurs in DKJM2
          break;
       }
 
@@ -318,14 +283,10 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
       {
          rtc.data[rtc.index++] = data;
 
-         if (rtc.index == MAX_RTC_INDEX)
+         if (rtc.index == MAX_RTC_INDEX) // We have all the data for the RTC load
          {
-            // We have all the data for the RTC load
-
-            rtc.system_timestamp = time(NULL);    // Get local system time
-
-            // Get the day of the week
-            rtc.data[rtc.index++] = S9xSRTCComputeDayOfWeek();
+            rtc.system_timestamp = time(NULL); // Get local system time
+            rtc.data[rtc.index++] = S9xSRTCComputeDayOfWeek(); // Get the day of the week
 
             // Start RTC counting again
             rtc.count_enable = true;
@@ -334,55 +295,32 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
 
          return;
       }
-      else
-      {
-         // Attempting to write too much data
-         // error(); // ignore??
-      }
    }
    else if (rtc.mode == MODE_COMMAND)
    {
       switch (data)
       {
       case COMMAND_CLEAR_RTC:
-         // Disable RTC counter
-         rtc.count_enable = false;
-
+         rtc.count_enable = false; // Disable RTC counter
          memset(rtc.data, 0, MAX_RTC_INDEX + 1);
          rtc.index = -1;
          rtc.mode = MODE_COMMAND_DONE;
          break;
       case COMMAND_LOAD_RTC:
-         // Disable RTC counter
-         rtc.count_enable = false;
-
+         rtc.count_enable = false; // Disable RTC counter
          rtc.index = 0;  // Setup for writing
          rtc.mode = MODE_LOAD_RTC;
          break;
       default:
-         rtc.mode = MODE_COMMAND_DONE;
-         // unrecognized command - need to implement.
+         rtc.mode = MODE_COMMAND_DONE; // unrecognized command - need to implement.
       }
 
       return;
    }
-   else
-   {
-      if (rtc.mode == MODE_READ)
-      {
-         // Attempting to write while in read mode. Ignore.
-      }
-
-      if (rtc.mode == MODE_COMMAND_DONE)
-      {
-         // Maybe this isn't an error.  Maybe we should kick off
-         // a new E command.  But is this valid?
-      }
-   }
 }
 
 /**********************************************************************************************/
-/* S9xGetSRTC(void)                                                                               */
+/* S9xGetSRTC()                                                                               */
 /* This function retrieves data from the S-RTC                                                */
 /**********************************************************************************************/
 uint8_t S9xGetSRTC(uint16_t Address)
@@ -391,20 +329,17 @@ uint8_t S9xGetSRTC(uint16_t Address)
    {
       if (rtc.index < 0)
       {
-         S9xUpdateSrtcTime();    // Only update it if the game reads it
+         S9xUpdateSrtcTime(); // Only update it if the game reads it
          rtc.index++;
-         return (0x0f);          // Send start marker.
+         return 0x0f; // Send start marker.
       }
       else if (rtc.index > MAX_RTC_INDEX)
       {
-         rtc.index = -1;         // Setup for next set of reads
-         return (0x0f);          // Data done marker.
+         rtc.index = -1; // Setup for next set of reads
+         return 0x0f; // Data done marker.
       }
       else
-      {
-         // Feed out the data
-         return rtc.data[rtc.index++];
-      }
+         return rtc.data[rtc.index++]; // Feed out the data
    }
    else
       return 0x0;
@@ -415,8 +350,8 @@ void S9xSRTCPreSaveState()
    if (Settings.SRTC)
    {
       S9xUpdateSrtcTime();
-
       int32_t s = Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0;
+
       if (s > 0x20000)
          s = 0x20000;
 
