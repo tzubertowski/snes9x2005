@@ -22,32 +22,33 @@ static INLINE void SetZN8(uint8_t Work)
 static INLINE void ADC8(void)
 {
    uint8_t Work8 = S9xGetByte(OpAddress);
-
    if (CheckDecimal())
    {
-      uint8_t Ans8;
-      uint8_t A1 = (ICPU.Registers.A.W) & 0x0f;
-      uint8_t A2 = (ICPU.Registers.A.W) & 0xf0;
-      uint8_t W1 = Work8 & 0x0f;
-      uint8_t W2 = Work8 & 0xf0;
+      int8_t Ans8;
+      uint8_t A1 = (ICPU.Registers.A.W) & 0xf;
+      uint8_t A2 = (ICPU.Registers.A.W >> 4) & 0xf;
+      uint8_t W1 = Work8 & 0xf;
+      uint8_t W2 = (Work8 >> 4) & 0xf;
 
       A1 += W1 + CheckCarry();
-      if (A1 >= 0x0a)
+      if (A1 > 9)
       {
-         A1 -= 0x0a;
-         A2 += 0x10;
+         A1 -= 10;
+         A1 &= 0xf;
+         A2++;
       }
 
       A2 += W2;
-      if (A2 >= 0xa0)
+      if (A2 > 9)
       {
-         A2 -= 0xa0;
+         A2 -= 10;
+         A2 &= 0xf;
          SetCarry();
       }
       else
          ClearCarry();
 
-      Ans8 = A2 | A1;
+      Ans8 = (A2 << 4) | A1;
       if (~(ICPU.Registers.AL ^ Work8) & (Work8 ^ Ans8) & 0x80)
          SetOverflow();
       else
@@ -56,7 +57,7 @@ static INLINE void ADC8(void)
    }
    else
    {
-      uint16_t Ans16 = ICPU.Registers.AL + Work8 + CheckCarry();
+      int16_t Ans16 = ICPU.Registers.AL + Work8 + CheckCarry();
       ICPU._Carry = Ans16 > 0xff;
       if (~(ICPU.Registers.AL ^ Work8) & (Work8 ^ (uint8_t) Ans16) & 0x80)
          SetOverflow();
@@ -70,50 +71,53 @@ static INLINE void ADC8(void)
 static INLINE void ADC16(void)
 {
    uint16_t Work16 = S9xGetWord(OpAddress);
-
    if (CheckDecimal())
    {
       uint16_t Ans16;
-      uint16_t A1 = ICPU.Registers.A.W & 0x000f;
-      uint16_t A2 = ICPU.Registers.A.W & 0x00f0;
-      uint16_t A3 = ICPU.Registers.A.W & 0x0f00;
-      uint16_t A4 = ICPU.Registers.A.W & 0xf000;
-      uint16_t W1 = Work16 & 0x000f;
-      uint16_t W2 = Work16 & 0x00f0;
-      uint16_t W3 = Work16 & 0x0f00;
-      uint16_t W4 = Work16 & 0xf000;
+      uint8_t A1 = (ICPU.Registers.A.W) & 0xf;
+      uint8_t A2 = (ICPU.Registers.A.W >> 4) & 0xf;
+      uint8_t A3 = (ICPU.Registers.A.W >> 8) & 0xf;
+      uint8_t A4 = (ICPU.Registers.A.W >> 12) & 0xf;
+      uint8_t W1 = Work16 & 0xf;
+      uint8_t W2 = (Work16 >> 4) & 0xf;
+      uint8_t W3 = (Work16 >> 8) & 0xf;
+      uint8_t W4 = (Work16 >> 12) & 0xf;
 
       A1 += W1 + CheckCarry();
-      if (A1 >= 0x000a)
+      if (A1 > 9)
       {
-         A1 -= 0x000a;
-         A2 += 0x0010;
+         A1 -= 10;
+         A1 &= 0xf;
+         A2++;
       }
 
       A2 += W2;
-      if (A2 >= 0x00a0)
+      if (A2 > 9)
       {
-         A2 -= 0x00a0;
-         A3 += 0x0100;
+         A2 -= 10;
+         A2 &= 0xf;
+         A3++;
       }
 
       A3 += W3;
-      if (A3 >= 0x0a00)
+      if (A3 > 9)
       {
-         A3 -= 0x0a00;
-         A4 += 0x1000;
+         A3 -= 10;
+         A3 &= 0xf;
+         A4++;
       }
 
       A4 += W4;
-      if (A4 >= 0xa000)
+      if (A4 > 9)
       {
-         A4 -= 0xa000;
+         A4 -= 10;
+         A4 &= 0xf;
          SetCarry();
       }
       else
          ClearCarry();
 
-      Ans16 = A4 | A3 | A2 | A1;
+      Ans16 = (A4 << 12) | (A3 << 8) | (A2 << 4) | (A1);
       if (~(ICPU.Registers.A.W ^ Work16) & (Work16 ^ Ans16) & 0x8000)
          SetOverflow();
       else
@@ -562,51 +566,46 @@ static INLINE void ROR8(void)
 static INLINE void SBC16(void)
 {
    uint16_t Work16 = S9xGetWord(OpAddress);
-
    if (CheckDecimal())
    {
       uint16_t Ans16;
-      uint16_t A1 = ICPU.Registers.A.W & 0x000f;
-      uint16_t A2 = ICPU.Registers.A.W & 0x00f0;
-      uint16_t A3 = ICPU.Registers.A.W & 0x0f00;
-      uint16_t A4 = ICPU.Registers.A.W & 0xf000;
-      uint16_t W1 = Work16 & 0x000f;
-      uint16_t W2 = Work16 & 0x00f0;
-      uint16_t W3 = Work16 & 0x0f00;
-      uint16_t W4 = Work16 & 0xf000;
+      uint8_t A1 = (ICPU.Registers.A.W) & 0xf;
+      uint8_t A2 = (ICPU.Registers.A.W >> 4) & 0xf;
+      uint8_t A3 = (ICPU.Registers.A.W >> 8) & 0xf;
+      uint8_t A4 = (ICPU.Registers.A.W >> 12) & 0xf;
+      uint8_t W1 = Work16 & 0xf;
+      uint8_t W2 = (Work16 >> 4) & 0xf;
+      uint8_t W3 = (Work16 >> 8) & 0xf;
+      uint8_t W4 = (Work16 >> 12) & 0xf;
 
       A1 -= W1 + !CheckCarry();
       A2 -= W2;
       A3 -= W3;
       A4 -= W4;
-      if (A1 > 0x000f)
+      if (A1 > 9)
       {
-         A1 += 0x000a;
-         A1 &= 0x000f;
-         A2 -= 0x0010;
+         A1 += 10;
+         A2--;
       }
-      if (A2 > 0x00f0)
+      if (A2 > 9)
       {
-         A2 += 0x00a0;
-         A2 &= 0x00f0;
-         A3 -= 0x0100;
+         A2 += 10;
+         A3--;
       }
-      if (A3 > 0x0f00)
+      if (A3 > 9)
       {
-         A3 += 0x0a00;
-         A3 &= 0x0f00;
-         A4 -= 0x1000;
+         A3 += 10;
+         A4--;
       }
-      if (A4 > 0xf000)
+      if (A4 > 9)
       {
-         A4 += 0xa000;
-         A4 &= 0xf000;
+         A4 += 10;
          ClearCarry();
       }
       else
          SetCarry();
 
-      Ans16 = A4 | A3 | A2 | A1;
+      Ans16 = (A4 << 12) | (A3 << 8) | (A2 << 4) | (A1);
       if ((ICPU.Registers.A.W ^ Work16) & (ICPU.Registers.A.W ^ Ans16) & 0x8000)
          SetOverflow();
       else
@@ -632,29 +631,27 @@ static INLINE void SBC8(void)
    if (CheckDecimal())
    {
       uint8_t Ans8;
-      uint8_t A1 = ICPU.Registers.A.W & 0x0f;
-      uint8_t A2 = ICPU.Registers.A.W & 0xf0;
-      uint8_t W1 = Work8 & 0x0f;
-      uint8_t W2 = Work8 & 0xf0;
+      uint8_t A1 = (ICPU.Registers.A.W) & 0xf;
+      uint8_t A2 = (ICPU.Registers.A.W >> 4) & 0xf;
+      uint8_t W1 = Work8 & 0xf;
+      uint8_t W2 = (Work8 >> 4) & 0xf;
 
       A1 -= W1 + !CheckCarry();
       A2 -= W2;
-      if (A1 > 0x0f)
+      if (A1 > 9)
       {
-         A1 += 0x0a;
-         A1 &= 0x0f;
-         A2 -= 0x10;
+         A1 += 10;
+         A2--;
       }
-      if (A2 > 0xf0)
+      if (A2 > 9)
       {
-         A2 += 0xa0;
-         A2 &= 0xf0;
+         A2 += 10;
          ClearCarry();
       }
       else
          SetCarry();
 
-      Ans8 = A2 | A1;
+      Ans8 = (A2 << 4) | A1;
       if ((ICPU.Registers.AL ^ Work8) & (ICPU.Registers.AL ^ Ans8) & 0x80)
          SetOverflow();
       else
