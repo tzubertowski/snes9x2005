@@ -406,49 +406,49 @@ static void Op0AM0(void)
 
 static void Op06M1(void)
 {
-   Direct(false);
+   Direct(true);
    ASL8();
 }
 
 static void Op06M0(void)
 {
-   Direct(false);
+   Direct(true);
    ASL16();
 }
 
 static void Op16M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ASL8();
 }
 
 static void Op16M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ASL16();
 }
 
 static void Op0EM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    ASL8();
 }
 
 static void Op0EM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    ASL16();
 }
 
 static void Op1EM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ASL8();
 }
 
 static void Op1EM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ASL16();
 }
 
@@ -829,49 +829,49 @@ static void Op3AM0(void)
 
 static void OpC6M1(void)
 {
-   Direct(false);
+   Direct(true);
    DEC8();
 }
 
 static void OpC6M0(void)
 {
-   Direct(false);
+   Direct(true);
    DEC16();
 }
 
 static void OpD6M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    DEC8();
 }
 
 static void OpD6M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    DEC16();
 }
 
 static void OpCEM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    DEC8();
 }
 
 static void OpCEM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    DEC16();
 }
 
 static void OpDEM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    DEC8();
 }
 
 static void OpDEM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    DEC16();
 }
 
@@ -1080,49 +1080,49 @@ static void Op1AM0(void)
 
 static void OpE6M1(void)
 {
-   Direct(false);
+   Direct(true);
    INC8();
 }
 
 static void OpE6M0(void)
 {
-   Direct(false);
+   Direct(true);
    INC16();
 }
 
 static void OpF6M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    INC8();
 }
 
 static void OpF6M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    INC16();
 }
 
 static void OpEEM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    INC8();
 }
 
 static void OpEEM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    INC16();
 }
 
 static void OpFEM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    INC8();
 }
 
 static void OpFEM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    INC16();
 }
 
@@ -1477,49 +1477,49 @@ static void Op4AM0(void)
 
 static void Op46M1(void)
 {
-   Direct(false);
+   Direct(true);
    LSR8();
 }
 
 static void Op46M0(void)
 {
-   Direct(false);
+   Direct(true);
    LSR16();
 }
 
 static void Op56M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    LSR8();
 }
 
 static void Op56M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    LSR16();
 }
 
 static void Op4EM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    LSR8();
 }
 
 static void Op4EM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    LSR16();
 }
 
 static void Op5EM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    LSR8();
 }
 
 static void Op5EM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    LSR16();
 }
 
@@ -1728,49 +1728,49 @@ static void Op2AM0(void)
 
 static void Op26M1(void)
 {
-   Direct(false);
+   Direct(true);
    ROL8();
 }
 
 static void Op26M0(void)
 {
-   Direct(false);
+   Direct(true);
    ROL16();
 }
 
 static void Op36M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ROL8();
 }
 
 static void Op36M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ROL16();
 }
 
 static void Op2EM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    ROL8();
 }
 
 static void Op2EM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    ROL16();
 }
 
 static void Op3EM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ROL8();
 }
 
 static void Op3EM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ROL16();
 }
 
@@ -1787,49 +1787,49 @@ static void Op6AM0(void)
 
 static void Op66M1(void)
 {
-   Direct(false);
+   Direct(true);
    ROR8();
 }
 
 static void Op66M0(void)
 {
-   Direct(false);
+   Direct(true);
    ROR16();
 }
 
 static void Op76M1(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ROR8();
 }
 
 static void Op76M0(void)
 {
-   DirectIndexedX(false);
+   DirectIndexedX(true);
    ROR16();
 }
 
 static void Op6EM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    ROR8();
 }
 
 static void Op6EM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    ROR16();
 }
 
 static void Op7EM1(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ROR8();
 }
 
 static void Op7EM0(void)
 {
-   AbsoluteIndexedX(false);
+   AbsoluteIndexedX(true);
    ROR16();
 }
 
@@ -2317,50 +2317,50 @@ static void Op9EM0(void)
 /* TRB */
 static void Op14M1(void)
 {
-   Direct(false);
+   Direct(true);
    TRB8();
 }
 
 static void Op14M0(void)
 {
-   Direct(false);
+   Direct(true);
    TRB16();
 }
 
 static void Op1CM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    TRB8();
 }
 
 static void Op1CM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    TRB16();
 }
 
 /* TSB */
 static void Op04M1(void)
 {
-   Direct(false);
+   Direct(true);
    TSB8();
 }
 
 static void Op04M0(void)
 {
-   Direct(false);
+   Direct(true);
    TSB16();
 }
 
 static void Op0CM1(void)
 {
-   Absolute(false);
+   Absolute(true);
    TSB8();
 }
 
 static void Op0CM0(void)
 {
-   Absolute(false);
+   Absolute(true);
    TSB16();
 }
 
