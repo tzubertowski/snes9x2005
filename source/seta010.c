@@ -36,7 +36,6 @@ uint8_t S9xGetST010(uint32_t Address)
 {
    if (!(Address & 0x80000))
       return 0x80;
-
    if ((Address & 0xFFF) == 0x20)
       return ST010.op_reg;
    if ((Address & 0xFFF) == 0x21)
@@ -257,7 +256,8 @@ void ST010_OP01(int16_t x0, int16_t y0, int16_t* x1, int16_t* y1, int16_t* Quadr
          *y1 >>= 1;
    }
 
-   if (*y1 == 0) *Quadrant += 0x4000;
+   if(*y1 == 0)
+      *Quadrant += 0x4000;
 
    *Theta = (ST010_ArcTan[*y1][*x1] << 8) ^ *Quadrant;
 }
@@ -284,13 +284,15 @@ void ST010_SortDrivers(uint16_t Positions, uint16_t Places[32], uint16_t Drivers
    bool Sorted;
    uint16_t Temp;
 
-   if (Positions > 1)
+   if(Positions > 1)
+   {
       do
       {
          Sorted = true;
          int32_t i;
-         for (i = 0; i < Positions - 1; i++)
-            if (Places[i] < Places[i + 1])
+         for(i = 0; i < Positions - 1; i++)
+         {
+            if(Places[i] < Places[i + 1])
             {
                Temp = Places[i + 1];
                Places[i + 1] = Places[i];
@@ -302,9 +304,10 @@ void ST010_SortDrivers(uint16_t Positions, uint16_t Places[32], uint16_t Drivers
 
                Sorted = false;
             }
+         }
          Positions--;
-      }
-      while (!Sorted);
+      } while(!Sorted);
+   }
 }
 
 #define ST010_WORD(offset) (Memory.SRAM[offset + 1] << 8) | Memory.SRAM[offset]
@@ -321,7 +324,8 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       ST010.op_reg = Byte;
    if ((Address & 0xFFF) == 0x21 && ST010.control_enable)
       ST010.execute = Byte;
-   else Memory.SRAM[Address & Memory.SRAMMask] = Byte;
+   else
+      Memory.SRAM[Address & Memory.SRAMMask] = Byte;
 
    if (ST010.execute & 0x80)
    {
@@ -462,7 +466,8 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
             Memory.SRAM[0x0250 + offset] = (uint8_t)(data);
             Memory.SRAM[0x0251 + offset] = (uint8_t)(data >> 8);
 
-            if (data) data = ~data;
+            if(data)
+               data = ~data;
 
             Memory.SRAM[0x03b0 + offset] = (uint8_t)(data);
             Memory.SRAM[0x03b1 + offset] = (uint8_t)(data >> 8);
@@ -618,49 +623,45 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
             wrap = true;
          }
 
-         uint16_t old_speed;
+         uint16_t old_speed = speed;
 
-         old_speed = speed;
-
-         // special case
-         if (ABS(o1 - rot) == 0x8000)
+         if (ABS(o1 - rot) == 0x8000) // special case
             speed = 0x100;
-         // slow down for sharp curves
-         else if (ABS(o1 - rot) >= 0x1000)
+         else if (ABS(o1 - rot) >= 0x1000) // slow down for sharp curves
          {
             uint32_t slow = ABS(o1 - rot);
             slow >>= 4; // scaling
             speed -= slow;
          }
-         // otherwise accelerate
-         else
+         else // otherwise accelerate
          {
             speed += accel;
             if (speed > speed_max)
-            {
-               // clip speed
-               speed = speed_max;
-            }
+               speed = speed_max; // clip speed
          }
 
          // prevent negative/positive overflow
          if (ABS(old_speed - speed) > 0x8000)
          {
-            if (old_speed < speed) speed = 0;
-            else speed = 0xff00;
+            if(old_speed < speed)
+               speed = 0;
+            else
+               speed = 0xff00;
          }
 
          // adjust direction by so many degrees
          // be careful of negative adjustments
-         if ((o1 > rot && (o1 - rot) > 0x80) ||
-               (o1 < rot && (rot - o1) >= 0x80))
+         if((o1 > rot && (o1 - rot) > 0x80) || (o1 < rot && (rot - o1) >= 0x80))
          {
-            if (o1 < rot) rot -= 0x280;
-            else if (o1 > rot) rot += 0x280;
+            if(o1 < rot)
+               rot -= 0x280;
+            else if(o1 > rot)
+               rot += 0x280;
          }
 
-         // turn off wrapping
-         if (wrap) rot -= 0x8000;
+         /* turn off wrapping */
+         if(wrap)
+            rot -= 0x8000;
 
          // now check the distances (store for later)
          dx = (xpos_max << 16) - xpos;
@@ -669,8 +670,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          dy >>= 16;
 
          // if we're in so many units of the target, signal it
-         if ((system && (dy <= 6 && dy >= -8) && (dx <= 126 && dx >= -128)) ||
-               (!system && (dx <= 6 && dx >= -8) && (dy <= 126 && dy >= -128)))
+         if ((system && (dy <= 6 && dy >= -8) && (dx <= 126 && dx >= -128)) || (!system && (dx <= 6 && dx >= -8) && (dy <= 126 && dy >= -128)))
          {
             // announce our new destination and flag it
             xpos_max = xpos_new & 0x7FFF;

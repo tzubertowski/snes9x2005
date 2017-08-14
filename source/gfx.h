@@ -19,7 +19,6 @@ void S9xBuildDirectColourMaps(void);
 
 bool S9xInitGFX(void);
 void S9xDeinitGFX(void);
-bool S9xInitUpdate(void);
 
 typedef struct
 {
@@ -154,10 +153,7 @@ static INLINE uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
    else if (C2 == 0)
       return C1;
    else
-      return GFX.X2 [(((C1 & RGB_REMOVE_LOW_BITS_MASK) +
-                       (C2 & RGB_REMOVE_LOW_BITS_MASK)) >> 1) +
-                       (C1 & C2 & RGB_LOW_BITS_MASK)] |
-                      ((C1 ^ C2) & RGB_LOW_BITS_MASK);
+      return GFX.X2[(((C1 & RGB_REMOVE_LOW_BITS_MASK) + (C2 & RGB_REMOVE_LOW_BITS_MASK)) >> 1) + (C1 & C2 & RGB_LOW_BITS_MASK)] | ((C1 ^ C2) & RGB_LOW_BITS_MASK);
 }
 
 #define COLOR_ADD1_2(C1, C2) \
@@ -175,13 +171,7 @@ static INLINE uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
 GFX.ZERO [(((C1) | RGB_HI_BITS_MASKx2) - \
            ((C2) & RGB_REMOVE_LOW_BITS_MASK)) >> 1]
 
-typedef void (*NormalTileRenderer)(uint32_t Tile, int32_t Offset,
-                                   uint32_t StartLine, uint32_t LineCount);
-typedef void (*ClippedTileRenderer)(uint32_t Tile, int32_t Offset,
-                                    uint32_t StartPixel, uint32_t Width,
-                                    uint32_t StartLine, uint32_t LineCount);
-typedef void (*LargePixelRenderer)(uint32_t Tile, int32_t Offset,
-                                   uint32_t StartPixel, uint32_t Pixels,
-                                   uint32_t StartLine, uint32_t LineCount);
-
+typedef void (*NormalTileRenderer)(uint32_t Tile, int32_t Offset, uint32_t StartLine, uint32_t LineCount);
+typedef void (*ClippedTileRenderer)(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Width, uint32_t StartLine, uint32_t LineCount);
+typedef void (*LargePixelRenderer)(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Pixels, uint32_t StartLine, uint32_t LineCount);
 #endif

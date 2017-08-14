@@ -129,8 +129,7 @@ static int32_t ScoreHiROM(bool skip_header, int32_t romoff)
    if (Memory.ROM [o + 0xd4] == 0x20)
       score += 2;
 
-   if ((Memory.ROM [o + 0xdc] + (Memory.ROM [o + 0xdd] << 8) +
-         Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)) == 0xffff)
+   if ((Memory.ROM [o + 0xdc] + (Memory.ROM [o + 0xdd] << 8) + Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)) == 0xffff)
    {
       score += 2;
       if (0 != (Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)))
@@ -171,8 +170,7 @@ static int32_t ScoreLoROM(bool skip_header, int32_t romoff)
    if (Memory.ROM [o + 0xd5] == 0x23)
       score += 2;
 
-   if ((Memory.ROM [o + 0xdc] + (Memory.ROM [o + 0xdd] << 8) +
-         Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)) == 0xffff)
+   if ((Memory.ROM [o + 0xdc] + (Memory.ROM [o + 0xdd] << 8) + Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)) == 0xffff)
    {
       score += 2;
       if (0 != (Memory.ROM [o + 0xde] + (Memory.ROM [o + 0xdf] << 8)))
@@ -188,7 +186,7 @@ static int32_t ScoreLoROM(bool skip_header, int32_t romoff)
    if (!(Memory.ROM [o + 0xfd] & 0x80))
       score -= 6;
    if ((Memory.ROM [o + 0xfc] | (Memory.ROM [o + 0xfd] << 8)) > 0xFFB0)
-      score -= 2;//reduced per Cowering suggestion
+      score -= 2; //reduced per Cowering suggestion
    if ((1 << (Memory.ROM [o + 0xd7] - 7)) > 48)
       score -= 1;
    if (!AllASCII(&Memory.ROM [o + 0xb0], 6))
@@ -261,10 +259,7 @@ bool S9xInitMemory(void)
    IPPU.TileCached [TILE_4BIT] = (uint8_t*) calloc(MAX_4BIT_TILES, 1);
    IPPU.TileCached [TILE_8BIT] = (uint8_t*) calloc(MAX_8BIT_TILES, 1);
 
-   if (!Memory.RAM || !Memory.SRAM || !Memory.VRAM || !Memory.ROM || !Memory.BSRAM ||
-       !IPPU.TileCache [TILE_2BIT] || !IPPU.TileCache [TILE_4BIT] ||
-       !IPPU.TileCache [TILE_8BIT] || !IPPU.TileCached [TILE_2BIT] ||
-       !IPPU.TileCached [TILE_4BIT] ||  !IPPU.TileCached [TILE_8BIT])
+   if (!Memory.RAM || !Memory.SRAM || !Memory.VRAM || !Memory.ROM || !Memory.BSRAM || !IPPU.TileCache [TILE_2BIT] || !IPPU.TileCache [TILE_4BIT] || !IPPU.TileCache [TILE_8BIT] || !IPPU.TileCached [TILE_2BIT] || !IPPU.TileCached [TILE_4BIT] ||  !IPPU.TileCached [TILE_8BIT])
    {
       S9xDeinitMemory();
       return false;
@@ -272,15 +267,14 @@ bool S9xInitMemory(void)
 
    // FillRAM uses first 32K of ROM image area, otherwise space just
    // wasted. Might be read by the SuperFX code.
-
    Memory.FillRAM = Memory.ROM;
 
    // Add 0x8000 to ROM image pointer to stop SuperFX code accessing
    // unallocated memory (can cause crash on some ports).
-   Memory.ROM += 0x8000;  // still 32-byte aligned
+   Memory.ROM += 0x8000; // still 32-byte aligned
 
    SuperFX.pvRegisters = &Memory.FillRAM [0x3000];
-   SuperFX.nRamBanks = 2; // Most only use 1.  1=64KB, 2=128KB=1024Mb
+   SuperFX.nRamBanks = 2; // Most only use 1.  1 = 64KB, 2 = 128KB = 1024Mb
    SuperFX.pvRam = Memory.SRAM;
    SuperFX.nRomBanks = (2 * 1024 * 1024) / (32 * 1024);
    SuperFX.pvRom = (uint8_t*) Memory.ROM;
@@ -440,10 +434,7 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
    // Check if ROM image needs to be truncated
    ofs = ReadInt(patch_file, 3);
    if (ofs != -1 && ofs - offset < *rom_size)
-   {
-      // Need to truncate ROM image
-      *rom_size = ofs - offset;
-   }
+      *rom_size = ofs - offset; // Need to truncate ROM image
    fclose(patch_file);
    return;
 
@@ -485,13 +476,12 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 
    do
    {
+      int32_t calc_size;
       FileSize = fread(ptr, 1, maxsize + 0x200 - (ptr - Memory.ROM), ROMFile);
       fclose(ROMFile);
+      calc_size = FileSize & ~0x1FFF; // round to the lower 0x2000
 
-      int32_t calc_size = FileSize & ~0x1FFF; // round to the lower 0x2000
-
-      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) ||
-            Settings.ForceHeader)
+      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) || Settings.ForceHeader)
       {
          // memmove required: Overlapping addresses [Neb]
          // DS2 DMA notes: Can be split into 512-byte DMA blocks [Neb]
@@ -519,8 +509,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 
       // check for multi file roms
 
-      if ((ptr - Memory.ROM) < (maxsize + 0x200) &&
-            (isdigit(ext [0]) && ext [1] == 0 && ext [0] < '9'))
+      if ((ptr - Memory.ROM) < (maxsize + 0x200) && (isdigit(ext [0]) && ext [1] == 0 && ext [0] < '9'))
       {
          more = true;
          ext [0]++;
@@ -531,11 +520,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 #endif
          _makepath(fname, drive, dir, name, ext);
       }
-      else if (ptr - Memory.ROM < maxsize + 0x200 &&
-               (((len = strlen(name)) == 7 || len == 8) &&
-                strncasecmp(name, "sf", 2) == 0 &&
-                isdigit(name [2]) && isdigit(name [3]) && isdigit(name [4]) &&
-                isdigit(name [5]) && isalpha(name [len - 1])))
+      else if (ptr - Memory.ROM < maxsize + 0x200 && (((len = strlen(name)) == 7 || len == 8) && strncasecmp(name, "sf", 2) == 0 && isdigit(name [2]) && isdigit(name [3]) && isdigit(name [4]) && isdigit(name [5]) && isalpha(name [len - 1])))
       {
          more = true;
          name [len - 1]++;
@@ -578,11 +563,7 @@ bool LoadROM(
    uint8_t* RomHeader = Memory.ROM;
    Memory.ExtendedFormat = NOPE;
 
-   if (CleanUp7110 != NULL)
-      (*CleanUp7110)();
-
-   memset(&SNESGameFixes, 0, sizeof(SNESGameFixes));
-   SNESGameFixes.SRAMInitialValue = 0x60;
+   Del7110Gfx();
 
    memset(bytes0x2000, 0, 0x2000);
    CPU.TriedInterleavedMode2 = false;
@@ -631,7 +612,8 @@ again:
    // SNESAdvance speed hacks (from the speed-hacks branch of CatSFC)
    if (strncmp("YOSHI'S ISLAND", (char *) &Memory.ROM[0x7FC0], 14) == 0)
    {
-      Memory.ROM[0x0000F4] = 0x42; Memory.ROM[0x0000F5] = 0x3B;
+      Memory.ROM[0x0000F4] = 0x42;
+      Memory.ROM[0x0000F5] = 0x3B;
    }
    else if (strncmp("SUPER MARIOWORLD", (char *) &Memory.ROM[0x7FC0], 16) == 0)
    {
@@ -639,33 +621,47 @@ again:
    }
    else if (strncmp("ALL_STARS + WORLD", (char *) &Memory.ROM[0x7FC0], 17) == 0)
    {
-      Memory.ROM[0x0003D0] = 0x42; Memory.ROM[0x0003D1] = 0x5B;
-      Memory.ROM[0x018522] = 0x42; Memory.ROM[0x018523] = 0x5B;
-      Memory.ROM[0x02C804] = 0x42; Memory.ROM[0x02C805] = 0xBA;
-      Memory.ROM[0x0683B5] = 0x42; Memory.ROM[0x0683B6] = 0x5B;
-      Memory.ROM[0x0696AC] = 0x42; Memory.ROM[0x0696AD] = 0xBA;
-      Memory.ROM[0x089233] = 0xDB; Memory.ROM[0x089234] = 0x61;
-      Memory.ROM[0x0895DF] = 0x42; Memory.ROM[0x0895E0] = 0x5B;
-      Memory.ROM[0x0A7A9D] = 0x42; Memory.ROM[0x0A7A9E] = 0xBA;
-      Memory.ROM[0x1072E7] = 0x42; Memory.ROM[0x1072E8] = 0xD9;
-      Memory.ROM[0x107355] = 0x42; Memory.ROM[0x107356] = 0x5B;
-      Memory.ROM[0x1073CF] = 0x42; Memory.ROM[0x1073D0] = 0x5B;
-      Memory.ROM[0x107443] = 0x42; Memory.ROM[0x107444] = 0x5B;
-      Memory.ROM[0x107498] = 0x42; Memory.ROM[0x107499] = 0x5B;
-      Memory.ROM[0x107505] = 0x42; Memory.ROM[0x107506] = 0x5B;
-      Memory.ROM[0x107539] = 0x42; Memory.ROM[0x10753A] = 0x5B;
-      Memory.ROM[0x107563] = 0x42; Memory.ROM[0x107564] = 0x5B;
-      Memory.ROM[0x18041D] = 0x42; Memory.ROM[0x18041E] = 0x79;
+      Memory.ROM[0x0003D0] = 0x42;
+      Memory.ROM[0x0003D1] = 0x5B;
+      Memory.ROM[0x018522] = 0x42;
+      Memory.ROM[0x018523] = 0x5B;
+      Memory.ROM[0x02C804] = 0x42;
+      Memory.ROM[0x02C805] = 0xBA;
+      Memory.ROM[0x0683B5] = 0x42;
+      Memory.ROM[0x0683B6] = 0x5B;
+      Memory.ROM[0x0696AC] = 0x42;
+      Memory.ROM[0x0696AD] = 0xBA;
+      Memory.ROM[0x089233] = 0xDB;
+      Memory.ROM[0x089234] = 0x61;
+      Memory.ROM[0x0895DF] = 0x42;
+      Memory.ROM[0x0895E0] = 0x5B;
+      Memory.ROM[0x0A7A9D] = 0x42;
+      Memory.ROM[0x0A7A9E] = 0xBA;
+      Memory.ROM[0x1072E7] = 0x42;
+      Memory.ROM[0x1072E8] = 0xD9;
+      Memory.ROM[0x107355] = 0x42;
+      Memory.ROM[0x107356] = 0x5B;
+      Memory.ROM[0x1073CF] = 0x42;
+      Memory.ROM[0x1073D0] = 0x5B;
+      Memory.ROM[0x107443] = 0x42;
+      Memory.ROM[0x107444] = 0x5B;
+      Memory.ROM[0x107498] = 0x42;
+      Memory.ROM[0x107499] = 0x5B;
+      Memory.ROM[0x107505] = 0x42;
+      Memory.ROM[0x107506] = 0x5B;
+      Memory.ROM[0x107539] = 0x42;
+      Memory.ROM[0x10753A] = 0x5B;
+      Memory.ROM[0x107563] = 0x42;
+      Memory.ROM[0x107564] = 0x5B;
+      Memory.ROM[0x18041D] = 0x42;
+      Memory.ROM[0x18041E] = 0x79;
    }
 #endif
 
    hi_score = ScoreHiROM(true, 0);
    lo_score = ScoreLoROM(true, 0);
 
-   if (Memory.HeaderCount == 0 && !Settings.ForceNoHeader &&
-       strncmp((char *) &Memory.ROM [0], "BANDAI SFC-ADX", 14) &&
-       ((hi_score > lo_score && ScoreHiROM(true, 0) > hi_score) ||
-       (hi_score <= lo_score && ScoreLoROM(true, 0) > lo_score)))
+   if (Memory.HeaderCount == 0 && !Settings.ForceNoHeader && strncmp((char *) &Memory.ROM [0], "BANDAI SFC-ADX", 14) && ((hi_score > lo_score && ScoreHiROM(true, 0) > hi_score) || (hi_score <= lo_score && ScoreLoROM(true, 0) > lo_score)))
    {
 #ifdef DS2_DMA
       __dcache_writeback_all();
@@ -695,11 +691,7 @@ again:
 
    //If both vectors are invalid, it's type 1 LoROM
 
-   if (Memory.ExtendedFormat == NOPE &&
-      strncmp ((char *) &Memory.ROM [0], "BANDAI SFC-ADX", 14) &&
-      ((Memory.ROM[0x7FFC] | (Memory.ROM[0x7FFD] << 8)) < 0x8000) &&
-      ((Memory.ROM[0xFFFC] | (Memory.ROM[0xFFFD] << 8)) < 0x8000) &&
-      !Settings.ForceInterleaved)
+   if(Memory.ExtendedFormat == NOPE && strncmp((char *) &Memory.ROM[0], "BANDAI SFC-ADX", 14) && ((Memory.ROM[0x7ffc] | (Memory.ROM[0x7ffd] << 8)) < 0x8000) && ((Memory.ROM[0xfffc] | (Memory.ROM[0xFffd] << 8)) < 0x8000) && !Settings.ForceInterleaved)
      S9xDeinterleaveType1(TotalFileSize, Memory.ROM);
 
    //CalculatedSize is now set, so rescore
@@ -715,7 +707,6 @@ again:
       swappedhirom = ScoreHiROM(false, 0x400000);
 
       //set swapped here.
-
       if (MAX(swappedlorom, swappedhirom) >= MAX(loromscore, hiromscore))
       {
          Memory.ExtendedFormat = BIGFIRST;
@@ -784,29 +775,24 @@ again:
        !Settings.ForceC4 &&
        !Settings.ForceNoC4 &&
        !Settings.ForceSDD1 &&
-       !Settings.ForceNoSDD1 &&
-       !Settings.ForceInterleaveGD24)
+       !Settings.ForceNoSDD1)
    {
       /* スーファミターボ BIOS読み込み */
-      if ((strncmp((char*) &Memory.ROM [0], "BANDAI SFC-ADX", 14) == 0) &&
-          !(strncmp((char*) &Memory.ROM [0x10], "SFC-ADX BACKUP", 14) == 0))
+      if ((strncmp((char*) &Memory.ROM [0], "BANDAI SFC-ADX", 14) == 0) && !(strncmp((char*) &Memory.ROM [0x10], "SFC-ADX BACKUP", 14) == 0))
       {
          Memory.LoROM = true;
          Memory.HiROM = false;
          Interleaved = false;
          Tales = false;
       }
-      else if (strncmp ((char *) &Memory.ROM [0x7fc0], "YUYU NO QUIZ DE GO!GO!", 22) == 0 ||
-               strncmp ((char *) &Memory.ROM [0x7fc0], "SP MOMOTAROU DENTETSU2", 22) == 0 ||
-               strncmp ((char *) &Memory.ROM [0x7fc0], "SUPER FORMATION SOCCE", 21) == 0)
+      else if (strncmp ((char *) &Memory.ROM [0x7fc0], "YUYU NO QUIZ DE GO!GO!", 22) == 0 || strncmp ((char *) &Memory.ROM [0x7fc0], "SP MOMOTAROU DENTETSU2", 22) == 0 || strncmp ((char *) &Memory.ROM [0x7fc0], "SUPER FORMATION SOCCE", 21) == 0)
       {
          Memory.LoROM = true;
          Memory.HiROM = false;
          Interleaved = false;
       }
       /* BS Zooっと麻雀 */
-      else if ((strncmp ((char *) &Memory.ROM [0xffc0], "Ｚｏｏっと麻雀！", 16) == 0)||
-               (strncmp ((char *) &Memory.ROM [0xffc0], "Zooっと麻雀!IVT", 15) == 0))
+      else if ((strncmp ((char *) &Memory.ROM [0xffc0], "Ｚｏｏっと麻雀！", 16) == 0)|| (strncmp ((char *) &Memory.ROM [0xffc0], "Zooっと麻雀!IVT", 15) == 0))
       {
          Memory.LoROM = false;
          Memory.HiROM = true;
@@ -889,7 +875,7 @@ again:
       }
       else if (Settings.ForceInterleaved2)
          S9xDeinterleaveType2(false);
-      else if (Settings.ForceInterleaveGD24 && Memory.CalculatedSize == 0x300000)
+      else if (Memory.CalculatedSize == 0x300000)
       {
          bool t = Memory.LoROM;
 
@@ -910,8 +896,7 @@ again:
       hi_score = ScoreHiROM(false, 0);
       lo_score = ScoreLoROM(false, 0);
 
-      if ((Memory.HiROM && (lo_score >= hi_score || hi_score < 0)) ||
-          (Memory.LoROM && (hi_score > lo_score || lo_score < 0)))
+      if ((Memory.HiROM && (lo_score >= hi_score || hi_score < 0)) || (Memory.LoROM && (hi_score > lo_score || lo_score < 0)))
       {
          if (retry_count == 0)
          {
@@ -956,8 +941,7 @@ void S9xDeinterleaveType2(bool reset)
 
    for (i = 0; i < nblocks * 2; i++)
    {
-      blocks [i] = (i & ~0xF) | ((i & 3) << 2) |
-                   ((i & 12) >> 2);
+      blocks [i] = (i & ~0xF) | ((i & 3) << 2) | ((i & 12) >> 2);
    }
 
 #ifdef DS2_DMA
@@ -980,28 +964,20 @@ void S9xDeinterleaveType2(bool reset)
             {
                uint8_t b;
 #ifdef DS2_DMA
-               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, tmp,
-                                  &Memory.ROM [blocks [j] * 0x10000], 0x10000);
+               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, tmp, &Memory.ROM [blocks [j] * 0x10000], 0x10000);
                ds2_DMA_wait(2);
                ds2_DMA_stop(2);
-
-               ds2_DMAcopy_32Byte(2 /* channel: emu internal */,
-                                  &Memory.ROM [blocks [j] * 0x10000],
-                                  &Memory.ROM [blocks [i] * 0x10000], 0x10000);
+               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, &Memory.ROM [blocks [j] * 0x10000], &Memory.ROM [blocks [i] * 0x10000], 0x10000);
                ds2_DMA_wait(2);
                ds2_DMA_stop(2);
-
-               ds2_DMAcopy_32Byte(2 /* channel: emu internal */,
-                                  &Memory.ROM [blocks [i] * 0x10000], tmp, 0x10000);
+               ds2_DMAcopy_32Byte(2 /* channel: emu internal */, &Memory.ROM [blocks [i] * 0x10000], tmp, 0x10000);
                ds2_DMA_wait(2);
                ds2_DMA_stop(2);
 #else
                // memmove converted: Different mallocs [Neb]
                memcpy(tmp, &Memory.ROM [blocks [j] * 0x10000], 0x10000);
-
                // memmove converted: Different addresses, or identical if blocks[i] == blocks[j] [Neb]
-               memcpy(&Memory.ROM [blocks [j] * 0x10000],
-                      &Memory.ROM [blocks [i] * 0x10000], 0x10000);
+               memcpy(&Memory.ROM [blocks [j] * 0x10000], &Memory.ROM [blocks [i] * 0x10000], 0x10000);
                // memmove converted: Different mallocs [Neb]
                memcpy(&Memory.ROM [blocks [i] * 0x10000], tmp, 0x10000);
 #endif
@@ -1080,8 +1056,7 @@ void InitROM(bool Interleaved)
 
    ParseSNESHeader(RomHeader);
 
-   //// Detect and initialize chips
-   //// detection codes are compatible with NSRT
+   //// Detect and initialize chips - detection codes are compatible with NSRT
 
    // DSP1/2/3/4
    if (Memory.ROMType == 0x03)
@@ -1162,8 +1137,7 @@ void InitROM(bool Interleaved)
          Settings.SuperFX = !Settings.ForceNoSuperFX;
 
       //OBC1 hack ROM
-      if (strncmp(Memory.ROMName, "METAL COMBAT", 12) == 0 &&
-          Memory.ROMType == 0x13 && Memory.ROMSpeed == 0x42)
+      if (strncmp(Memory.ROMName, "METAL COMBAT", 12) == 0 && Memory.ROMType == 0x13 && Memory.ROMSpeed == 0x42)
       {
          Settings.OBC1 = true;
          Settings.SuperFX = Settings.ForceSuperFX;
@@ -1177,7 +1151,6 @@ void InitROM(bool Interleaved)
       if (((Memory.ROMType & 0xF0) == 0xF0) & ((Memory.ROMSpeed & 0x0F) != 5))
       {
          Memory.SRAMSize = 2;
-         SNESGameFixes.SRAMInitialValue = 0x00;
          if ((Memory.ROMType & 0x0F) == 6)
          {
             if (Memory.ROM[0x7FD7] == 0x09)
@@ -1197,9 +1170,7 @@ void InitROM(bool Interleaved)
             Settings.SETA = ST_018;
       }
       Settings.C4 = Settings.ForceC4;
-      if ((Memory.ROMType & 0xf0) == 0xf0 &&
-            (strncmp(Memory.ROMName, "MEGAMAN X", 9) == 0 ||
-             strncmp(Memory.ROMName, "ROCKMAN X", 9) == 0))
+      if ((Memory.ROMType & 0xf0) == 0xf0 && (strncmp(Memory.ROMName, "MEGAMAN X", 9) == 0 || strncmp(Memory.ROMName, "ROCKMAN X", 9) == 0))
          Settings.C4 = !Settings.ForceNoC4;
 
       if (Settings.SETA && Settings.SETA != ST_018)
@@ -1213,9 +1184,7 @@ void InitROM(bool Interleaved)
          Settings.C4 = false;
          Settings.SDD1 = false;
       }
-      else if (Settings.ForceSA1 ||
-              (!Settings.ForceNoSA1 && (Memory.ROMSpeed & ~0x10) == 0x23 &&
-              (Memory.ROMType & 0xf) > 3 && (Memory.ROMType & 0xf0) == 0x30))
+      else if (Settings.ForceSA1 || (!Settings.ForceNoSA1 && (Memory.ROMSpeed & ~0x10) == 0x23 && (Memory.ROMType & 0xf) > 3 && (Memory.ROMType & 0xf0) == 0x30))
       {
          Settings.SA1 = true;
          Settings.DSP1Master = false;
@@ -1227,14 +1196,12 @@ void InitROM(bool Interleaved)
          TalesROMMap(Interleaved);
       else if (Memory.ExtendedFormat != NOPE)
          JumboLoROMMap(Interleaved);
-      else if (strncmp((char*) &Memory.ROM [0x7fc0], "SOUND NOVEL-TCOOL", 17) == 0 ||
-               strncmp((char*) &Memory.ROM [0x7fc0], "DERBY STALLION 96", 17) == 0)
+      else if (strncmp((char*) &Memory.ROM [0x7fc0], "SOUND NOVEL-TCOOL", 17) == 0 || strncmp((char*) &Memory.ROM [0x7fc0], "DERBY STALLION 96", 17) == 0)
       {
          LoROM24MBSMap();
          Settings.DSP1Master = false;
       }
-      else if (strncmp((char*) &Memory.ROM [0x7fc0], "THOROUGHBRED BREEDER3", 21) == 0 ||
-               strncmp((char*) &Memory.ROM [0x7fc0], "RPG-TCOOL 2", 11) == 0)
+      else if (strncmp((char*) &Memory.ROM [0x7fc0], "THOROUGHBRED BREEDER3", 21) == 0 || strncmp((char*) &Memory.ROM [0x7fc0], "RPG-TCOOL 2", 11) == 0)
       {
          SRAM512KLoROMMap();
          Settings.DSP1Master = false;
@@ -1254,13 +1221,9 @@ void InitROM(bool Interleaved)
          Memory.SRAMSize = 5;
          SufamiTurboLoROMMap();
       }
-      else if ((strncmp((char *) &Memory.ROM [0x7fc0], "ROCKMAN X  ", 11) == 0)||
-               (strncmp((char *) &Memory.ROM [0x7fc0], "MEGAMAN X  ", 11) == 0)||
-               (strncmp((char *) &Memory.ROM [0x7fc0], "demon's blazon", 14) == 0)||
-               (strncmp((char *) &Memory.ROM [0x7fc0], "demon's crest", 13) == 0))
+      else if ((strncmp((char *) &Memory.ROM [0x7fc0], "ROCKMAN X  ", 11) == 0)|| (strncmp((char *) &Memory.ROM [0x7fc0], "MEGAMAN X  ", 11) == 0)|| (strncmp((char *) &Memory.ROM [0x7fc0], "demon's blazon", 14) == 0)|| (strncmp((char *) &Memory.ROM [0x7fc0], "demon's crest", 13) == 0))
          CapcomProtectLoROMMap();
-      else if ((Memory.ROMSpeed & ~0x10) == 0x22 &&
-               strncmp(Memory.ROMName, "Super Street Fighter", 20) != 0)
+      else if ((Memory.ROMSpeed & ~0x10) == 0x22 && strncmp(Memory.ROMName, "Super Street Fighter", 20) != 0)
          AlphaROMMap();
       else if (strncmp ((char *) &Memory.ROM [0x7fc0], "HITOMI3", 7) == 0)
       {
@@ -1276,7 +1239,7 @@ void InitROM(bool Interleaved)
 
    uint32_t sum1 = 0;
    uint32_t sum2 = 0;
-   if (0 == Memory.CalculatedChecksum)
+   if (!Memory.CalculatedChecksum)
    {
       int32_t power2 = 0;
       int32_t size = Memory.CalculatedSize;
@@ -1359,7 +1322,7 @@ void InitROM(bool Interleaved)
 #ifndef USE_BLARGG_APU
    IAPU.OneCycle = ONE_APU_CYCLE;
 #endif
-   Settings.Shutdown = Settings.ShutdownMaster;
+   Settings.Shutdown = true;
    ResetSpeedMap();
    ApplyROMFixes();
    sprintf(Memory.ROMName, "%s", Safe(Memory.ROMName));
@@ -1368,22 +1331,9 @@ void InitROM(bool Interleaved)
 
    fprintf(stderr,
            "\"%s\" [%s] %s, %s, Type: %s, Mode: %s, TV: %s, S-RAM: %s, ROMId: %s Company: %2.2s\n",
-           Memory.ROMName,
-           (Memory.ROMChecksum + Memory.ROMComplementChecksum != 0xffff ||
-            Memory.ROMChecksum != Memory.CalculatedChecksum) ? "bad checksum" : "checksum ok",
-           MapType(),
-           Size(),
-           KartContents(),
-           MapMode(),
-           TVStandard(),
-           StaticRAMSize(),
-           Memory.ROMId,
-           Memory.CompanyId);
+           Memory.ROMName, (Memory.ROMChecksum + Memory.ROMComplementChecksum != 0xffff || Memory.ROMChecksum != Memory.CalculatedChecksum) ? "bad checksum" : "checksum ok", MapType(), Size(), KartContents(), MapMode(), TVStandard(), StaticRAMSize(), Memory.ROMId, Memory.CompanyId);
 
-   Settings.ForceHeader = Settings.ForceHiROM = Settings.ForceLoROM =
-                          Settings.ForceInterleaved = Settings.ForceNoHeader =
-                          Settings.ForceNotInterleaved =
-                          Settings.ForceInterleaved2 = false;
+   Settings.ForceHeader = Settings.ForceHiROM = Settings.ForceLoROM = Settings.ForceInterleaved = Settings.ForceNoHeader = Settings.ForceNotInterleaved = Settings.ForceInterleaved2 = false;
 }
 
 void FixROMSpeed(void)
@@ -1694,8 +1644,7 @@ void SetaDSPMap(void)
    {
       for (i = 0; i < 0x08; i++)
       {
-         //where does the SETA chip access, anyway?
-         //please confirm this?
+         // Where does the SETA chip access, anyway? Please confirm this.
          Memory.Map[c + 0x80 + i] = (uint8_t*)MAP_SETA_DSP;
          Memory.BlockIsROM [c + 0x80 + i] = false;
          Memory.BlockIsRAM [c + 0x80 + i] = true;
@@ -1805,14 +1754,12 @@ void TalesROMMap(bool Interleaved)
       {
          Memory.Map [c + 6] = Memory.Map [c + 0x806] = MAP_HIROM_SRAM_OR_NONE;
          Memory.Map [c + 7] = Memory.Map [c + 0x807] = MAP_HIROM_SRAM_OR_NONE;
-         Memory.BlockIsRAM [6 + c] = Memory.BlockIsRAM [7 + c] =
-                                     Memory.BlockIsRAM [0x806 + c] = Memory.BlockIsRAM [0x807 + c] = true;
+         Memory.BlockIsRAM [6 + c] = Memory.BlockIsRAM [7 + c] = Memory.BlockIsRAM [0x806 + c] = Memory.BlockIsRAM [0x807 + c] = true;
       }
       else
       {
          Memory.Map [c + 6] = Memory.Map [c + 0x806] = (uint8_t*) MAP_NONE;
          Memory.Map [c + 7] = Memory.Map [c + 0x807] = (uint8_t*) MAP_NONE;
-
       }
       for (i = c + 8; i < c + 16; i++)
       {
@@ -1855,7 +1802,6 @@ void TalesROMMap(bool Interleaved)
    }
 
    Memory.CalculatedChecksum = sum & 0xFFFF;
-
    MapRAM();
    WriteProtectROM();
 }
@@ -1980,10 +1926,8 @@ void SuperFXROMMap(void)
    for (c = 0; c < 64; c++)
    {
 #ifdef DS2_DMA
-      ds2_DMAcopy_32Byte(2 /* channel: emu internal */, &ROM [0x200000 + c * 0x10000],
-                         &ROM [c * 0x8000], 0x8000);
-      ds2_DMAcopy_32Byte(3 /* channel: emu internal 2 */,
-                         &ROM [0x208000 + c * 0x10000], &ROM [c * 0x8000], 0x8000);
+      ds2_DMAcopy_32Byte(2 /* channel: emu internal */, &ROM [0x200000 + c * 0x10000], &ROM [c * 0x8000], 0x8000);
+      ds2_DMAcopy_32Byte(3 /* channel: emu internal 2 */, &ROM [0x208000 + c * 0x10000], &ROM [c * 0x8000], 0x8000);
       ds2_DMA_wait(2);
       ds2_DMA_wait(3);
       ds2_DMA_stop(2);
@@ -2408,7 +2352,6 @@ void JumboLoROMMap(bool Interleaved)
          sum += bank[l];
    }
    Memory.CalculatedChecksum = sum & 0xFFFF;
-
    MapRAM();
    WriteProtectROM();
 }
@@ -2727,38 +2670,15 @@ void ApplyROMFixes(void)
 #endif
 
    //Specific game fixes
-
-   Settings.StarfoxHack = match_na("STAR FOX") ||
-                          match_na("STAR WING");
-   Settings.WinterGold = match_na("FX SKIING NINTENDO 96") ||
-                         match_na("DIRT RACER") ||
-                         Settings.StarfoxHack;
-
-   if((match_na("LEGEND") && !Settings.PAL)||
-       match_na("King Arthurs World"))
-      SNESGameFixes.EchoOnlyOutput = true;
-
+   Settings.StarfoxHack = match_na("STAR FOX") || match_na("STAR WING");
+   Settings.WinterGold = match_na("FX SKIING NINTENDO 96") || match_na("DIRT RACER") || Settings.StarfoxHack;
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
-
-   //OAM hacks because we don't fully understand the
-   //behavior of the SNES.
-
-   if (match_na("\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0") ||   //Super Famista
-       match_na("\xBD\xB0\xCA\xDF\xB0\xCC\xA7\xD0\xBD\xC0 2") ||  //Super Famista 2
-       match_na("ZENKI TENCHIMEIDOU") ||
-       match_na("GANBA LEAGUE"))
-      SNESGameFixes.APU_OutPorts_ReturnValueFix = true;
-   else if (match_na("FURAI NO SIREN"))
-      SNESGameFixes.SoundEnvelopeHeightReading2 = true;
 
    //CPU timing hacks
    Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * Settings.CyclesPercentage) / 100;
 
    // A Couple of HDMA related hacks - Lantus
-   if ((match_na("SFX SUPERBUTOUDEN2")) ||
-         (match_na("ALIEN vs. PREDATOR")) ||
-         (match_na("STONE PROTECTORS")) ||
-         (match_na("SUPER BATTLETANK 2")))
+   if ((match_na("SFX SUPERBUTOUDEN2")) || (match_na("ALIEN vs. PREDATOR")) || (match_na("STONE PROTECTORS")) || (match_na("SUPER BATTLETANK 2")))
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 130) / 100;
    else if (match_na("HOME IMPROVEMENT"))
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 200) / 100;
@@ -2776,10 +2696,7 @@ void ApplyROMFixes(void)
    else if (match_na("\x0bd\x0da\x0b2\x0d4\x0b0\x0bd\x0de") &&
          Settings.CyclesPercentage == 100)
       Settings.H_Max = (SNES_CYCLES_PER_SCANLINE * 101) / 100;
-   else if (match_na("WILD TRAX") ||
-         match_na("STAR FOX 2") ||
-         match_na("YOSSY'S ISLAND") ||
-         match_na("YOSHI'S ISLAND"))
+   else if (match_na("WILD TRAX") || match_na("STAR FOX 2") || match_na("YOSSY'S ISLAND") || match_na("YOSHI'S ISLAND"))
       CPU.TriedInterleavedMode2 = true;
    // Start Trek: Deep Sleep 9
    else if (strncmp(Memory.ROMId, "A9D", 3) == 0 && Settings.CyclesPercentage == 100)
@@ -2969,14 +2886,7 @@ void ApplyROMFixes(void)
       bytes0x2000 [0xb18] = 0x4c;
       bytes0x2000 [0xb19] = 0x4b;
       bytes0x2000 [0xb1a] = 0xea;
-      SNESGameFixes.SRAMInitialValue = 0x6b;
    }
-
-   //sram value fixes
-   if (match_na("SUPER DRIFT OUT") ||
-         match_na("SATAN IS OUR FATHER!") ||
-         match_na("goemon 4"))
-      SNESGameFixes.SRAMInitialValue = 0x00;
 
    if(Settings.BS && Memory.LoROM &&
       match_na("F-ZERO") &&
@@ -3010,7 +2920,7 @@ static bool is_bsx(uint8_t *p) // p == "0xFFC0" or "0x7FC0" ROM offset pointer
 
    // Maker ID
    c = p[0x1a];
-   if ((c != 0x33) && (c != 0xff))   // 0x33 = Manufacturer: Nintendo
+   if ((c != 0x33) && (c != 0xff)) // 0x33 = Manufacturer: Nintendo
       return false;
 
    // Month, Day
@@ -3069,16 +2979,12 @@ static bool bs_name(uint8_t* p)
             return false;
       }
       //SJIS single byte char
-      else if((*p >= 0x20 && *p <= 0x7f) ||
-              (*p >= 0xa0 && *p <= 0xdf))
+      else if((*p >= 0x20 && *p <= 0x7f) || (*p >= 0xa0 && *p <= 0xdf))
          p++;
       //SJIS multi byte char
       else if(lcount >= 2)
       {
-         if(((*p >= 0x81 && *p <= 0x9f) ||
-            (*p >= 0xe0 && *p <= 0xfc)) &&
-            ((*(p + 1) >= 0x40 && *(p + 1) <= 0x7e) ||
-            (*(p + 1) >= 0x80 && *(p + 1) <= 0xfc)))
+         if(((*p >= 0x81 && *p <= 0x9f) || (*p >= 0xe0 && *p <= 0xfc)) && ((*(p + 1) >= 0x40 && *(p + 1) <= 0x7e) || (*(p + 1) >= 0x80 && *(p + 1) <= 0xfc)))
          {
             p += 2;
             lcount--;

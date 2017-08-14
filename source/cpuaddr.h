@@ -13,13 +13,13 @@ static INLINE void Immediate8(void)
    CPU.PC++;
 }
 
-static INLINE void Immediate16()
+static INLINE void Immediate16(void)
 {
    OpAddress = ICPU.ShiftedPB + CPU.PC - CPU.PCBase;
    CPU.PC += 2;
 }
 
-static INLINE void Relative()
+static INLINE void Relative(void)
 {
    int8_t Int8 = *CPU.PC++;
 #ifndef SA1_OPCODES
@@ -28,7 +28,7 @@ static INLINE void Relative()
    OpAddress = ((int32_t)(CPU.PC - CPU.PCBase) + Int8) & 0xffff;
 }
 
-static INLINE void RelativeLong()
+static INLINE void RelativeLong(void)
 {
 #ifdef FAST_LSB_WORD_ACCESS
    OpAddress = *(uint16_t*) CPU.PC;
@@ -152,9 +152,6 @@ static INLINE void DirectIndirectIndexed(bool read)
    if (read)
       OpenBus = (uint8_t)(OpAddress >> 8);
    OpAddress += ICPU.ShiftedDB + ICPU.Registers.Y.W;
-
-   // XXX: always add one if STA
-   // XXX: else Add one cycle if crosses page boundary
 }
 
 static INLINE void DirectIndirectIndexedLong(bool read)
@@ -221,8 +218,6 @@ static INLINE void AbsoluteIndexedX(bool read)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2;
 #endif
-   // XXX: always add one cycle for ROL, LSR, etc
-   // XXX: else is cross page boundary add one cycle
 }
 
 static INLINE void AbsoluteIndexedY(bool read)
@@ -238,8 +233,6 @@ static INLINE void AbsoluteIndexedY(bool read)
 #ifndef SA1_OPCODES
    CPU.Cycles += CPU.MemSpeedx2;
 #endif
-   // XXX: always add cycle for STA
-   // XXX: else is cross page boundary add one cycle
 }
 
 static INLINE void AbsoluteLongIndexedX(bool read)

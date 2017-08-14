@@ -146,7 +146,7 @@ int16_t Op00Multiplicand;
 int16_t Op00Multiplier;
 int16_t Op00Result;
 
-void DSPOp00()
+void DSPOp00(void)
 {
    Op00Result = Op00Multiplicand * Op00Multiplier >> 15;
 }
@@ -155,7 +155,7 @@ int16_t Op20Multiplicand;
 int16_t Op20Multiplier;
 int16_t Op20Result;
 
-void DSPOp20()
+void DSPOp20(void)
 {
    Op20Result = Op20Multiplicand * Op20Multiplier >> 15;
    Op20Result++;
@@ -181,7 +181,8 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
       // Step Two: Remove Sign
       if (Coefficient < 0)
       {
-         if (Coefficient < -32767) Coefficient = -32767;
+         if (Coefficient < -32767)
+            Coefficient = -32767;
          Coefficient = -Coefficient;
          Sign = -1;
       }
@@ -195,12 +196,15 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
 
       // Step Four: Special Case
       if (Coefficient == 0x4000)
-         if (Sign == 1) *iCoefficient = 0x7fff;
+      {
+         if (Sign == 1)
+            *iCoefficient = 0x7fff;
          else
          {
             *iCoefficient = -0x4000;
             Exponent--;
          }
+      }
       else
       {
          // Step Five: Initial Guess
@@ -217,7 +221,7 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
    }
 }
 
-void DSPOp10()
+void DSPOp10(void)
 {
    DSP1_Inverse(Op10Coefficient, Op10Exponent, &Op10CoefficientR, &Op10ExponentR);
 }
@@ -305,11 +309,13 @@ int16_t DSP1_Sin(int16_t Angle)
 
    if (Angle < 0)
    {
-      if (Angle == -32768) return 0;
+      if (Angle == -32768)
+         return 0;
       return -DSP1_Sin(-Angle);
    }
    S = DSP1_SinTable[Angle >> 8] + (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[0x40 + (Angle >> 8)] >> 15);
-   if (S > 32767) S = 32767;
+   if (S > 32767)
+      S = 32767;
    return (int16_t) S;
 }
 
@@ -319,11 +325,13 @@ int16_t DSP1_Cos(int16_t Angle)
 
    if (Angle < 0)
    {
-      if (Angle == -32768) return -32768;
+      if (Angle == -32768)
+         return -32768;
       Angle = -Angle;
    }
    S = DSP1_SinTable[0x40 + (Angle >> 8)] - (DSP1_MulTable[Angle & 0xff] * DSP1_SinTable[Angle >> 8] >> 15);
-   if (S < -32768) S = -32767;
+   if (S < -32768)
+      S = -32767;
    return (int16_t) S;
 }
 
@@ -333,17 +341,21 @@ void DSP1_Normalize(int16_t m, int16_t* Coefficient, int16_t* Exponent)
    int16_t e = 0;
 
    if (m < 0)
+   {
       while ((m & i) && i)
       {
          i >>= 1;
          e++;
       }
+   }
    else
+   {
       while (!(m & i) && i)
       {
          i >>= 1;
          e++;
       }
+   }
 
    if (e > 0)
       *Coefficient = m * DSP1ROM[0x21 + e] << 1;
@@ -361,17 +373,21 @@ void DSP1_NormalizeDouble(int32_t Product, int16_t* Coefficient, int16_t* Expone
    int16_t e = 0;
 
    if (m < 0)
+   {
       while ((m & i) && i)
       {
          i >>= 1;
          e++;
       }
+   }
    else
+   {
       while (!(m & i) && i)
       {
          i >>= 1;
          e++;
       }
+   }
 
    if (e > 0)
    {
@@ -384,17 +400,21 @@ void DSP1_NormalizeDouble(int32_t Product, int16_t* Coefficient, int16_t* Expone
          i = 0x4000;
 
          if (m < 0)
+         {
             while ((n & i) && i)
             {
                i >>= 1;
                e++;
             }
+         }
          else
+         {
             while (!(n & i) && i)
             {
                i >>= 1;
                e++;
             }
+         }
 
          if (e > 15)
             *Coefficient = n * DSP1ROM[0x0012 + e] << 1;
@@ -412,17 +432,17 @@ int16_t DSP1_Truncate(int16_t C, int16_t E)
 {
    if (E > 0)
    {
-      if (C > 0) return 32767;
-      else if (C < 0) return -32767;
+      if (C > 0)
+         return 32767;
+      else if (C < 0)
+         return -32767;
    }
-   else
-   {
-      if (E < 0) return C * DSP1ROM[0x0031 + E] >> 15;
-   }
+   else if (E < 0)
+      return C * DSP1ROM[0x0031 + E] >> 15;
    return C;
 }
 
-void DSPOp04()
+void DSPOp04(void)
 {
    Op04Sin = DSP1_Sin(Op04Angle) * Op04Radius >> 15;
    Op04Cos = DSP1_Cos(Op04Angle) * Op04Radius >> 15;
@@ -434,7 +454,7 @@ int16_t Op0CY1;
 int16_t Op0CX2;
 int16_t Op0CY2;
 
-void DSPOp0C()
+void DSPOp0C(void)
 {
    Op0CX2 = (Op0CY1 * DSP1_Sin(Op0CA) >> 15) + (Op0CX1 * DSP1_Cos(Op0CA) >> 15);
    Op0CY2 = (Op0CY1 * DSP1_Cos(Op0CA) >> 15) - (Op0CX1 * DSP1_Sin(Op0CA) >> 15);
@@ -524,7 +544,8 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    if (AZS < 0)
    {
       MaxAZS = -MaxAZS;
-      if (AZS < MaxAZS + 1) AZS = MaxAZS + 1;
+      if (AZS < MaxAZS + 1)
+         AZS = MaxAZS + 1;
    }
    else if (AZS > MaxAZS)
       AZS = MaxAZS;
@@ -550,10 +571,11 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
 
    if ((Azs != AZS) || (Azs == MaxAZS))
    {
-      if (Azs == -32768) Azs = -32767;
-
+      if (Azs == -32768)
+         Azs = -32767;
       C = Azs - MaxAZS;
-      if (C >= 0) C--;
+      if (C >= 0)
+         C--;
       Aux = ~(C << 2);
 
       C = Aux * DSP1ROM[0x0328] >> 15;
@@ -620,7 +642,7 @@ int16_t Op02VVA;
 int16_t Op02CX;
 int16_t Op02CY;
 
-void DSPOp02()
+void DSPOp02(void)
 {
    DSP1_Parameter(Op02FX, Op02FY, Op02FZ, Op02LFE, Op02LES, Op02AAS, Op02AZS, &Op02VOF, &Op02VVA, &Op02CX, &Op02CY);
 }
@@ -631,7 +653,7 @@ int16_t Op0AB;
 int16_t Op0AC;
 int16_t Op0AD;
 
-void DSPOp0A()
+void DSPOp0A(void)
 {
    DSP1_Raster(Op0AVS, &Op0AA, &Op0AB, &Op0AC, &Op0AD);
    Op0AVS++;
@@ -639,7 +661,7 @@ void DSPOp0A()
 
 int16_t DSP1_ShiftR(int16_t C, int16_t E)
 {
-  return (C * DSP1ROM[0x0031 + E] >> 15);
+   return C * DSP1ROM[0x0031 + E] >> 15;
 }
 
 void DSP1_Project(int16_t X, int16_t Y, int16_t Z, int16_t *H, int16_t *V, int16_t *M)
@@ -661,17 +683,17 @@ void DSP1_Project(int16_t X, int16_t Y, int16_t Z, int16_t *H, int16_t *V, int16
    Pz>>=1;
    E3--;
 
-  refE = MIN(E, E3);
-  refE = MIN(refE, E4);
+   refE = MIN(E, E3);
+   refE = MIN(refE, E4);
 
-  Px = DSP1_ShiftR(Px, E4 - refE); // normalize them to the same exponent
-  Py = DSP1_ShiftR(Py, E - refE);
-  Pz = DSP1_ShiftR(Pz, E3 - refE);
+   Px = DSP1_ShiftR(Px, E4 - refE); // normalize them to the same exponent
+   Py = DSP1_ShiftR(Py, E - refE);
+   Pz = DSP1_ShiftR(Pz, E3 - refE);
 
-  C11 = -(Px * Nx >> 15);
-  C8 = -(Py * Ny >> 15);
-  C9 = -(Pz * Nz >> 15);
-  C12 = C11 + C8 + C9; // this cannot overflow!
+   C11 = -(Px * Nx >> 15);
+   C8 = -(Py * Ny >> 15);
+   C9 = -(Pz * Nz >> 15);
+   C12 = C11 + C8 + C9; // this cannot overflow!
 
    aux4 = C12; // de-normalization with 32-bit arithmetic
    refE = 16 - refE; // refE can be up to 3
@@ -723,7 +745,7 @@ int16_t Op06H;
 int16_t Op06V;
 int16_t Op06M;
 
-void DSPOp06()
+void DSPOp06(void)
 {
    DSP1_Project(Op06X, Op06Y, Op06Z, &Op06H, &Op06V, &Op06M);
 }
@@ -745,7 +767,7 @@ int16_t Op21Zr;
 int16_t Op21Xr;
 int16_t Op21Yr;
 
-void DSPOp01()
+void DSPOp01(void)
 {
    int16_t SinAz = DSP1_Sin(Op01Zr);
    int16_t CosAz = DSP1_Cos(Op01Zr);
@@ -769,7 +791,7 @@ void DSPOp01()
    matrixA[2][2] = (Op01m * CosAx >> 15) * CosAy >> 15;
 }
 
-void DSPOp11()
+void DSPOp11(void)
 {
    int16_t SinAz = DSP1_Sin(Op11Zr);
    int16_t CosAz = DSP1_Cos(Op11Zr);
@@ -793,7 +815,7 @@ void DSPOp11()
    matrixB[2][2] = (Op11m * CosAx >> 15) * CosAy >> 15;
 }
 
-void DSPOp21()
+void DSPOp21(void)
 {
    int16_t SinAz = DSP1_Sin(Op21Zr);
    int16_t CosAz = DSP1_Cos(Op21Zr);
@@ -836,21 +858,21 @@ int16_t Op2DF;
 int16_t Op2DL;
 int16_t Op2DU;
 
-void DSPOp0D()
+void DSPOp0D(void)
 {
    Op0DF = (Op0DX * matrixA[0][0] >> 15) + (Op0DY * matrixA[0][1] >> 15) + (Op0DZ * matrixA[0][2] >> 15);
    Op0DL = (Op0DX * matrixA[1][0] >> 15) + (Op0DY * matrixA[1][1] >> 15) + (Op0DZ * matrixA[1][2] >> 15);
    Op0DU = (Op0DX * matrixA[2][0] >> 15) + (Op0DY * matrixA[2][1] >> 15) + (Op0DZ * matrixA[2][2] >> 15);
 }
 
-void DSPOp1D()
+void DSPOp1D(void)
 {
    Op1DF = (Op1DX * matrixB[0][0] >> 15) + (Op1DY * matrixB[0][1] >> 15) + (Op1DZ * matrixB[0][2] >> 15);
    Op1DL = (Op1DX * matrixB[1][0] >> 15) + (Op1DY * matrixB[1][1] >> 15) + (Op1DZ * matrixB[1][2] >> 15);
    Op1DU = (Op1DX * matrixB[2][0] >> 15) + (Op1DY * matrixB[2][1] >> 15) + (Op1DZ * matrixB[2][2] >> 15);
 }
 
-void DSPOp2D()
+void DSPOp2D(void)
 {
    Op2DF = (Op2DX * matrixC[0][0] >> 15) + (Op2DY * matrixC[0][1] >> 15) + (Op2DZ * matrixC[0][2] >> 15);
    Op2DL = (Op2DX * matrixC[1][0] >> 15) + (Op2DY * matrixC[1][1] >> 15) + (Op2DZ * matrixC[1][2] >> 15);
@@ -876,21 +898,21 @@ int16_t Op23X;
 int16_t Op23Y;
 int16_t Op23Z;
 
-void DSPOp03()
+void DSPOp03(void)
 {
    Op03X = (Op03F * matrixA[0][0] >> 15) + (Op03L * matrixA[1][0] >> 15) + (Op03U * matrixA[2][0] >> 15);
    Op03Y = (Op03F * matrixA[0][1] >> 15) + (Op03L * matrixA[1][1] >> 15) + (Op03U * matrixA[2][1] >> 15);
    Op03Z = (Op03F * matrixA[0][2] >> 15) + (Op03L * matrixA[1][2] >> 15) + (Op03U * matrixA[2][2] >> 15);
 }
 
-void DSPOp13()
+void DSPOp13(void)
 {
    Op13X = (Op13F * matrixB[0][0] >> 15) + (Op13L * matrixB[1][0] >> 15) + (Op13U * matrixB[2][0] >> 15);
    Op13Y = (Op13F * matrixB[0][1] >> 15) + (Op13L * matrixB[1][1] >> 15) + (Op13U * matrixB[2][1] >> 15);
    Op13Z = (Op13F * matrixB[0][2] >> 15) + (Op13L * matrixB[1][2] >> 15) + (Op13U * matrixB[2][2] >> 15);
 }
 
-void DSPOp23()
+void DSPOp23(void)
 {
    Op23X = (Op23F * matrixC[0][0] >> 15) + (Op23L * matrixC[1][0] >> 15) + (Op23U * matrixC[2][0] >> 15);
    Op23Y = (Op23F * matrixC[0][1] >> 15) + (Op23L * matrixC[1][1] >> 15) + (Op23U * matrixC[2][1] >> 15);
@@ -907,7 +929,7 @@ int16_t Op14Zrr;
 int16_t Op14Xrr;
 int16_t Op14Yrr;
 
-void DSPOp14()
+void DSPOp14(void)
 {
    int16_t CSec, ESec, CTan, CSin, C, E;
 
@@ -973,7 +995,7 @@ int16_t Op0EV;
 int16_t Op0EX;
 int16_t Op0EY;
 
-void DSPOp0E()
+void DSPOp0E(void)
 {
    DSP1_Target(Op0EH, Op0EV, &Op0EX, &Op0EY);
 }
@@ -991,24 +1013,24 @@ int16_t Op2BY;
 int16_t Op2BZ;
 int16_t Op2BS;
 
-void DSPOp0B()
+void DSPOp0B(void)
 {
    Op0BS = (Op0BX * matrixA[0][0] + Op0BY * matrixA[0][1] + Op0BZ * matrixA[0][2]) >> 15;
 }
 
-void DSPOp1B()
+void DSPOp1B(void)
 {
    Op1BS = (Op1BX * matrixB[0][0] + Op1BY * matrixB[0][1] + Op1BZ * matrixB[0][2]) >> 15;
 }
 
-void DSPOp2B()
+void DSPOp2B(void)
 {
    Op2BS = (Op2BX * matrixC[0][0] + Op2BY * matrixC[0][1] + Op2BZ * matrixC[0][2]) >> 15;
 }
 
 int16_t Op08X, Op08Y, Op08Z, Op08Ll, Op08Lh;
 
-void DSPOp08()
+void DSPOp08(void)
 {
    int32_t Op08Size = (Op08X * Op08X + Op08Y * Op08Y + Op08Z * Op08Z) << 1;
    Op08Ll = Op08Size & 0xffff;
@@ -1017,14 +1039,14 @@ void DSPOp08()
 
 int16_t Op18X, Op18Y, Op18Z, Op18R, Op18D;
 
-void DSPOp18()
+void DSPOp18(void)
 {
    Op18D = (Op18X * Op18X + Op18Y * Op18Y + Op18Z * Op18Z - Op18R * Op18R) >> 15;
 }
 
 int16_t Op38X, Op38Y, Op38Z, Op38R, Op38D;
 
-void DSPOp38()
+void DSPOp38(void)
 {
    Op38D = (Op38X * Op38X + Op38Y * Op38Y + Op38Z * Op38Z - Op38R * Op38R) >> 15;
    Op38D++;
@@ -1035,16 +1057,18 @@ int16_t Op28Y;
 int16_t Op28Z;
 int16_t Op28R;
 
-void DSPOp28()
+void DSPOp28(void)
 {
    int32_t Radius = Op28X * Op28X + Op28Y * Op28Y + Op28Z * Op28Z;
 
-   if (Radius == 0) Op28R = 0;
+   if (Radius == 0)
+      Op28R = 0;
    else
    {
       int16_t C, E, Pos, Node1, Node2;
       DSP1_NormalizeDouble(Radius, &C, &E);
-      if (E & 1) C = C * 0x4000 >> 15;
+      if (E & 1)
+         C = C * 0x4000 >> 15;
 
       Pos = C * 0x0040 >> 15;
 
@@ -1065,7 +1089,7 @@ int16_t Op1CX2;
 int16_t Op1CY2;
 int16_t Op1CZ2;
 
-void DSPOp1C()
+void DSPOp1C(void)
 {
    // Rotate Around Op1CZ1
    Op1CX1 = (Op1CYBR * DSP1_Sin(Op1CZ) >> 15) + (Op1CXBR * DSP1_Cos(Op1CZ) >> 15);
@@ -1089,7 +1113,7 @@ void DSPOp1C()
 uint16_t Op0FRamsize;
 uint16_t Op0FPass;
 
-void DSPOp0F()
+void DSPOp0F(void)
 {
    Op0FPass = 0x0000;
 }
@@ -1097,7 +1121,7 @@ void DSPOp0F()
 int16_t Op2FUnknown;
 int16_t Op2FSize;
 
-void DSPOp2F()
+void DSPOp2F(void)
 {
    Op2FSize = 0x100;
 }

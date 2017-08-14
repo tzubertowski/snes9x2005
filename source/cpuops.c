@@ -20,7 +20,7 @@
 
 int32_t OpAddress;
 
-/* ADC *************************************************************************************** */
+/* ADC */
 static void Op69M1(void)
 {
    Immediate8();
@@ -201,9 +201,7 @@ static void Op73M0(void)
    ADC16();
 }
 
-/**********************************************************************************************/
-
-/* AND *************************************************************************************** */
+/* AND */
 static void Op29M1(void)
 {
    ICPU.Registers.AL &= *CPU.PC++;
@@ -394,9 +392,8 @@ static void Op33M0(void)
    StackRelativeIndirectIndexed(true);
    AND16();
 }
-/**********************************************************************************************/
 
-/* ASL *************************************************************************************** */
+/* ASL */
 static void Op0AM1(void)
 {
    A_ASL8();
@@ -454,9 +451,8 @@ static void Op1EM0(void)
    AbsoluteIndexedX(false);
    ASL16();
 }
-/**********************************************************************************************/
 
-/* BIT *************************************************************************************** */
+/* BIT */
 static void Op89M1(void)
 {
    ICPU._Zero = ICPU.Registers.AL & *CPU.PC++;
@@ -525,9 +521,8 @@ static void Op3CM0(void)
    AbsoluteIndexedX(true);
    BIT16();
 }
-/**********************************************************************************************/
 
-/* CMP *************************************************************************************** */
+/* CMP */
 static void OpC9M1(void)
 {
    int32_t Int32 = (int32_t) ICPU.Registers.AL - (int32_t) *CPU.PC++;
@@ -721,9 +716,7 @@ static void OpD3M0(void)
    CMP16();
 }
 
-/**********************************************************************************************/
-
-/* CMX *************************************************************************************** */
+/* CMX */
 static void OpE0X1(void)
 {
    int32_t Int32 = (int32_t) ICPU.Registers.XL - (int32_t) *CPU.PC++;
@@ -773,9 +766,7 @@ static void OpECX0(void)
    CMX16();
 }
 
-/**********************************************************************************************/
-
-/* CMY *************************************************************************************** */
+/* CMY */
 static void OpC0X1(void)
 {
    int32_t Int32 = (int32_t) ICPU.Registers.YL - (int32_t) *CPU.PC++;
@@ -825,9 +816,7 @@ static void OpCCX0(void)
    CMY16();
 }
 
-/**********************************************************************************************/
-
-/* DEC *************************************************************************************** */
+/* DEC */
 static void Op3AM1(void)
 {
    A_DEC8();
@@ -886,9 +875,7 @@ static void OpDEM0(void)
    DEC16();
 }
 
-/**********************************************************************************************/
-
-/* EOR *************************************************************************************** */
+/* EOR */
 static void Op49M1(void)
 {
    ICPU.Registers.AL ^= *CPU.PC++;
@@ -1080,9 +1067,7 @@ static void Op53M0(void)
    EOR16();
 }
 
-/**********************************************************************************************/
-
-/* INC *************************************************************************************** */
+/* INC */
 static void Op1AM1(void)
 {
    A_INC8();
@@ -1141,8 +1126,7 @@ static void OpFEM0(void)
    INC16();
 }
 
-/**********************************************************************************************/
-/* LDA *************************************************************************************** */
+/* LDA */
 static void OpA9M1(void)
 {
    ICPU.Registers.AL = *CPU.PC++;
@@ -1335,9 +1319,7 @@ static void OpB3M0(void)
    LDA16();
 }
 
-/**********************************************************************************************/
-
-/* LDX *************************************************************************************** */
+/* LDX */
 static void OpA2X1(void)
 {
    ICPU.Registers.XL = *CPU.PC++;
@@ -1408,9 +1390,8 @@ static void OpBEX0(void)
    AbsoluteIndexedY(true);
    LDX16();
 }
-/**********************************************************************************************/
 
-/* LDY *************************************************************************************** */
+/* LDY */
 static void OpA0X1(void)
 {
    ICPU.Registers.YL = *CPU.PC++;
@@ -1482,9 +1463,8 @@ static void OpBCX0(void)
    AbsoluteIndexedX(true);
    LDY16();
 }
-/**********************************************************************************************/
 
-/* LSR *************************************************************************************** */
+/* LSR */
 static void Op4AM1(void)
 {
    A_LSR8();
@@ -1543,9 +1523,7 @@ static void Op5EM0(void)
    LSR16();
 }
 
-/**********************************************************************************************/
-
-/* ORA *************************************************************************************** */
+/* ORA */
 static void Op09M1(void)
 {
    ICPU.Registers.AL |= *CPU.PC++;
@@ -1737,9 +1715,7 @@ static void Op13M0(void)
    ORA16();
 }
 
-/**********************************************************************************************/
-
-/* ROL *************************************************************************************** */
+/* ROL */
 static void Op2AM1(void)
 {
    A_ROL8();
@@ -1797,9 +1773,8 @@ static void Op3EM0(void)
    AbsoluteIndexedX(false);
    ROL16();
 }
-/**********************************************************************************************/
 
-/* ROR *************************************************************************************** */
+/* ROR */
 static void Op6AM1(void)
 {
    A_ROR8();
@@ -1857,9 +1832,8 @@ static void Op7EM0(void)
    AbsoluteIndexedX(false);
    ROR16();
 }
-/**********************************************************************************************/
 
-/* SBC *************************************************************************************** */
+/* SBC */
 static void OpE9M1(void)
 {
    Immediate8();
@@ -2039,9 +2013,8 @@ static void OpF3M0(void)
    StackRelativeIndirectIndexed(true);
    SBC16();
 }
-/**********************************************************************************************/
 
-/* STA *************************************************************************************** */
+/* STA */
 static void Op85M1(void)
 {
    Direct(false);
@@ -2217,9 +2190,8 @@ static void Op93M0(void)
    StackRelativeIndirectIndexed(false);
    STA16();
 }
-/**********************************************************************************************/
 
-/* STX *************************************************************************************** */
+/* STX */
 static void Op86X1(void)
 {
    Direct(false);
@@ -2255,9 +2227,8 @@ static void Op8EX0(void)
    Absolute(false);
    STX16();
 }
-/**********************************************************************************************/
 
-/* STY *************************************************************************************** */
+/* STY */
 static void Op84X1(void)
 {
    Direct(false);
@@ -2293,9 +2264,8 @@ static void Op8CX0(void)
    Absolute(false);
    STY16();
 }
-/**********************************************************************************************/
 
-/* STZ *************************************************************************************** */
+/* STZ */
 static void Op64M1(void)
 {
    Direct(false);
@@ -2344,9 +2314,7 @@ static void Op9EM0(void)
    STZ16();
 }
 
-/**********************************************************************************************/
-
-/* TRB *************************************************************************************** */
+/* TRB */
 static void Op14M1(void)
 {
    Direct(false);
@@ -2370,9 +2338,8 @@ static void Op1CM0(void)
    Absolute(false);
    TRB16();
 }
-/**********************************************************************************************/
 
-/* TSB *************************************************************************************** */
+/* TSB */
 static void Op04M1(void)
 {
    Direct(false);
@@ -2397,9 +2364,7 @@ static void Op0CM0(void)
    TSB16();
 }
 
-/**********************************************************************************************/
-
-/* Branch Instructions *********************************************************************** */
+/* Branch Instructions */
 #ifndef SA1_OPCODES
 #define BranchCheck() \
    if(CPU.BranchSkip) \
@@ -2421,7 +2386,6 @@ static INLINE void CPUShutdown(void)
       // interrupt. Interrupts are delayed for a few cycles already, but
       // the delay could allow the shutdown code to cycle skip again.
       // Was causing screen flashing on Top Gear 3000.
-
       if (CPU.WaitCounter == 0 && !(CPU.Flags & (IRQ_PENDING_FLAG | NMI_FLAG)))
       {
          CPU.WaitAddress = NULL;
@@ -2433,8 +2397,7 @@ static INLINE void CPUShutdown(void)
             do
             {
                APU_EXECUTE1();
-            }
-            while (APU.Cycles < CPU.NextEvent);
+            } while (APU.Cycles < CPU.NextEvent);
             ICPU.CPUExecuting = true;
          }
 #endif
@@ -2474,8 +2437,7 @@ static INLINE void ForceShutdown(void)
       do
       {
          APU_EXECUTE1();
-      }
-      while (APU.Cycles < CPU.NextEvent);
+      } while (APU.Cycles < CPU.NextEvent);
       ICPU.CPUExecuting = true;
    }
 #endif
@@ -2615,9 +2577,8 @@ static void Op70(void)
       CPUShutdown();
    }
 }
-/**********************************************************************************************/
 
-/* ClearFlag Instructions ******************************************************************** */
+/* ClearFlag Instructions */
 /* CLC */
 static void Op18(void)
 {
@@ -2643,7 +2604,6 @@ static void Op58(void)
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
-   /*    CHECK_FOR_IRQ(); */
 }
 
 /* CLV */
@@ -2654,9 +2614,8 @@ static void OpB8(void)
    CPU.Cycles += ONE_CYCLE;
 #endif
 }
-/**********************************************************************************************/
 
-/* DEX/DEY *********************************************************************************** */
+/* DEX/DEY */
 static void OpCAX1(void)
 {
 #ifndef SA1_OPCODES
@@ -2696,9 +2655,8 @@ static void Op88X0(void)
    ICPU.Registers.Y.W--;
    SetZN16(ICPU.Registers.Y.W);
 }
-/**********************************************************************************************/
 
-/* INX/INY *********************************************************************************** */
+/* INX/INY */
 static void OpE8X1(void)
 {
 #ifndef SA1_OPCODES
@@ -2739,35 +2697,32 @@ static void OpC8X0(void)
    SetZN16(ICPU.Registers.Y.W);
 }
 
-/**********************************************************************************************/
-
-/* NOP *************************************************************************************** */
+/* NOP */
 static void OpEA(void)
 {
 #ifndef SA1_OPCODES
    CPU.Cycles += ONE_CYCLE;
 #endif
 }
-/**********************************************************************************************/
 
-/* PUSH Instructions ************************************************************************* */
+/* PUSH Instructions */
 #define PushB(b)\
    S9xSetByte(b, ICPU.Registers.S.W--);
 
 #define PushBE(b)\
    PushB(b);\
-   ICPU.Registers.SH = 0x01;
+   ICPU.Registers.SH = 0x01
 
 #define PushW(w)\
    S9xSetByte((w) >> 8, ICPU.Registers.S.W);\
    S9xSetByte((w) & 0xff, (ICPU.Registers.S.W - 1) & 0xffff);\
-   ICPU.Registers.S.W -= 2;
+   ICPU.Registers.S.W -= 2
 
 #define PushWE(w)\
    PushW(w); \
-   ICPU.Registers.SH = 0x01;
+   ICPU.Registers.SH = 0x01
 
-//PEA NL
+/* PEA NL */
 static void OpF4E1(void)
 {
    Absolute(false);
@@ -2780,7 +2735,7 @@ static void OpF4(void)
    PushW((uint16_t)OpAddress);
 }
 
-//PEI NL
+/* PEI NL */
 static void OpD4E1(void)
 {
    DirectIndirect(false);
@@ -2793,20 +2748,20 @@ static void OpD4(void)
    PushW((uint16_t)OpAddress);
 }
 
-//PER NL
+/* PER NL */
 static void Op62E1(void)
 {
-   RelativeLong(false);
+   RelativeLong();
    PushWE((uint16_t)OpAddress);
 }
 
 static void Op62(void)
 {
-   RelativeLong(false);
+   RelativeLong();
    PushW((uint16_t)OpAddress);
 }
 
-//PHA
+/* PHA */
 static void Op48E1(void)
 {
    PushBE(ICPU.Registers.AL);
@@ -2831,7 +2786,7 @@ static void Op48M0(void)
 #endif
 }
 
-//PHB
+/* PHB */
 static void Op8BE1(void)
 {
    PushBE(ICPU.Registers.DB);
@@ -2848,7 +2803,7 @@ static void Op8B(void)
 #endif
 }
 
-//PHD NL
+/* PHD NL */
 static void Op0BE1(void)
 {
    PushWE(ICPU.Registers.D.W);
@@ -2865,7 +2820,7 @@ static void Op0B(void)
 #endif
 }
 
-//PHK
+/* PHK */
 static void Op4BE1(void)
 {
    PushBE(ICPU.Registers.PB);
@@ -2882,7 +2837,7 @@ static void Op4B(void)
 #endif
 }
 
-//PHP
+/* PHP */
 static void Op08E1(void)
 {
    S9xPackStatus();
@@ -2901,7 +2856,7 @@ static void Op08(void)
 #endif
 }
 
-//PHX
+/* PHX */
 static void OpDAE1(void)
 {
    PushBE(ICPU.Registers.XL);
@@ -2926,7 +2881,7 @@ static void OpDAX0(void)
 #endif
 }
 
-//PHY
+/* PHY */
 static void Op5AE1(void)
 {
    PushBE(ICPU.Registers.YL);
@@ -2950,25 +2905,24 @@ static void Op5AX0(void)
    CPU.Cycles += ONE_CYCLE;
 #endif
 }
-/**********************************************************************************************/
 
-/* PULL Instructions ************************************************************************* */
+/* PULL Instructions */
 #define PullB(b)\
-   b = S9xGetByte (++ICPU.Registers.S.W);
+   b = S9xGetByte (++ICPU.Registers.S.W)
 
 #define PullBE(b)\
    PullB(b);\
-   ICPU.Registers.SH = 0x01;
+   ICPU.Registers.SH = 0x01
 
 #define PullW(w)\
    w = S9xGetByte(++ICPU.Registers.S.W);\
-   w |= (S9xGetByte(++ICPU.Registers.S.W) << 8);
+   w |= (S9xGetByte(++ICPU.Registers.S.W) << 8)
 
 #define PullWE(w)\
    PullW(w);\
-   ICPU.Registers.SH = 0x01;
+   ICPU.Registers.SH = 0x01
 
-//PLA
+/* PLA */
 static void Op68E1(void)
 {
 #ifndef SA1_OPCODES
@@ -2996,7 +2950,7 @@ static void Op68M0(void)
    SetZN16(ICPU.Registers.A.W);
 }
 
-//PLB
+/* PLB */
 static void OpABE1(void)
 {
 #ifndef SA1_OPCODES
@@ -3017,8 +2971,7 @@ static void OpAB(void)
    ICPU.ShiftedDB = ICPU.Registers.DB << 16;
 }
 
-/* PHP */
-//PLD NL
+/* PLD NL */
 static void Op2BE1(void)
 {
 #ifndef SA1_OPCODES
@@ -3070,7 +3023,7 @@ static void Op28(void)
    S9xFixCycles();
 }
 
-//PLX
+/* PLX */
 static void OpFAE1(void)
 {
 #ifndef SA1_OPCODES
@@ -3098,7 +3051,7 @@ static void OpFAX0(void)
    SetZN16(ICPU.Registers.X.W);
 }
 
-//PLY
+/* PLY */
 static void Op7AE1(void)
 {
 #ifndef SA1_OPCODES
@@ -3126,9 +3079,6 @@ static void Op7AX0(void)
    SetZN16(ICPU.Registers.Y.W);
 }
 
-/**********************************************************************************************/
-
-/* SetFlag Instructions ********************************************************************** */
 /* SEC */
 static void Op38(void)
 {
@@ -3155,9 +3105,7 @@ static void Op78(void)
    CPU.Cycles += ONE_CYCLE;
 #endif
 }
-/**********************************************************************************************/
 
-/* Transfer Instructions ********************************************************************* */
 /* TAX8 */
 static void OpAAX1(void)
 {
@@ -3335,9 +3283,7 @@ static void OpBBX0(void)
    SetZN16(ICPU.Registers.X.W);
 }
 
-/**********************************************************************************************/
-
-/* XCE *************************************************************************************** */
+/* XCE */
 static void OpFB(void)
 {
    uint8_t A1, A2;
@@ -3361,9 +3307,8 @@ static void OpFB(void)
    }
    S9xFixCycles();
 }
-/**********************************************************************************************/
 
-/* BRK *************************************************************************************** */
+/* BRK */
 static void Op00(void)
 {
    if (!CheckEmulation())
@@ -3400,17 +3345,15 @@ static void Op00(void)
 #endif
    }
 }
-/**********************************************************************************************/
 
-/* BRL ************************************************************************************** */
+/* BRL */
 static void Op82(void)
 {
    RelativeLong();
    S9xSetPCBase(ICPU.ShiftedPB + OpAddress);
 }
-/**********************************************************************************************/
 
-/* IRQ *************************************************************************************** */
+/* IRQ */
 void S9xOpcode_IRQ(void)
 {
    if (!CheckEmulation())
@@ -3426,16 +3369,12 @@ void S9xOpcode_IRQ(void)
       ICPU.Registers.PB = 0;
       ICPU.ShiftedPB = 0;
 #ifdef SA1_OPCODES
-      S9xSA1SetPCBase(Memory.FillRAM [0x2207] |
-                      (Memory.FillRAM [0x2208] << 8));
+      S9xSA1SetPCBase(Memory.FillRAM [0x2207] | (Memory.FillRAM [0x2208] << 8));
 #else
       if (Settings.SA1 && (Memory.FillRAM [0x2209] & 0x40))
-         S9xSetPCBase(Memory.FillRAM [0x220e] |
-                      (Memory.FillRAM [0x220f] << 8));
+         S9xSetPCBase(Memory.FillRAM [0x220e] | (Memory.FillRAM [0x220f] << 8));
       else
          S9xSetPCBase(S9xGetWord(0xFFEE));
-#endif
-#ifndef SA1_OPCODES
       CPU.Cycles += TWO_CYCLES;
 #endif
    }
@@ -3451,24 +3390,18 @@ void S9xOpcode_IRQ(void)
       ICPU.Registers.PB = 0;
       ICPU.ShiftedPB = 0;
 #ifdef SA1_OPCODES
-      S9xSA1SetPCBase(Memory.FillRAM [0x2207] |
-                      (Memory.FillRAM [0x2208] << 8));
+      S9xSA1SetPCBase(Memory.FillRAM [0x2207] | (Memory.FillRAM [0x2208] << 8));
 #else
       if (Settings.SA1 && (Memory.FillRAM [0x2209] & 0x40))
-         S9xSetPCBase(Memory.FillRAM [0x220e] |
-                      (Memory.FillRAM [0x220f] << 8));
+         S9xSetPCBase(Memory.FillRAM [0x220e] | (Memory.FillRAM [0x220f] << 8));
       else
          S9xSetPCBase(S9xGetWord(0xFFFE));
-#endif
-#ifndef SA1_OPCODES
       CPU.Cycles += ONE_CYCLE;
 #endif
    }
 }
 
-/**********************************************************************************************/
-
-/* NMI *************************************************************************************** */
+/* NMI */
 void S9xOpcode_NMI(void)
 {
    if (!CheckEmulation())
@@ -3484,16 +3417,12 @@ void S9xOpcode_NMI(void)
       ICPU.Registers.PB = 0;
       ICPU.ShiftedPB = 0;
 #ifdef SA1_OPCODES
-      S9xSA1SetPCBase(Memory.FillRAM [0x2205] |
-                      (Memory.FillRAM [0x2206] << 8));
+      S9xSA1SetPCBase(Memory.FillRAM [0x2205] | (Memory.FillRAM [0x2206] << 8));
 #else
       if (Settings.SA1 && (Memory.FillRAM [0x2209] & 0x20))
-         S9xSetPCBase(Memory.FillRAM [0x220c] |
-                      (Memory.FillRAM [0x220d] << 8));
+         S9xSetPCBase(Memory.FillRAM [0x220c] | (Memory.FillRAM [0x220d] << 8));
       else
          S9xSetPCBase(S9xGetWord(0xFFEA));
-#endif
-#ifndef SA1_OPCODES
       CPU.Cycles += TWO_CYCLES;
 #endif
    }
@@ -3509,23 +3438,18 @@ void S9xOpcode_NMI(void)
       ICPU.Registers.PB = 0;
       ICPU.ShiftedPB = 0;
 #ifdef SA1_OPCODES
-      S9xSA1SetPCBase(Memory.FillRAM [0x2205] |
-                      (Memory.FillRAM [0x2206] << 8));
+      S9xSA1SetPCBase(Memory.FillRAM [0x2205] | (Memory.FillRAM [0x2206] << 8));
 #else
       if (Settings.SA1 && (Memory.FillRAM [0x2209] & 0x20))
-         S9xSetPCBase(Memory.FillRAM [0x220c] |
-                      (Memory.FillRAM [0x220d] << 8));
+         S9xSetPCBase(Memory.FillRAM [0x220c] | (Memory.FillRAM [0x220d] << 8));
       else
          S9xSetPCBase(S9xGetWord(0xFFFA));
-#endif
-#ifndef SA1_OPCODES
       CPU.Cycles += ONE_CYCLE;
 #endif
    }
 }
-/**********************************************************************************************/
 
-/* COP *************************************************************************************** */
+/* COP */
 static void Op02(void)
 {
    if (!CheckEmulation())
@@ -3562,9 +3486,8 @@ static void Op02(void)
 #endif
    }
 }
-/**********************************************************************************************/
 
-/* JML *************************************************************************************** */
+/* JML */
 static void OpDC(void)
 {
    AbsoluteIndirectLong(false);
@@ -3583,9 +3506,8 @@ static void Op5C(void)
    ICPU.ShiftedPB = OpAddress & 0xff0000;
    S9xSetPCBase(OpAddress);
 }
-/**********************************************************************************************/
 
-/* JMP *************************************************************************************** */
+/* JMP */
 static void Op4C(void)
 {
    Absolute(false);
@@ -3609,9 +3531,8 @@ static void Op7C(void)
    CPU.Cycles += ONE_CYCLE;
 #endif
 }
-/**********************************************************************************************/
 
-/* JSL/RTL *********************************************************************************** */
+/* JSL/RTL */
 static void Op22E1(void)
 {
    AbsoluteLong(false);
@@ -3653,9 +3574,8 @@ static void Op6B(void)
    CPU.Cycles += TWO_CYCLES;
 #endif
 }
-/**********************************************************************************************/
 
-/* JSR/RTS *********************************************************************************** */
+/* JSR/RTS */
 static void Op20(void)
 {
    Absolute(false);
@@ -3696,9 +3616,7 @@ static void Op60(void)
 #endif
 }
 
-/**********************************************************************************************/
-
-/* MVN/MVP *********************************************************************************** */
+/* MVN/MVP */
 static void Op54X1(void)
 {
 #ifndef SA1_OPCODES
@@ -3771,9 +3689,7 @@ static void Op44X0(void)
       CPU.PC -= 3;
 }
 
-/**********************************************************************************************/
-
-/* REP/SEP *********************************************************************************** */
+/* REP/SEP */
 static void OpC2(void)
 {
    uint8_t Work8 = ~*CPU.PC++;
@@ -3817,9 +3733,8 @@ static void OpE2(void)
    }
    S9xFixCycles();
 }
-/**********************************************************************************************/
 
-/* XBA *************************************************************************************** */
+/* XBA */
 static void OpEB(void)
 {
    uint8_t Work8 = ICPU.Registers.AL;
@@ -3830,9 +3745,8 @@ static void OpEB(void)
    CPU.Cycles += TWO_CYCLES;
 #endif
 }
-/**********************************************************************************************/
 
-/* RTI *************************************************************************************** */
+/* RTI */
 static void Op40(void)
 {
    PullB(ICPU.Registers.PL);
@@ -3857,10 +3771,7 @@ static void Op40(void)
    S9xFixCycles();
 }
 
-/**********************************************************************************************/
-
-/* STP/WAI/DB ******************************************************************************** */
-// WAI
+/* WAI */
 static void OpCB(void)
 {
 #ifdef SA1_OPCODES
@@ -3888,8 +3799,7 @@ static void OpCB(void)
 #endif
 }
 
-// Usually an STP opcode
-// SNESAdvance speed hack, not implemented in Snes9xTYL | Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
+// Usually an STP opcode; SNESAdvance speed hack, not implemented in Snes9xTYL | Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
 static void OpDB(void)
 {
 #ifndef NO_SPEEDHACKS
@@ -3911,10 +3821,6 @@ static void OpDB(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -3926,10 +3832,6 @@ static void OpDB(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -3962,10 +3864,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -3977,10 +3875,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -3992,10 +3886,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4007,10 +3897,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4019,10 +3905,6 @@ static void Op42(void)
       CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
       CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-      CPU.Cycles++;
-#endif
 #endif
       CPUShutdown ();
       return;
@@ -4033,10 +3915,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4048,10 +3926,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4063,10 +3937,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4078,10 +3948,6 @@ static void Op42(void)
          CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
          CPU.Cycles += ONE_CYCLE;
-#else
-#ifndef SA1_OPCODES
-         CPU.Cycles++;
-#endif
 #endif
          CPUShutdown ();
       }
@@ -4090,11 +3956,7 @@ static void Op42(void)
 #endif
 }
 
-/*****************************************************************************/
-
-/*****************************************************************************/
-/* CPU-S9xOpcodes Definitions                                                */
-/*****************************************************************************/
+/* CPU-S9xOpcodes Definitions */
 SOpcodes S9xOpcodesM1X1[256] =
 {
    {Op00},      {Op01M1},    {Op02},      {Op03M1},    {Op04M1},

@@ -1,6 +1,5 @@
 #include "../copyright"
 
-#ifndef NO_SETA
 #ifndef _seta_h
 #define _seta_h
 
@@ -59,6 +58,4 @@ typedef struct
    uint8_t  parameters [512];
    uint8_t  output     [512];
 } ST018_Regs;
-
-#endif
 #endif

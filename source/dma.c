@@ -7,8 +7,9 @@
 #include "dma.h"
 #include "apu.h"
 #include "sa1.h"
-#include "spc7110.h"
 #include "sdd1emu.h"
+#include "spc7110.h"
+#include "spc7110dec.h"
 
 static uint8_t sdd1_decode_buffer[0x10000];
 
@@ -17,7 +18,7 @@ extern uint8_t* HDMAMemPointers [8];
 extern uint8_t* HDMABasePointers [8];
 
 /**********************************************************************************************/
-/* S9xDoDMA()                                                                                   */
+/* S9xDoDMA()                                                                                 */
 /* This function preforms the general dma transfer                                            */
 /**********************************************************************************************/
 void S9xDoDMA(uint8_t Channel)
@@ -36,7 +37,6 @@ void S9xDoDMA(uint8_t Channel)
 
    CPU.InDMA = true;
    d = &DMA[Channel];
-
    count = d->TransferBytes;
 
    // Prepare for custom chip DMA
@@ -48,7 +48,7 @@ void S9xDoDMA(uint8_t Channel)
    if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80 && !d->TransferDirection)
    {
       d->AAddress += d->TransferBytes;
-      //does an invalid DMA actually take time?
+      // Does an invalid DMA actually take time?
       // I'd say yes, since 'invalid' is probably just the WRAM chip
       // not being able to read and write itself at the same time
       CPU.Cycles += (d->TransferBytes + 1) * SLOW_ONE_CYCLE;
@@ -66,8 +66,7 @@ void S9xDoDMA(uint8_t Channel)
    {
       if (d->AAddressFixed && Memory.FillRAM [0x4801] > 0)
       {
-         uint8_t *in_ptr;
-
+         uint8_t* in_ptr;
          // XXX: Should probably verify that we're DMAing from ROM?
          // And somewhere we should make sure we're not running across a mapping boundary too.
          inc = !d->AAddressDecrement ? 1 : -1;
@@ -85,44 +84,23 @@ void S9xDoDMA(uint8_t Channel)
    }
    if (Settings.SPC7110 && (d->AAddress == 0x4800 || d->ABank == 0x50))
    {
-      uint32_t i;
-      int32_t icount;
-      i = (s7r.reg4805 | (s7r.reg4806 << 8));
-      i *= s7r.AlignBy;
-      i += s7r.bank50Internal;
-      i %= DECOMP_BUFFER_SIZE;
-      if ((i + d->TransferBytes) < DECOMP_BUFFER_SIZE)
-         spc7110_dma = &s7r.bank50[i];
-      else
-      {
-         uint32_t j;
-
-         spc7110_dma = (uint8_t*)malloc(d->TransferBytes);
-         j = DECOMP_BUFFER_SIZE - i;
-         memcpy(spc7110_dma, &s7r.bank50[i], j);
-         memcpy(&spc7110_dma[j], s7r.bank50, d->TransferBytes - j);
-         s7_wrap = true;
-      }
-
-      icount = s7r.reg4809 | (s7r.reg480A << 8);
-      icount -= d->TransferBytes;
+      int32_t c;
+      spc7110_dma = &s7r.bank50[0];
+      for(c = 0; c < count; c++)
+         s7r.bank50[c] = spc7110dec_read();
+      int32_t icount = (s7r.reg4809 | (s7r.reg480A << 8)) - count;
       s7r.reg4809 = 0x00ff & icount;
       s7r.reg480A = (0xff00 & icount) >> 8;
-
-      s7r.bank50Internal += d->TransferBytes;
-      s7r.bank50Internal %= DECOMP_BUFFER_SIZE;
       inc = 1;
       d->AAddress -= count;
    }
    if (d->BAddress == 0x18 && SA1.in_char_dma && (d->ABank & 0xf0) == 0x40)
    {
-      int32_t i;
       // Perform packed bitmap to PPU character format conversion on the
       // data before transmitting it to V-RAM via-DMA.
+      int32_t i;
       int32_t num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
-      int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 :
-                      (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
-
+      int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 : (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
       int32_t bytes_per_char = 8 * depth;
       int32_t bytes_per_line = depth * num_chars;
       int32_t char_line_bytes = bytes_per_char * num_chars;
@@ -132,19 +110,16 @@ void S9xDoDMA(uint8_t Channel)
       uint8_t* p = buffer;
       uint32_t inc = char_line_bytes - (d->AAddress % char_line_bytes);
       uint32_t char_count = inc / bytes_per_char;
-
       in_sa1_dma = true;
 
       switch (depth)
       {
       case 2:
-         for (i = 0; i < count; i += inc, base += char_line_bytes,
-               inc = char_line_bytes, char_count = num_chars)
+         for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
          {
             uint32_t j;
             uint8_t* line = base + (num_chars - char_count) * 2;
-            for (j = 0; j < char_count && p - buffer < count;
-                  j++, line += 2)
+            for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 2)
             {
                int32_t b, l;
                uint8_t* q = line;
@@ -168,13 +143,11 @@ void S9xDoDMA(uint8_t Channel)
          }
          break;
       case 4:
-         for (i = 0; i < count; i += inc, base += char_line_bytes,
-               inc = char_line_bytes, char_count = num_chars)
+         for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
          {
             uint32_t j;
             uint8_t* line = base + (num_chars - char_count) * 4;
-            for (j = 0; j < char_count && p - buffer < count;
-                  j++, line += 4)
+            for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 4)
             {
                uint8_t* q = line;
                int32_t b, l;
@@ -199,13 +172,11 @@ void S9xDoDMA(uint8_t Channel)
          }
          break;
       case 8:
-         for (i = 0; i < count; i += inc, base += char_line_bytes,
-               inc = char_line_bytes, char_count = num_chars)
+         for(i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
          {
             uint8_t* line = base + (num_chars - char_count) * 8;
             uint32_t j;
-            for (j = 0; j < char_count && p - buffer < count;
-                  j++, line += 8)
+            for(j = 0 ; j < char_count && p - buffer < count ; j++, line += 8)
             {
                uint8_t* q = line;
                int32_t b, l;
@@ -236,13 +207,12 @@ void S9xDoDMA(uint8_t Channel)
    {
       uint8_t* base;
       uint16_t p;
-
       /* XXX: DMA is potentially broken here for cases where we DMA across
        * XXX: memmap boundries. A possible solution would be to re-call
        * XXX: GetBasePointer whenever we cross a boundry, and when
        * XXX: GetBasePointer returns (0) to take the 'slow path' and use
        * XXX: S9xGetByte instead of *base. GetBasePointer() would want to
-       * XXX: return (0) for MAP_PPU and whatever else is a register range
+       * XXX: return 0 for MAP_PPU and whatever else is a register range
        * XXX: rather than a RAM/ROM block, and we'd want to detect MAP_PPU
        * XXX: (or specifically, Address Bus B addresses $2100-$21FF in
        * XXX: banks $00-$3F) specially and treat it as MAP_NONE (since
@@ -263,7 +233,6 @@ void S9xDoDMA(uint8_t Channel)
          base = &Memory.ROM [MAX_ROM_SIZE - 0x10000];
          p = 0;
       }
-
       if (in_sdd1_dma)
       {
          base = in_sdd1_dma;
@@ -289,8 +258,7 @@ void S9xDoDMA(uint8_t Channel)
                Work = *(base + p);
                REGISTER_2104(Work);
                p += inc;
-            }
-            while (--count > 0);
+            } while (--count > 0);
             break;
          case 0x18:
             IPPU.FirstVRAMRead = true;
@@ -301,8 +269,7 @@ void S9xDoDMA(uint8_t Channel)
                   Work = *(base + p);
                   REGISTER_2118_linear(Work);
                   p += inc;
-               }
-               while (--count > 0);
+               } while (--count > 0);
             }
             else
             {
@@ -311,8 +278,7 @@ void S9xDoDMA(uint8_t Channel)
                   Work = *(base + p);
                   REGISTER_2118_tile(Work);
                   p += inc;
-               }
-               while (--count > 0);
+               } while (--count > 0);
             }
             break;
          case 0x19:
@@ -324,8 +290,7 @@ void S9xDoDMA(uint8_t Channel)
                   Work = *(base + p);
                   REGISTER_2119_linear(Work);
                   p += inc;
-               }
-               while (--count > 0);
+               } while (--count > 0);
             }
             else
             {
@@ -334,8 +299,7 @@ void S9xDoDMA(uint8_t Channel)
                   Work = *(base + p);
                   REGISTER_2119_tile(Work);
                   p += inc;
-               }
-               while (--count > 0);
+               } while (--count > 0);
             }
             break;
          case 0x22:
@@ -344,8 +308,7 @@ void S9xDoDMA(uint8_t Channel)
                Work = *(base + p);
                REGISTER_2122(Work);
                p += inc;
-            }
-            while (--count > 0);
+            } while (--count > 0);
             break;
          case 0x80:
             do
@@ -353,8 +316,7 @@ void S9xDoDMA(uint8_t Channel)
                Work = *(base + p);
                REGISTER_2180(Work);
                p += inc;
-            }
-            while (--count > 0);
+            } while (--count > 0);
             break;
          default:
             do
@@ -362,8 +324,7 @@ void S9xDoDMA(uint8_t Channel)
                Work = *(base + p);
                S9xSetPPU(Work, 0x2100 + d->BAddress);
                p += inc;
-            }
-            while (--count > 0);
+            } while (--count > 0);
             break;
          }
       }
@@ -459,8 +420,7 @@ void S9xDoDMA(uint8_t Channel)
             S9xSetPPU(Work, 0x2101 + d->BAddress);
             p += inc;
             count -= 4;
-         }
-         while (count > 0);
+         } while (count > 0);
       }
       else if (d->TransferMode == 4)
       {
@@ -488,8 +448,7 @@ void S9xDoDMA(uint8_t Channel)
             S9xSetPPU(Work, 0x2103 + d->BAddress);
             p += inc;
             count -= 4;
-         }
-         while (count > 0);
+         } while (count > 0);
       }
    }
    else
@@ -549,7 +508,6 @@ void S9xDoDMA(uint8_t Channel)
             d->AAddress += inc;
             count--;
             break;
-
          case 4:
             Work = S9xGetPPU(0x2100 + d->BAddress);
             S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
@@ -574,13 +532,11 @@ void S9xDoDMA(uint8_t Channel)
             d->AAddress += inc;
             count--;
             break;
-
          default:
             count = 0;
             break;
          }
-      }
-      while (count);
+      } while (count);
    }
 #ifndef USE_BLARGG_APU
    IAPU.APUExecuting = Settings.APUEnabled;
@@ -593,20 +549,15 @@ void S9xDoDMA(uint8_t Channel)
       while (CPU.Cycles > CPU.NextEvent)
          S9xDoHBlankProcessing_NoSFX();
 
-   if (Settings.SPC7110 && spc7110_dma)
-   {
-      if (spc7110_dma && s7_wrap)
-         free(spc7110_dma);
-   }
+   if (Settings.SPC7110 && spc7110_dma && s7_wrap)
+      free(spc7110_dma);
 
 update_address:
-   // Super Punch-Out requires that the A-BUS address be updated after the
-   // DMA transfer.
+   // Super Punch-Out requires that the A-BUS address be updated after the DMA transfer.
    Memory.FillRAM[0x4302 + (Channel << 4)] = (uint8_t) d->AAddress;
    Memory.FillRAM[0x4303 + (Channel << 4)] = d->AAddress >> 8;
 
-   // Secret of the Mana requires that the DMA bytes transfer count be set to
-   // zero when DMA has completed.
+   // Secret of the Mana requires that the DMA bytes transfer count be set to zero when DMA has completed.
    Memory.FillRAM [0x4305 + (Channel << 4)] = 0;
    Memory.FillRAM [0x4306 + (Channel << 4)] = 0;
 
@@ -616,16 +567,11 @@ update_address:
    CPU.InDMA = false;
 }
 
-void S9xStartHDMA()
+void S9xStartHDMA(void)
 {
    uint8_t i;
+   IPPU.HDMA = Memory.FillRAM [0x420c];
 
-   if (Settings.DisableHDMA)
-      IPPU.HDMA = 0;
-   else
-      IPPU.HDMA = Memory.FillRAM [0x420c];
-
-   //per anomie timing post
    if (IPPU.HDMA != 0)
       CPU.Cycles += ONE_CYCLE * 3;
 
@@ -649,7 +595,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
    uint8_t mask;
    SDMA* p = &DMA [0];
    int32_t d = 0;
-
    CPU.InDMA = true;
    CPU.Cycles += ONE_CYCLE * 3;
 
@@ -660,7 +605,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
          if (!p->LineCount)
          {
             uint8_t line;
-
             //remember, InDMA is set.
             //Get/Set incur no charges!
             CPU.Cycles += SLOW_ONE_CYCLE;
@@ -718,8 +662,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
                p->IndirectAddress = p->Address;
             }
 
-            if (!(HDMABasePointers [d] = HDMAMemPointers [d] =
-                                            S9xGetMemPointer((p->IndirectBank << 16) + p->IndirectAddress)))
+            if (!(HDMABasePointers [d] = HDMAMemPointers [d] = S9xGetMemPointer((p->IndirectBank << 16) + p->IndirectAddress)))
             {
                /* XXX: Instead of this, goto a slow path that first
                 * XXX: verifies src!=Address Bus B, then uses
@@ -793,7 +736,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
    return byte;
 }
 
-void S9xResetDMA()
+void S9xResetDMA(void)
 {
    int32_t c, d;
    for (d = 0; d < 8; d++)

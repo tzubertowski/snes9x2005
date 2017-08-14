@@ -4,7 +4,6 @@
 #define _SDD1_H_
 
 void S9xSetSDD1MemoryMap(uint32_t bank, uint32_t value);
-void S9xResetSDD1();
-void S9xSDD1PostLoadState();
-
+void S9xResetSDD1(void);
+void S9xSDD1PostLoadState(void);
 #endif

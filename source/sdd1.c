@@ -9,9 +9,7 @@ void S9xSetSDD1MemoryMap(uint32_t bank, uint32_t value)
 {
    bank = 0xc00 + bank * 0x100;
    value = value * 1024 * 1024;
-
    int32_t c;
-
    for (c = 0; c < 0x100; c += 16)
    {
       uint8_t* block = &Memory.ROM [value + (c << 12)];

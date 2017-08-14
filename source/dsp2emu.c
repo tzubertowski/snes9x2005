@@ -8,7 +8,7 @@ bool DSP2Op06HasLen = false;
 int32_t DSP2Op06Len = 0;
 uint8_t DSP2Op05Transparent = 0;
 
-void DSP2_Op05()
+void DSP2_Op05(void)
 {
    uint8_t color;
    // Overlay bitmap with transparency.
@@ -49,16 +49,14 @@ void DSP2_Op05()
    {
       c1 = *p1++;
       c2 = *p2++;
-      *p3++ = (((c2 >> 4) == color) ? c1 & 0xf0 : c2 & 0xf0) |
-              (((c2 & 0x0f) == color) ? c1 & 0x0f : c2 & 0x0f);
+      *p3++ = (((c2 >> 4) == color) ? c1 & 0xf0 : c2 & 0xf0) | (((c2 & 0x0f) == color) ? c1 & 0x0f : c2 & 0x0f);
    }
 }
 
-void DSP2_Op01()
+void DSP2_Op01(void)
 {
    // Op01 size is always 32 bytes input and output.
    // The hardware does strange things if you vary the size.
-
    int32_t j;
    uint8_t c0, c1, c2, c3;
    uint8_t* p1 = DSP1.parameters;
@@ -66,55 +64,20 @@ void DSP2_Op01()
    uint8_t* p2b = &DSP1.output[16]; // halfway
 
    // Process 8 blocks of 4 bytes each
-
    for (j = 0; j < 8; j++)
    {
       c0 = *p1++;
       c1 = *p1++;
       c2 = *p1++;
       c3 = *p1++;
-
-      *p2a++ = (c0 & 0x10) << 3 |
-               (c0 & 0x01) << 6 |
-               (c1 & 0x10) << 1 |
-               (c1 & 0x01) << 4 |
-               (c2 & 0x10) >> 1 |
-               (c2 & 0x01) << 2 |
-               (c3 & 0x10) >> 3 |
-               (c3 & 0x01);
-
-      *p2a++ = (c0 & 0x20) << 2 |
-               (c0 & 0x02) << 5 |
-               (c1 & 0x20)      |
-               (c1 & 0x02) << 3 |
-               (c2 & 0x20) >> 2 |
-               (c2 & 0x02) << 1 |
-               (c3 & 0x20) >> 4 |
-               (c3 & 0x02) >> 1;
-
-      *p2b++ = (c0 & 0x40) << 1 |
-               (c0 & 0x04) << 4 |
-               (c1 & 0x40) >> 1 |
-               (c1 & 0x04) << 2 |
-               (c2 & 0x40) >> 3 |
-               (c2 & 0x04)      |
-               (c3 & 0x40) >> 5 |
-               (c3 & 0x04) >> 2;
-
-
-      *p2b++ = (c0 & 0x80)      |
-               (c0 & 0x08) << 3 |
-               (c1 & 0x80) >> 2 |
-               (c1 & 0x08) << 1 |
-               (c2 & 0x80) >> 4 |
-               (c2 & 0x08) >> 1 |
-               (c3 & 0x80) >> 6 |
-               (c3 & 0x08) >> 3;
+      *p2a++ = (c0 & 0x10) << 3 | (c0 & 0x01) << 6 | (c1 & 0x10) << 1 | (c1 & 0x01) << 4 | (c2 & 0x10) >> 1 | (c2 & 0x01) << 2 | (c3 & 0x10) >> 3 | (c3 & 0x01);
+      *p2a++ = (c0 & 0x20) << 2 | (c0 & 0x02) << 5 | (c1 & 0x20)      | (c1 & 0x02) << 3 | (c2 & 0x20) >> 2 | (c2 & 0x02) << 1 | (c3 & 0x20) >> 4 | (c3 & 0x02) >> 1;
+      *p2b++ = (c0 & 0x40) << 1 | (c0 & 0x04) << 4 | (c1 & 0x40) >> 1 | (c1 & 0x04) << 2 | (c2 & 0x40) >> 3 | (c2 & 0x04)      | (c3 & 0x40) >> 5 | (c3 & 0x04) >> 2;
+      *p2b++ = (c0 & 0x80)      | (c0 & 0x08) << 3 | (c1 & 0x80) >> 2 | (c1 & 0x08) << 1 | (c2 & 0x80) >> 4 | (c2 & 0x08) >> 1 | (c3 & 0x80) >> 6 | (c3 & 0x08) >> 3;
    }
-   return;
 }
 
-void DSP2_Op06()
+void DSP2_Op06(void)
 {
    // Input:
    //    size
@@ -131,13 +94,10 @@ int32_t DSP2Op0DOutLen = 0;
 int32_t DSP2Op0DInLen = 0;
 
 // Scale bitmap based on input length out output length
-
-void DSP2_Op0D()
+void DSP2_Op0D(void)
 {
    // (Modified) Overload's algorithm
-
    int32_t i;
-
    for(i = 0 ; i < DSP2Op0DOutLen ; i++)
    {
       int32_t j = i << 1;

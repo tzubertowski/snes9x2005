@@ -9,25 +9,16 @@
 /* The FxChip Emulator's internal variables */
 FxRegs_s GSU; /* This will be initialized when loading a ROM */
 
-void FxCacheWriteAccess(uint16_t vAddress)
-{
-   if ((vAddress & 0x00f) == 0x00f)
-      GSU.vCacheFlags |= 1 << ((vAddress & 0x1f0) >> 4);
-}
-
 void FxFlushCache(void)
 {
-   GSU.vCacheFlags = 0;
    GSU.vCacheBaseReg = 0;
    GSU.bCacheActive = false;
 }
 
 void fx_flushCache(void)
 {
-   GSU.vCacheFlags = 0;
    GSU.bCacheActive = false;
 }
-
 
 void fx_updateRamBank(uint8_t Byte)
 {
@@ -51,8 +42,6 @@ static void fx_readRegisterSpaceForUse(void)
    static uint32_t avMult[] = { 16, 32, 32, 64 };
    int32_t i;
    uint8_t* p = GSU.pvRegisters;
-
-   GSU.vErrorCode = 0;
 
    /* Update R0 - R14 */
    for (i = 0; i < 15; i++)
@@ -90,10 +79,7 @@ static void fx_readRegisterSpaceForUse(void)
    else
       GSU.vScreenSize = (GSU.vScreenHeight / 8) * (256 / 8) * avMult[GSU.vMode];
    if (GSU.vPlotOptionReg & 0x10)
-   {
-      /* OBJ Mode (for drawing into sprites) */
-      GSU.vScreenHeight = 256;
-   }
+      GSU.vScreenHeight = 256; /* OBJ Mode (for drawing into sprites) */
    if (GSU.pvScreenBase + GSU.vScreenSize > GSU.pvRam + (GSU.nRamBanks * 65536))
       GSU.pvScreenBase =  GSU.pvRam + (GSU.nRamBanks * 65536) - GSU.vScreenSize;
    GSU.pfPlot = fx_apfPlotTable[GSU.vMode];
@@ -117,7 +103,6 @@ void fx_computeScreenPointers(void)
    if (GSU.vMode != GSU.vPrevMode || GSU.vPrevScreenHeight != GSU.vScreenHeight || GSU.vSCBRDirty)
    {
       int32_t i;
-
       GSU.vSCBRDirty = false;
 
       /* Make a list of pointers to the start of each screen column */
@@ -285,7 +270,6 @@ static void fx_writeRegisterSpaceAfterUse(void)
 void FxReset(FxInit_s* psFxInfo)
 {
    int32_t i;
-
    /* Clear all internal variables */
    memset(&GSU, 0, sizeof(FxRegs_s));
 
@@ -340,9 +324,6 @@ void FxReset(FxInit_s* psFxInfo)
 
    /* Start with a nop in the pipe */
    GSU.vPipe = 0x01;
-
-   /* Set pointer to GSU cache */
-   GSU.pvCache = &GSU.pvRegisters[0x100];
 
    fx_readRegisterSpaceForCheck();
    fx_readRegisterSpaceForUse();
@@ -399,45 +380,5 @@ int32_t FxEmulate(uint32_t nInstructions)
    fx_writeRegisterSpaceAfterUse();
 
    /* Check for error code */
-   if (GSU.vErrorCode)
-      return GSU.vErrorCode;
-   else
-      return vCount;
-}
-
-/* Errors */
-int32_t FxGetErrorCode(void)
-{
-   return GSU.vErrorCode;
-}
-
-int32_t FxGetIllegalAddress(void)
-{
-   return GSU.vIllegalAddress;
-}
-
-/* Access to internal registers */
-uint32_t FxGetColorRegister(void)
-{
-   return GSU.vColorReg & 0xff;
-}
-
-uint32_t FxGetPlotOptionRegister(void)
-{
-   return GSU.vPlotOptionReg & 0x1f;
-}
-
-uint32_t FxGetSourceRegisterIndex(void)
-{
-   return GSU.pvSreg - GSU.avReg;
-}
-
-uint32_t FxGetDestinationRegisterIndex(void)
-{
-   return GSU.pvDreg - GSU.avReg;
-}
-
-uint8_t FxPipe(void)
-{
-   return GSU.vPipe;
+   return vCount;
 }

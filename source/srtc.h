@@ -36,11 +36,11 @@ Index Description     Range (nibble)
 typedef struct
 {
    bool     needs_init;
-   bool     count_enable;             // Does RTC mark time or is it frozen
+   bool     count_enable; // Does RTC mark time or is it frozen
    uint8_t  data [MAX_RTC_INDEX + 1];
    int8_t   index;
    uint8_t  mode;
-   time_t   system_timestamp;         // Of latest RTC load time
+   time_t   system_timestamp; // Of latest RTC load time
 } SRTC_DATA;
 
 extern SRTC_DATA rtc;
@@ -52,7 +52,4 @@ void    S9xSRTCPreSaveState(void);
 void    S9xSRTCPostLoadState(void);
 void    S9xResetSRTC(void);
 void    S9xHardResetSRTC(void);
-
-#define SRTC_SRAM_PAD (4 + 8 + 1 + MAX_RTC_INDEX)
-
 #endif // _srtc_h

@@ -112,11 +112,9 @@ void S9xApplyCheats(void)
 {
    uint32_t i;
    if (Settings.ApplyCheats)
-   {
       for (i = 0; i < Cheat.num_cheats; i++)
          if (Cheat.c [i].enabled)
             S9xApplyCheat(i);
-   }
 }
 
 void S9xRemoveCheats(void)
@@ -130,27 +128,22 @@ void S9xRemoveCheats(void)
 bool S9xLoadCheatFile(const char* filename)
 {
    uint8_t data [8 + MAX_SFCCHEAT_NAME];
-   FILE* fs = NULL;
-
+   FILE* fs = fopen(filename, "rb");
    Cheat.num_cheats = 0;
 
-   fs = fopen(filename, "rb");
-
    if (!fs)
-      return (false);
+      return false;
 
-   while (fread((void*) data, 1, 8 + MAX_SFCCHEAT_NAME,
-                fs) == 8 + MAX_SFCCHEAT_NAME)
+   while (fread((void*) data, 1, 8 + MAX_SFCCHEAT_NAME, fs) == 8 + MAX_SFCCHEAT_NAME)
    {
       if (data[6] != 254 || data[7] != 252)
       {
          fclose(fs);
-         return (false);
+         return false;
       }
       Cheat.c [Cheat.num_cheats].enabled = (data [0] & 4) == 0;
       Cheat.c [Cheat.num_cheats].byte = data [1];
-      Cheat.c [Cheat.num_cheats].address = data [2] | (data [3] << 8) |
-                                           (data [4] << 16);
+      Cheat.c [Cheat.num_cheats].address = data [2] | (data [3] << 8) | (data [4] << 16);
       Cheat.c [Cheat.num_cheats].saved_byte = data [5];
       Cheat.c [Cheat.num_cheats].saved = (data [0] & 8) != 0;
       memcpy(Cheat.c [Cheat.num_cheats].name, &data [8], MAX_SFCCHEAT_NAME - 1);
@@ -158,25 +151,25 @@ bool S9xLoadCheatFile(const char* filename)
    }
    fclose(fs);
 
-   return (true);
+   return true;
 }
 
 bool S9xSaveCheatFile(const char* filename)
 {
    uint32_t i;
    uint8_t data [8 + MAX_SFCCHEAT_NAME];
-   FILE* fs = NULL;
+   FILE* fs;
 
    if (Cheat.num_cheats == 0)
    {
       (void) remove(filename);
-      return (true);
+      return true;
    }
 
    fs = fopen(filename, "wb");
 
    if (!fs)
-      return (false);
+      return false;
 
    for (i = 0; i < Cheat.num_cheats; i++)
    {
@@ -199,10 +192,10 @@ bool S9xSaveCheatFile(const char* filename)
       if (fwrite(data, 8 + MAX_SFCCHEAT_NAME, 1, fs) != 1)
       {
          fclose(fs);
-         return (false);
+         return false;
       }
    }
 
    fclose(fs);
-   return (true);
+   return true;
 }

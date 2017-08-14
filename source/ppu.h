@@ -257,8 +257,7 @@ static INLINE void REGISTER_2104(uint8_t byte)
       int32_t addr = ((PPU.OAMAddr & 0x10f) << 1) + (PPU.OAMFlip & 1);
       if (byte != PPU.OAMData [addr])
       {
-         SOBJ* pObj = NULL;
-
+         SOBJ* pObj;
          FLUSH_REDRAW();
          PPU.OAMData [addr] = byte;
          IPPU.OBJChanged = true;
@@ -301,16 +300,13 @@ static INLINE void REGISTER_2104(uint8_t byte)
    {
       int32_t addr;
       uint8_t lowbyte, highbyte;
-
       PPU.OAMWriteRegister &= 0x00ff;
       lowbyte = (uint8_t)(PPU.OAMWriteRegister);
       highbyte = byte;
       PPU.OAMWriteRegister |= byte << 8;
-
       addr = (PPU.OAMAddr << 1);
 
-      if (lowbyte != PPU.OAMData [addr] ||
-            highbyte != PPU.OAMData [addr + 1])
+      if (lowbyte != PPU.OAMData [addr] || highbyte != PPU.OAMData [addr + 1])
       {
          FLUSH_REDRAW();
          PPU.OAMData [addr] = lowbyte;
@@ -355,9 +351,7 @@ static INLINE void REGISTER_2118(uint8_t Byte)
    if (PPU.VMA.FullGraphicCount)
    {
       uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
-      address = (((PPU.VMA.Address & ~PPU.VMA.Mask1) +
-                  (rem >> PPU.VMA.Shift) +
-                  ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) & 0xffff;
+      address = (((PPU.VMA.Address & ~PPU.VMA.Mask1) + (rem >> PPU.VMA.Shift) + ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) & 0xffff;
       Memory.VRAM [address] = Byte;
    }
    else
@@ -373,9 +367,7 @@ static INLINE void REGISTER_2118_tile(uint8_t Byte)
 {
    uint32_t address;
    uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
-   address = (((PPU.VMA.Address & ~PPU.VMA.Mask1) +
-               (rem >> PPU.VMA.Shift) +
-               ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) & 0xffff;
+   address = (((PPU.VMA.Address & ~PPU.VMA.Mask1) + (rem >> PPU.VMA.Shift) + ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) & 0xffff;
    Memory.VRAM [address] = Byte;
    IPPU.TileCached [TILE_2BIT][address >> 4] = false;
    IPPU.TileCached [TILE_4BIT][address >> 5] = false;
@@ -386,8 +378,8 @@ static INLINE void REGISTER_2118_tile(uint8_t Byte)
 
 static INLINE void REGISTER_2118_linear(uint8_t Byte)
 {
-   uint32_t address;
-   Memory.VRAM[address = (PPU.VMA.Address << 1) & 0xFFFF] = Byte;
+   uint32_t address = (PPU.VMA.Address << 1) & 0xFFFF;
+   Memory.VRAM[address] = Byte;
    IPPU.TileCached [TILE_2BIT][address >> 4] = false;
    IPPU.TileCached [TILE_4BIT][address >> 5] = false;
    IPPU.TileCached [TILE_8BIT][address >> 6] = false;
@@ -401,9 +393,7 @@ static INLINE void REGISTER_2119(uint8_t Byte)
    if (PPU.VMA.FullGraphicCount)
    {
       uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
-      address = ((((PPU.VMA.Address & ~PPU.VMA.Mask1) +
-                   (rem >> PPU.VMA.Shift) +
-                   ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) + 1) & 0xFFFF;
+      address = ((((PPU.VMA.Address & ~PPU.VMA.Mask1) + (rem >> PPU.VMA.Shift) + ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) + 1) & 0xFFFF;
       Memory.VRAM [address] = Byte;
    }
    else
@@ -418,9 +408,7 @@ static INLINE void REGISTER_2119(uint8_t Byte)
 static INLINE void REGISTER_2119_tile(uint8_t Byte)
 {
    uint32_t rem = PPU.VMA.Address & PPU.VMA.Mask1;
-   uint32_t address = ((((PPU.VMA.Address & ~PPU.VMA.Mask1) +
-                       (rem >> PPU.VMA.Shift) +
-                       ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) + 1) & 0xFFFF;
+   uint32_t address = ((((PPU.VMA.Address & ~PPU.VMA.Mask1) + (rem >> PPU.VMA.Shift) + ((rem & (PPU.VMA.FullGraphicCount - 1)) << 3)) << 1) + 1) & 0xFFFF;
    Memory.VRAM [address] = Byte;
    IPPU.TileCached [TILE_2BIT][address >> 4] = false;
    IPPU.TileCached [TILE_4BIT][address >> 5] = false;
@@ -452,9 +440,7 @@ static INLINE void REGISTER_2122(uint8_t Byte)
          IPPU.ColorsChanged = true;
          IPPU.Blue [PPU.CGADD] = IPPU.XB [(Byte >> 2) & 0x1f];
          IPPU.Green [PPU.CGADD] = IPPU.XB [(PPU.CGDATA[PPU.CGADD] >> 5) & 0x1f];
-         IPPU.ScreenColors [PPU.CGADD] = (uint16_t) BUILD_PIXEL(IPPU.Red [PPU.CGADD],
-                                         IPPU.Green [PPU.CGADD],
-                                         IPPU.Blue [PPU.CGADD]);
+         IPPU.ScreenColors [PPU.CGADD] = (uint16_t) BUILD_PIXEL(IPPU.Red [PPU.CGADD], IPPU.Green [PPU.CGADD], IPPU.Blue [PPU.CGADD]);
       }
       PPU.CGADD++;
    }
@@ -481,8 +467,7 @@ static INLINE void REGISTER_2180(uint8_t Byte)
 static INLINE uint8_t REGISTER_4212(void)
 {
    uint8_t GetBank = 0;
-   if (CPU.V_Counter >= PPU.ScreenHeight + FIRST_VISIBLE_LINE &&
-         CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE + 3)
+   if (CPU.V_Counter >= PPU.ScreenHeight + FIRST_VISIBLE_LINE && CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE + 3)
       GetBank = 1;
 
    GetBank |= CPU.Cycles >= Settings.HBlankStart ? 0x40 : 0;
@@ -491,5 +476,4 @@ static INLINE uint8_t REGISTER_4212(void)
 
    return GetBank;
 }
-
 #endif

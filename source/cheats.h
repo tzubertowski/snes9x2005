@@ -59,10 +59,4 @@ void S9xDeleteCheats();
 void S9xDeleteCheat(uint32_t which1);
 bool S9xLoadCheatFile(const char* filename);
 bool S9xSaveCheatFile(const char* filename);
-
-void S9xStartCheatSearch(SCheatData* cheats);
-void S9xSearchForChange(SCheatData* cheats, S9xCheatComparisonType cmp, S9xCheatDataSize size, bool is_signed, bool update);
-void S9xSearchForValue(SCheatData* cheats, S9xCheatComparisonType cmp, S9xCheatDataSize size, uint32_t value, bool is_signed, bool update);
-void S9xOutputCheatSearchResults(SCheatData* cheats);
-
 #endif

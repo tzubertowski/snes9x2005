@@ -1,6 +1,5 @@
 DEBUG                 = 0
 PERF_TEST             = 0
-HAVE_GRIFFIN          = 0
 LOAD_FROM_MEMORY_TEST = 1
 USE_BLARGG_APU        = 0
 
@@ -97,15 +96,13 @@ else
 endif
 # Theos iOS
 else ifeq ($(platform), theos_ios)
-DEPLOYMENT_IOSVERSION = 5.0
-TARGET = iphone:latest:$(DEPLOYMENT_IOSVERSION)
-ARCHS = armv7 armv7s
-TARGET_IPHONEOS_DEPLOYMENT_VERSION=$(DEPLOYMENT_IOSVERSION)
-THEOS_BUILD_DIR := objs
-include $(THEOS)/makefiles/common.mk
-
-LIBRARY_NAME = $(TARGET_NAME)_libretro_ios
-
+	DEPLOYMENT_IOSVERSION = 5.0
+	TARGET = iphone:latest:$(DEPLOYMENT_IOSVERSION)
+	ARCHS = armv7 armv7s
+	TARGET_IPHONEOS_DEPLOYMENT_VERSION=$(DEPLOYMENT_IOSVERSION)
+	THEOS_BUILD_DIR := objs
+	include $(THEOS)/makefiles/common.mk
+	LIBRARY_NAME = $(TARGET_NAME)_libretro_ios
 else ifeq ($(platform), qnx)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).so
 	fpic := -fPIC

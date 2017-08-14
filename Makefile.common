@@ -2,13 +2,6 @@ LIBRETRO_COMM_DIR := $(LIBRETRO_DIR)/libretro-common
 
 INCFLAGS := -I$(CORE_DIR) -I$(LIBRETRO_DIR) -I$(LIBRETRO_COMM_DIR)/include
 
-ifeq ($(HAVE_GRIFFIN), 1)
-SOURCES_C := $(CORE_DIR)/catsfc_griffin.c
-SOURCES_C += \
-	$(CORE_DIR)/sa1.c \
-	$(CORE_DIR)/sa1cpu.c \
-	$(CORE_DIR)/apu_blargg.c
-else
 SOURCES_C := \
 	$(CORE_DIR)/apu.c \
 	$(CORE_DIR)/c4.c \
@@ -40,11 +33,11 @@ SOURCES_C := \
 	$(CORE_DIR)/soundux.c \
 	$(CORE_DIR)/spc700.c \
 	$(CORE_DIR)/spc7110.c \
+	$(CORE_DIR)/spc7110dec.c \
 	$(CORE_DIR)/srtc.c \
 	$(CORE_DIR)/tile.c \
 	$(CORE_DIR)/apu_blargg.c \
 	$(LIBRETRO_DIR)/libretro.c
-endif
 
 ifeq ($(USE_BLARGG_APU),1)
 	FLAGS += -DUSE_BLARGG_APU

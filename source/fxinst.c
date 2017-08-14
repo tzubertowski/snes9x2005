@@ -1,7 +1,5 @@
 #include "../copyright"
 
-#define FX_DO_ROMBUFFER
-
 #include "fxemu.h"
 #include "fxinst.h"
 #include <string.h>
@@ -10,7 +8,6 @@
 #include <retro_inline.h>
 
 extern FxRegs_s GSU;
-int32_t gsu_bank [512] = {0};
 
 /* Codes used:
  *
@@ -20,7 +17,6 @@ int32_t gsu_bank [512] = {0};
  * (yy) = 8 bit word address (0x0000 - 0x01fe)
  * #xx  = 16 bit immediate value
  * (xx) = 16 bit address (0x0000 - 0xffff)
- *
  */
 
 /* 00 - stop - stop GSU execution (and maybe generate an IRQ) */
@@ -2967,12 +2963,7 @@ static INLINE void fx_inc_r14(void)
 /* df - getc - transfer ROM buffer to color register */
 static INLINE void fx_getc(void)
 {
-#ifndef FX_DO_ROMBUFFER
-   uint8_t c;
-   c = ROM(R14);
-#else
    uint8_t c = GSU.vRomBuffer;
-#endif
    if (GSU.vPlotOptionReg & 0x04)
       c = (c & 0xf0) | (c >> 4);
    if (GSU.vPlotOptionReg & 0x08)
@@ -3077,12 +3068,7 @@ static INLINE void fx_dec_r14(void)
 /* ef - getb - get byte from ROM at address R14 */
 static INLINE void fx_getb(void)
 {
-   uint32_t v;
-#ifndef FX_DO_ROMBUFFER
-   v = (uint32_t)ROM(R14);
-#else
-   v = (uint32_t)GSU.vRomBuffer;
-#endif
+   uint32_t v = (uint32_t)GSU.vRomBuffer;
    R15++;
    DREG = v;
    TESTR14;
@@ -3092,14 +3078,8 @@ static INLINE void fx_getb(void)
 /* ef(ALT1) - getbh - get high-byte from ROM at address R14 */
 static INLINE void fx_getbh(void)
 {
-   uint32_t v;
-#ifndef FX_DO_ROMBUFFER
-   uint32_t c;
-   c = (uint32_t)ROM(R14);
-#else
    uint32_t c = USEX8(GSU.vRomBuffer);
-#endif
-   v = USEX8(SREG) | (c << 8);
+   uint32_t v = USEX8(SREG) | (c << 8);
    R15++;
    DREG = v;
    TESTR14;
@@ -3109,13 +3089,8 @@ static INLINE void fx_getbh(void)
 /* ef(ALT2) - getbl - get low-byte from ROM at address R14 */
 static INLINE void fx_getbl(void)
 {
-   uint32_t v;
-#ifndef FX_DO_ROMBUFFER
-   uint32_t c = (uint32_t)ROM(R14);
-#else
    uint32_t c = USEX8(GSU.vRomBuffer);
-#endif
-   v = (SREG & 0xff00) | c;
+   uint32_t v = (SREG & 0xff00) | c;
    R15++;
    DREG = v;
    TESTR14;
@@ -3125,14 +3100,7 @@ static INLINE void fx_getbl(void)
 /* ef(ALT3) - getbs - get sign extended byte from ROM at address R14 */
 static INLINE void fx_getbs(void)
 {
-   uint32_t v;
-#ifndef FX_DO_ROMBUFFER
-   int8_t c;
-   c = ROM(R14);
-   v = SEX8(c);
-#else
-   v = SEX8(GSU.vRomBuffer);
-#endif
+   uint32_t v = SEX8(GSU.vRomBuffer);
    R15++;
    DREG = v;
    TESTR14;
@@ -3384,7 +3352,7 @@ uint32_t fx_run(uint32_t nInstructions)
    READR14;
    while (TF(G) && (GSU.vCounter-- > 0))
       FX_STEP;
-   return (nInstructions - GSU.vInstCount);
+   return nInstructions - GSU.vInstCount;
 }
 
 /*** Special table for the different plot configurations ***/
@@ -3448,11 +3416,9 @@ void (*fx_apfOpcodeTable[])(void) =
    /* f0 - ff */
    &fx_iwt_r0,  &fx_iwt_r1,  &fx_iwt_r2,   &fx_iwt_r3,   &fx_iwt_r4,   &fx_iwt_r5,   &fx_iwt_r6,   &fx_iwt_r7,
    &fx_iwt_r8,  &fx_iwt_r9,  &fx_iwt_r10,  &fx_iwt_r11,  &fx_iwt_r12,  &fx_iwt_r13,  &fx_iwt_r14,  &fx_iwt_r15,
-
    /*
     * ALT1 Table
     */
-
    /* 00 - 0f */
    &fx_stop,    &fx_nop,     &fx_cache,    &fx_lsr,      &fx_rol,      &fx_bra,      &fx_bge,      &fx_blt,
    &fx_bne,     &fx_beq,     &fx_bpl,      &fx_bmi,      &fx_bcc,      &fx_bcs,      &fx_bvc,      &fx_bvs,
@@ -3501,11 +3467,9 @@ void (*fx_apfOpcodeTable[])(void) =
    /* f0 - ff */
    &fx_lm_r0,   &fx_lm_r1,   &fx_lm_r2,    &fx_lm_r3,    &fx_lm_r4,    &fx_lm_r5,    &fx_lm_r6,    &fx_lm_r7,
    &fx_lm_r8,   &fx_lm_r9,   &fx_lm_r10,   &fx_lm_r11,   &fx_lm_r12,   &fx_lm_r13,   &fx_lm_r14,   &fx_lm_r15,
-
    /*
     * ALT2 Table
     */
-
    /* 00 - 0f */
    &fx_stop,    &fx_nop,     &fx_cache,    &fx_lsr,      &fx_rol,      &fx_bra,      &fx_bge,      &fx_blt,
    &fx_bne,     &fx_beq,     &fx_bpl,      &fx_bmi,      &fx_bcc,      &fx_bcs,      &fx_bvc,      &fx_bvs,
@@ -3554,11 +3518,9 @@ void (*fx_apfOpcodeTable[])(void) =
    /* f0 - ff */
    &fx_sm_r0,   &fx_sm_r1,   &fx_sm_r2,    &fx_sm_r3,    &fx_sm_r4,    &fx_sm_r5,    &fx_sm_r6,    &fx_sm_r7,
    &fx_sm_r8,   &fx_sm_r9,   &fx_sm_r10,   &fx_sm_r11,   &fx_sm_r12,   &fx_sm_r13,   &fx_sm_r14,   &fx_sm_r15,
-
    /*
     * ALT3 Table
     */
-
    /* 00 - 0f */
    &fx_stop,    &fx_nop,     &fx_cache,    &fx_lsr,      &fx_rol,      &fx_bra,      &fx_bge,      &fx_blt,
    &fx_bne,     &fx_beq,     &fx_bpl,      &fx_bmi,      &fx_bcc,      &fx_bcs,      &fx_bvc,      &fx_bvs,

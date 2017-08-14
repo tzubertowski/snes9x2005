@@ -1,87 +1,19 @@
 #include "../copyright"
 
 #include "spc7110.h"
+#include "spc7110dec.h"
 #include "memmap.h"
 #include <time.h>
-#include <sys/stat.h>
-
-//Windows includes
-#ifdef __WIN32__
-#ifndef _XBOX           // chdir and getcwd not supported on Xbox hardware
-#include <direct.h>
-#define chdir _chdir
-#define getcwd _getcwd
-#endif
-
-#ifndef PATH_MAX
-#ifdef MAX_PATH
-#define PATH_MAX  MAX_PATH
-#else
-#define PATH_MAX 1024
-#endif
-#endif
-
-#else // Unix
-#include "display.h"
-#include <limits.h>
-#include <unistd.h>
-#endif
 
 const char* S9xGetFilename(const char*);
-char* osd_GetPackDir(void);
-//really not needed, but usually MS adds the _ to POSIX functions,
-//while *nix doesn't, so this was to "un-M$" the function.
-#define splitpath _splitpath
 
-//not much headroom, but FEOEZ has 41 tables, I think, and SPL4 has 38.
-#define MAX_TABLES 48
+SPC7110Regs s7r;         // SPC7110 registers, about 33KB
+S7RTC rtc_f9;            // FEOEZ (and Shounen Jump no SHou) RTC
+void S9xUpdateRTC(void); // S-RTC function hacked to work with the RTC
 
-//default to using 5 megs of RAM for method 3 caching.
-uint16_t cacheMegs = 5;
-
-//using function pointers to initialize cache management
-void (*CleanUp7110)(void) = NULL;
-void (*LoadUp7110)(char*) = &SPC7110Load;
-void (*Copy7110)(void) = NULL;
-
-//size and offset of the pack data
-//offset and size of reads from pack
-typedef struct
+void S9xSpc7110Init(void) // Emulate power on state
 {
-   uint32_t offset;
-   uint32_t size;
-   uint16_t used_offset;
-   uint16_t used_len;
-} Data7110;
-
-//this maps an index.bin table to the decompression pack
-typedef struct
-{
-   int32_t  table;
-   bool     is_file;
-   Data7110 location[256];
-} Index7110;
-
-//this contains all the data for the decompression pack.
-typedef struct
-{
-   uint8_t*  binfiles[MAX_TABLES];
-   Index7110 tableEnts[MAX_TABLES];
-   int32_t   last_table;
-   int32_t   idx;
-   uint8_t   last_idx;
-   uint16_t  last_offset;
-} Pack7110;
-
-char pfold[9];              // Hack variable for log naming (each game makes a different log)
-Pack7110* decompack = NULL; // Decompression pack uses a fair chunk of RAM, so dynalloc it.
-SPC7110Regs s7r;            // SPC7110 registers, about 33KB
-S7RTC rtc_f9;               // FEOEZ (and Shounen Jump no SHou) RTC
-void S9xUpdateRTC(void);        // S-RTC function hacked to work with the RTC
-
-//Emulate power on state
-void S9xSpc7110Init(void)
-{
+   spc7110dec_init();
    s7r.DataRomOffset = 0x00100000; //handy constant!
    s7r.DataRomSize = Memory.CalculatedSize - s7r.DataRomOffset;
    s7r.reg4800 = 0;
@@ -132,306 +64,8 @@ void S9xSpc7110Init(void)
    s7r.written = 0;
    s7r.offset_add = 0;
    s7r.AlignBy = 1;
-
-   (*LoadUp7110)(osd_GetPackDir());
-
    s7r.bank50Internal = 0;
    memset(s7r.bank50, 0x00, DECOMP_BUFFER_SIZE);
-}
-
-//full cache decompression routine (memcpy) Method 1
-void MovePackData(void)
-{
-   //log the last entry
-   Data7110* log = &(decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
-   if ((log->used_len + log->used_offset) < (decompack->last_offset +
-         (uint16_t)s7r.bank50Internal))
-   {
-      log->used_len = s7r.bank50Internal;
-      log->used_offset = decompack->last_offset;
-   }
-
-   //set up for next logging
-   decompack->last_offset = (s7r.reg4805) | (s7r.reg4806 << 8);
-
-   decompack->last_idx = s7r.reg4804;
-
-   //start decompression
-   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
-
-   //the table is a offset multiplier byte and a big-endian pointer
-   int32_t j = 4 * s7r.reg4804;
-   j += s7r.DataRomOffset;
-   j += table;
-
-   //set proper offsetting.
-   if (s7r.reg480B == 0)
-      s7r.AlignBy = 0;
-   else
-   {
-      switch (Memory.ROM[j])
-      {
-      case 0x03:
-         s7r.AlignBy = 8;
-         break;
-      case 0x01:
-         s7r.AlignBy = 2;
-         break;
-      case 0x02:
-         s7r.AlignBy = 4;
-         break;
-      case 0x00:
-      default:
-         s7r.AlignBy = 1;
-         break;
-      }
-   }
-   //note that we are still setting up for the next log.
-   decompack->last_offset *= s7r.AlignBy;
-   decompack->last_offset %= DECOMP_BUFFER_SIZE;
-
-   //find the table
-   if (table != decompack->last_table)
-   {
-      int32_t i = 0;
-      while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
-         i++;
-      if (i == MAX_TABLES)
-      {
-#ifdef _XBOX
-         FILE* fp = fopen("T:\\sp7err.out", "a");
-#else
-         FILE* fp = fopen("sp7err.out", "a");
-#endif
-
-         fclose(fp);
-         return;
-      }
-      decompack->idx = i;
-      decompack->last_table = table;
-   }
-
-   //copy data
-   if (decompack->binfiles[decompack->idx])
-   {
-      memcpy(s7r.bank50,
-             &(decompack->binfiles[decompack->idx][decompack->tableEnts[decompack->idx].location[s7r.reg4804].offset]),
-             decompack->tableEnts[decompack->idx].location[s7r.reg4804].size);
-   }
-}
-
-// This is similar to the last function, but it keeps the last 5 accessed files open,
-// and reads the data directly. Method 2
-void ReadPackData(void)
-{
-   static int32_t table_age_2;
-   static int32_t table_age_3;
-   static int32_t table_age_4;
-   static int32_t table_age_5;
-
-   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
-
-   if (table == 0)
-   {
-      table_age_2 = table_age_3 = table_age_4 = table_age_5 = MAX_TABLES;
-      return;
-   }
-
-   if (table_age_2 == 0 && table_age_3 == 0 && table_age_4 == 0 && table_age_5 == 0)
-      table_age_2 = table_age_3 = table_age_4 = table_age_5 = MAX_TABLES;
-   Data7110* log = &(decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
-   if ((log->used_len + log->used_offset) < (decompack->last_offset +
-         (uint16_t)s7r.bank50Internal))
-   {
-      log->used_len = s7r.bank50Internal;
-      log->used_offset = decompack->last_offset;
-   }
-
-   decompack->last_offset = (s7r.reg4805) | (s7r.reg4806 << 8);
-
-   decompack->last_idx = s7r.reg4804;
-
-   int32_t j = 4 * s7r.reg4804;
-   j += s7r.DataRomOffset;
-   j += table;
-
-   if (s7r.reg480B == 0)
-      s7r.AlignBy = 0;
-   else
-   {
-      switch (Memory.ROM[j])
-      {
-      case 0x03:
-         s7r.AlignBy = 8;
-         break;
-      case 0x01:
-         s7r.AlignBy = 2;
-         break;
-      case 0x02:
-         s7r.AlignBy = 4;
-         break;
-      case 0x00:
-      default:
-         s7r.AlignBy = 1;
-         break;
-      }
-   }
-   decompack->last_offset *= s7r.AlignBy;
-   decompack->last_offset %= DECOMP_BUFFER_SIZE;
-   if (table != decompack->last_table)
-   {
-      int32_t i = 0;
-      while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
-         i++;
-      if (i == MAX_TABLES)
-      {
-         FILE* fp = fopen("sp7err.out", "a");
-         fclose(fp);
-         return;
-      }
-      if (i != table_age_2 && i != table_age_3 && i != table_age_4 && i != table_age_5)
-      {
-         if (table_age_5 != MAX_TABLES && decompack->binfiles[table_age_5])
-         {
-            fclose((FILE*)(decompack->binfiles[table_age_5]));
-            (decompack->binfiles[table_age_5]) = NULL;
-         }
-         table_age_5 = table_age_4;
-         table_age_4 = table_age_3;
-         table_age_3 = table_age_2;
-         table_age_2 = decompack->idx;
-         char name[PATH_MAX];
-         //open file
-         char drive [_MAX_DRIVE + 1];
-         char dir [_MAX_DIR + 1];
-         char fname [_MAX_FNAME + 1];
-         char ext [_MAX_EXT + 1];
-
-         splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-         strcpy(name, drive);
-         strcat(name, dir);
-
-         strcat(name, pfold);
-         char bfname[11];
-         sprintf(bfname, "%06X.bin", table);
-         strcat(name, "/");
-         strcat(name, bfname);
-         decompack->binfiles[i] = (uint8_t*)fopen(name, "rb");
-      }
-      else
-      {
-         //fix tables in this case
-         if (table_age_5 == i)
-         {
-            table_age_5 = table_age_4;
-            table_age_4 = table_age_3;
-            table_age_3 = table_age_2;
-            table_age_2 = decompack->idx;
-         }
-         if (table_age_4 == i)
-         {
-            table_age_4 = table_age_3;
-            table_age_3 = table_age_2;
-            table_age_2 = decompack->idx;
-         }
-         if (table_age_3 == i)
-         {
-            table_age_3 = table_age_2;
-            table_age_2 = decompack->idx;
-         }
-         if (table_age_2 == i)
-            table_age_2 = decompack->idx;
-      }
-      decompack->idx = i;
-      decompack->last_table = table;
-   }
-   //do read here.
-   if (decompack->binfiles[decompack->idx])
-   {
-      fseek((FILE*)(decompack->binfiles[decompack->idx]),
-            decompack->tableEnts[decompack->idx].location[s7r.reg4804].offset, 0);
-      fread(s7r.bank50, 1, (
-               decompack->tableEnts[decompack->idx].location[s7r.reg4804].size),
-            (FILE*)(decompack->binfiles[decompack->idx]));
-   }
-}
-
-//Cache Method 3: some entries are cached, others are file handles.
-//use is_file to distinguish.
-void GetPackData(void)
-{
-   Data7110* log = &
-                   (decompack->tableEnts[decompack->idx].location[decompack->last_idx]);
-   if ((log->used_len + log->used_offset) < (decompack->last_offset +
-         (uint16_t)s7r.bank50Internal))
-   {
-      log->used_len = s7r.bank50Internal;
-      log->used_offset = decompack->last_offset;
-   }
-
-   decompack->last_offset = (s7r.reg4805) | (s7r.reg4806 << 8);
-
-   decompack->last_idx = s7r.reg4804;
-   int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
-
-   int32_t j = 4 * s7r.reg4804;
-   j += s7r.DataRomOffset;
-   j += table;
-
-   if (s7r.reg480B == 0)
-      s7r.AlignBy = 0;
-   else
-   {
-      switch (Memory.ROM[j])
-      {
-      case 0x03:
-         s7r.AlignBy = 8;
-         break;
-      case 0x01:
-         s7r.AlignBy = 2;
-         break;
-      case 0x02:
-         s7r.AlignBy = 4;
-         break;
-      case 0x00:
-      default:
-         s7r.AlignBy = 1;
-         break;
-      }
-   }
-   decompack->last_offset *= s7r.AlignBy;
-   decompack->last_offset %= DECOMP_BUFFER_SIZE;
-   if (table != decompack->last_table)
-   {
-      int32_t i = 0;
-      while (i < MAX_TABLES && decompack->tableEnts[i].table != table)
-         i++;
-      if (i == MAX_TABLES)
-      {
-         FILE* fp = fopen("sp7err.out", "a");
-         fclose(fp);
-         return;
-      }
-      decompack->idx = i;
-      decompack->last_table = table;
-   }
-   if (decompack->binfiles[decompack->idx])
-   {
-      if (decompack->tableEnts[decompack->idx].is_file)
-      {
-         fseek((FILE*)decompack->binfiles[decompack->idx],
-               decompack->tableEnts[decompack->idx].location[s7r.reg4804].offset, 0);
-         fread(s7r.bank50, 1, (
-                  decompack->tableEnts[decompack->idx].location[s7r.reg4804].size),
-               (FILE*)(decompack->binfiles[decompack->idx]));
-      }
-      else
-      {
-         memcpy(s7r.bank50,
-                &(decompack->binfiles[decompack->idx][decompack->tableEnts[decompack->idx].location[s7r.reg4804].offset]),
-                decompack->tableEnts[decompack->idx].location[s7r.reg4804].size);
-      }
-   }
 }
 
 //reads SPC7110 and RTC registers.
@@ -448,40 +82,26 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    case 0x4800:
    {
       uint16_t count = s7r.reg4809 | (s7r.reg480A << 8);
-      uint32_t i, j;
-      j = (s7r.reg4805 | (s7r.reg4806 << 8));
-      j *= s7r.AlignBy;
-      i = j;
       if (count > 0)
          count--;
-      else count = 0xFFFF;
+      else
+         count = 0xFFFF;
       s7r.reg4809 = 0x00ff & count;
       s7r.reg480A = (0xff00 & count) >> 8;
-      i += s7r.bank50Internal;
-      i %= DECOMP_BUFFER_SIZE;
-      s7r.reg4800 = s7r.bank50[i];
-
-      s7r.bank50Internal++;
-      s7r.bank50Internal %= DECOMP_BUFFER_SIZE;
+      s7r.reg4800 = spc7110dec_read();
+      return s7r.reg4800;
    }
-   return s7r.reg4800;
-   //table register low
-   case 0x4801:
+   case 0x4801: //table register low
       return s7r.reg4801;
-   //table register middle
-   case 0x4802:
+   case 0x4802: //table register middle
       return s7r.reg4802;
-   //table register high
-   case 0x4803:
+   case 0x4803: //table register high
       return s7r.reg4803;
-   //index of pointer in table (each entry is 4 bytes)
-   case 0x4804:
+   case 0x4804: //index of pointer in table (each entry is 4 bytes)
       return s7r.reg4804;
-   //offset register low
-   case 0x4805:
+   case 0x4805: //offset register low
       return s7r.reg4805;
-   //offset register high
-   case 0x4806:
+   case 0x4806: //offset register high
       return s7r.reg4806;
    //DMA channel (not that I see this usually set,
    //regardless of what channel DMA is on)
@@ -496,15 +116,13 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    //this is set by the ROM, and wraps on bounds.
    case 0x4809:
       return s7r.reg4809;
-   //C Length high
-   case 0x480A:
+   case 0x480A: //C Length high
       return s7r.reg480A;
    //Offset enable.
    //if this is zero, 4805-6 are useless. Emulated by setting AlignBy to 0
    case 0x480B:
       return s7r.reg480B;
-   //decompression finished: just emulated by switching each read.
-   case 0x480C:
+   case 0x480C:  //decompression finished: just emulated by switching each read.
       s7r.reg480C ^= 0x80;
       return s7r.reg480C ^ 0x80;
    //Data access port
@@ -536,7 +154,8 @@ uint8_t S9xGetSPC7110(uint16_t Address)
                i += r4814;
                if (r4814 != 0xFFFF)
                   r4814++;
-               else r4814 = 0;
+               else
+                  r4814 = 0;
                s7r.reg4815 = (uint8_t)(r4814 >> 8);
                s7r.reg4814 = (uint8_t)(r4814 & 0x00FF);
 
@@ -553,8 +172,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          {
             if (s7r.reg4818 & 0x04)
             {
-               int16_t inc;
-               inc = (s7r.reg4817 << 8) | s7r.reg4816;
+               int16_t inc = (s7r.reg4817 << 8) | s7r.reg4816;
 
                if (!(s7r.reg4818 & 0x10))
                   i += inc;
@@ -640,31 +258,23 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          s7r.reg4813 = ((i & 0xFF0000) >> 16);
          return tmp;
       }
-      else return 0;
-   //direct read address low
-   case 0x4811:
+      else
+         return 0;
+   case 0x4811: //direct read address low
       return s7r.reg4811;
-   //direct read address middle
-   case 0x4812:
+   case 0x4812: //direct read address middle
       return s7r.reg4812;
-   //direct read access high
-   case 0x4813:
+   case 0x4813: //direct read access high
       return s7r.reg4813;
-   //read adjust low
-   case 0x4814:
+   case 0x4814: //read adjust low
       return s7r.reg4814;
-   //read adjust high
-   case 0x4815:
+   case 0x4815: //read adjust high
       return s7r.reg4815;
-   //read increment low
-   case 0x4816:
+   case 0x4816: //read increment low
       return s7r.reg4816;
-   //read increment high
-   case 0x4817:
+   case 0x4817: //read increment high
       return s7r.reg4817;
-   //Data ROM command mode
-   //essentially, this controls the insane code of $4810 and $481A
-   case 0x4818:
+   case 0x4818: //Data ROM command mode; essentially, this controls the insane code of $4810 and $481A
       return s7r.reg4818;
    //read after adjust port
    //what this does, besides more nasty stuff like 4810,
@@ -675,22 +285,14 @@ uint8_t S9xGetSPC7110(uint16_t Address)
       {
          uint32_t i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
          if (s7r.reg4818 & 0x08)
-         {
-            int16_t adj;
-            adj = ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
-            i += adj;
-         }
+            i += ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
          else
-         {
-            uint16_t adj;
-            adj = (s7r.reg4815 << 8) | s7r.reg4814;
-            i += adj;
-         }
+            i += (s7r.reg4815 << 8) | s7r.reg4814;
 
          i %= s7r.DataRomSize;
          i += s7r.DataRomOffset;
          uint8_t tmp = Memory.ROM[i];
-         if (0x60 == (s7r.reg4818 & 0x60))
+         if ((s7r.reg4818 & 0x60) == 0x60)
          {
             i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
 
@@ -733,85 +335,60 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          }
          return tmp;
       }
-      else return 0;
-
-   //multiplicand low or dividend lowest
-   case 0x4820:
+      else
+         return 0;
+   case 0x4820: //multiplicand low or dividend lowest
       return s7r.reg4820;
-   //multiplicand high or divdend lower
-   case 0x4821:
+   case 0x4821: //multiplicand high or divdend lower
       return s7r.reg4821;
-   //dividend higher
-   case 0x4822:
+   case 0x4822: //dividend higher
       return s7r.reg4822;
-   //dividend highest
-   case 0x4823:
+   case 0x4823: //dividend highest
       return s7r.reg4823;
-   //multiplier low
-   case 0x4824:
+   case 0x4824: //multiplier low
       return s7r.reg4824;
-   //multiplier high
-   case 0x4825:
+   case 0x4825: //multiplier high
       return s7r.reg4825;
-   //divisor low
-   case 0x4826:
+   case 0x4826: //divisor low
       return s7r.reg4826;
-   //divisor high
-   case 0x4827:
+   case 0x4827: //divisor high
       return s7r.reg4827;
-   //result lowest
-   case 0x4828:
+   case 0x4828: //result lowest
       return s7r.reg4828;
-   //result lower
-   case 0x4829:
+   case 0x4829: //result lower
       return s7r.reg4829;
-   //result higher
-   case 0x482A:
+   case 0x482A: //result higher
       return s7r.reg482A;
-   //result highest
-   case 0x482B:
+   case 0x482B: //result highest
       return s7r.reg482B;
-   //remainder (division) low
-   case 0x482C:
+   case 0x482C: //remainder (division) low
       return s7r.reg482C;
-   //remainder (division) high
-   case 0x482D:
+   case 0x482D: //remainder (division) high
       return s7r.reg482D;
-   //signed/unsigned
-   case 0x482E:
+   case 0x482E: //signed/unsigned
       return s7r.reg482E;
-   //finished flag, emulated as an on-read toggle.
-   case 0x482F:
+   case 0x482F: //finished flag, emulated as an on-read toggle.
       if (s7r.reg482F)
       {
          s7r.reg482F = 0;
          return 0x80;
       }
       return 0;
-      break;
-
-   //SRAM toggle
-   case 0x4830:
+   case 0x4830: //SRAM toggle
       return s7r.reg4830;
-   //DX bank mapping
-   case 0x4831:
+   case 0x4831: //DX bank mapping
       return s7r.reg4831;
-   //EX bank mapping
-   case 0x4832:
+   case 0x4832: //EX bank mapping
       return s7r.reg4832;
-   //FX bank mapping
-   case 0x4833:
+   case 0x4833: //FX bank mapping
       return s7r.reg4833;
-   //SRAM mapping? We have no clue!
-   case 0x4834:
+   case 0x4834: //SRAM mapping? We have no clue!
       return s7r.reg4834;
-   //RTC enable
-   case 0x4840:
+   case 0x4840: //RTC enable
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       return s7r.reg4840;
-   //command/index/value of RTC (essentially, zero unless we're in read mode
-   case 0x4841:
+   case 0x4841: //command/index/value of RTC (essentially, zero unless we're in read mode
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       if (rtc_f9.init)
@@ -822,9 +399,9 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          rtc_f9.index %= 0x10;
          return tmp;
       }
-      else return 0;
-   //RTC done flag
-   case 0x4842:
+      else
+         return 0;
+   case 0x4842: //RTC done flag
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       s7r.reg4842 ^= 0x80;
@@ -834,14 +411,21 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    }
 }
 
+static uint32_t datarom_addr(uint32_t addr)
+{
+   uint32_t size = Memory.CalculatedSize - 0x100000;
+
+   while(addr >= size)
+      addr -= size;
+   return addr + 0x100000;
+}
+
 void S9xSetSPC7110(uint8_t data, uint16_t Address)
 {
    switch (Address)
    {
    //Writes to $4800 are undefined.
-
-   //table low, middle, and high.
-   case 0x4801:
+   case 0x4801: //table low, middle, and high.
       s7r.reg4801 = data;
       break;
    case 0x4802:
@@ -850,54 +434,44 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
    case 0x4803:
       s7r.reg4803 = data;
       break;
-
-   //table index (4 byte entries, bigendian with a multiplier byte)
-   case 0x4804:
+   case 0x4804: //table index (4 byte entries, bigendian with a multiplier byte)
       s7r.reg4804 = data;
       break;
-
-   //offset low
-   case 0x4805:
+   case 0x4805: //offset low
       s7r.reg4805 = data;
       break;
-
-   //offset high, starts decompression
-   case 0x4806:
+   case 0x4806: //offset high, starts decompression
+   {
+      uint32_t table = (s7r.reg4801 + (s7r.reg4802 << 8) + (s7r.reg4803 << 16));
+      uint32_t index = (s7r.reg4804 << 2);
+      uint32_t addr = datarom_addr(table + index);
+      uint32_t mode = (Memory.ROM[addr + 0]);
+      uint32_t offset = (Memory.ROM[addr + 1] << 16) + (Memory.ROM[addr + 2] << 8) + (Memory.ROM[addr + 3]);
       s7r.reg4806 = data;
-      (*Copy7110)();
+      spc7110dec_clear(mode, offset, (s7r.reg4805 + (s7r.reg4806 << 8)) << mode);
       s7r.bank50Internal = 0;
       s7r.reg480C &= 0x7F;
       break;
-
-   //DMA channel register (Is it used??)
-   case 0x4807:
+   }
+   case 0x4807: //DMA channel register (Is it used??)
       s7r.reg4807 = data;
       break;
-
    //C r/w? I have no idea. If you get weird values written here before a bug,
    //The Dumper should probably be contacted about running a test.
    case 0x4808:
       s7r.reg4808 = data;
       break;
-
-   //C-Length low
-   case 0x4809:
+   case 0x4809: //C-Length low
       s7r.reg4809 = data;
       break;
-   //C-Length high
-   case 0x480A:
+   case 0x480A: //C-Length high
       s7r.reg480A = data;
       break;
-
-   //Offset enable
-   case 0x480B:
+   case 0x480B: //Offset enable
    {
       s7r.reg480B = data;
       int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
-
-      int32_t j = 4 * s7r.reg4804;
-      j += s7r.DataRomOffset;
-      j += table;
+      int32_t j = 4 * s7r.reg4804 + s7r.DataRomOffset + table;
 
       if (s7r.reg480B == 0)
          s7r.AlignBy = 0;
@@ -920,30 +494,21 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             break;
          }
       }
+      break;
    }
-   break;
-   //$4810 is probably read only.
-
-   //Data port address low
-   case 0x4811:
+   case 0x4811: //Data port address low
       s7r.reg4811 = data;
       s7r.written |= 0x01;
       break;
-
-   //data port address middle
-   case 0x4812:
+   case 0x4812: //data port address middle
       s7r.reg4812 = data;
       s7r.written |= 0x02;
       break;
-
-   //data port address high
-   case 0x4813:
+   case 0x4813: //data port address high
       s7r.reg4813 = data;
       s7r.written |= 0x04;
       break;
-
-   //data port adjust low (has a funky immediate increment mode)
-   case 0x4814:
+   case 0x4814: //data port adjust low (has a funky immediate increment mode)
       s7r.reg4814 = data;
       if (s7r.reg4818 & 0x02)
       {
@@ -952,10 +517,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             s7r.offset_add |= 0x01;
             if (s7r.offset_add == 3)
             {
-               if (s7r.reg4818 & 0x10)
-               {
-               }
-               else
+               if(!(s7r.reg4818 & 0x10))
                {
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
                   if (s7r.reg4818 & 0x08)
@@ -974,39 +536,25 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             s7r.offset_add |= 0x01;
             if (s7r.offset_add == 3)
             {
-               if (s7r.reg4818 & 0x10)
-               {
-               }
-               else
+               if(!(s7r.reg4818 & 0x10))
                {
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
                   if (s7r.reg4818 & 0x08)
-                  {
-                     int16_t adj;
-                     adj = ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
-                     i += adj;
-                  }
+                     i += ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
                   else
-                  {
-                     uint16_t adj;
-                     adj = (s7r.reg4815 << 8) | s7r.reg4814;
-                     i += adj;
-                  }
+                     i += (s7r.reg4815 << 8) | s7r.reg4814;
                   i %= s7r.DataRomSize;
                   s7r.reg4811 = i & 0x00FF;
                   s7r.reg4812 = (i & 0x00FF00) >> 8;
                   s7r.reg4813 = ((i & 0xFF0000) >> 16);
                }
             }
-
          }
       }
 
       s7r.written |= 0x08;
       break;
-
-   //data port adjust high (has a funky immediate increment mode)
-   case 0x4815:
+   case 0x4815: //data port adjust high (has a funky immediate increment mode)
       s7r.reg4815 = data;
       if (s7r.reg4818 & 0x02)
       {
@@ -1015,10 +563,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             s7r.offset_add |= 0x02;
             if (s7r.offset_add == 3)
             {
-               if (s7r.reg4818 & 0x10)
-               {
-               }
-               else
+               if(!(s7r.reg4818 & 0x10))
                {
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
 
@@ -1038,24 +583,13 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
             s7r.offset_add |= 0x02;
             if (s7r.offset_add == 3)
             {
-               if (s7r.reg4818 & 0x10)
-               {
-               }
-               else
+               if(!(s7r.reg4818 & 0x10))
                {
                   uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
                   if (s7r.reg4818 & 0x08)
-                  {
-                     int16_t adj;
-                     adj = ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
-                     i += adj;
-                  }
+                     i += ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
                   else
-                  {
-                     uint16_t adj;
-                     adj = (s7r.reg4815 << 8) | s7r.reg4814;
-                     i += adj;
-                  }
+                     i += (s7r.reg4815 << 8) | s7r.reg4814;
                   i %= s7r.DataRomSize;
                   s7r.reg4811 = i & 0x00FF;
                   s7r.reg4812 = (i & 0x00FF00) >> 8;
@@ -1066,15 +600,12 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.written |= 0x10;
       break;
-   //data port increment low
-   case 0x4816:
+   case 0x4816: //data port increment low
       s7r.reg4816 = data;
       break;
-   //data port increment high
-   case 0x4817:
+   case 0x4817: //data port increment high
       s7r.reg4817 = data;
       break;
-
    //data port mode switches
    //note that it starts inactive.
    case 0x4818:
@@ -1083,29 +614,22 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       s7r.offset_add = 0;
       s7r.reg4818 = data;
       break;
-
-   //multiplicand low or dividend lowest
-   case 0x4820:
+   case 0x4820: //multiplicand low or dividend lowest
       s7r.reg4820 = data;
       break;
-   //multiplicand high or dividend lower
-   case 0x4821:
+   case 0x4821: //multiplicand high or dividend lower
       s7r.reg4821 = data;
       break;
-   //dividend higher
-   case 0x4822:
+   case 0x4822: //dividend higher
       s7r.reg4822 = data;
       break;
-   //dividend highest
-   case 0x4823:
+   case 0x4823: //dividend highest
       s7r.reg4823 = data;
       break;
-   //multiplier low
-   case 0x4824:
+   case 0x4824: //multiplier low
       s7r.reg4824 = data;
       break;
-   //multiplier high (triggers operation)
-   case 0x4825:
+   case 0x4825: //multiplier high (triggers operation)
       s7r.reg4825 = data;
       if (s7r.reg482E & 0x01)
       {
@@ -1129,19 +653,16 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.reg482F = 0x80;
       break;
-   //divisor low
-   case 0x4826:
+   case 0x4826: //divisor low
       s7r.reg4826 = data;
       break;
-   //divisor high (triggers operation)
-   case 0x4827:
+   case 0x4827: //divisor high (triggers operation)
       s7r.reg4827 = data;
       if (s7r.reg482E & 0x01)
       {
          int32_t quotient;
          int16_t remainder;
-         int32_t dividend = (int32_t)(s7r.reg4820 | (s7r.reg4821 << 8) | (s7r.reg4822 << 16) |
-                                     (s7r.reg4823 << 24));
+         int32_t dividend = (int32_t)(s7r.reg4820 | (s7r.reg4821 << 8) | (s7r.reg4822 << 16) | (s7r.reg4823 << 24));
          int16_t divisor = (int16_t)(s7r.reg4826 | (s7r.reg4827 << 8));
          if (divisor != 0)
          {
@@ -1164,8 +685,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       {
          uint32_t quotient;
          uint16_t remainder;
-         uint32_t dividend = (uint32_t)(s7r.reg4820 | (s7r.reg4821 << 8) |
-                                    (s7r.reg4822 << 16) | (s7r.reg4823 << 24));
+         uint32_t dividend = (uint32_t)(s7r.reg4820 | (s7r.reg4821 << 8) | (s7r.reg4822 << 16) | (s7r.reg4823 << 24));
          uint16_t divisor = (uint16_t)(s7r.reg4826 | (s7r.reg4827 << 8));
          if (divisor != 0)
          {
@@ -1191,42 +711,30 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
    //reset: writes here nuke the whole math unit
    //Zero indicates unsigned math, resets with non-zero values turn on signed math
    case 0x482E:
-      s7r.reg4820 = s7r.reg4821 = s7r.reg4822 = s7r.reg4823 = s7r.reg4824 =
-                                     s7r.reg4825 = s7r.reg4826 = s7r.reg4827 = s7r.reg4828 = s7r.reg4829 =
-                                              s7r.reg482A = s7r.reg482B = s7r.reg482C = s7r.reg482D = 0;
+      s7r.reg4820 = s7r.reg4821 = s7r.reg4822 = s7r.reg4823 = s7r.reg4824 = s7r.reg4825 = s7r.reg4826 = s7r.reg4827 = s7r.reg4828 = s7r.reg4829 = s7r.reg482A = s7r.reg482B = s7r.reg482C = s7r.reg482D = 0;
       s7r.reg482E = data;
       break;
-
-   //math status register possibly read only
-
-   //SRAM toggle
-   case 0x4830:
+      //math status register possibly read only
+   case 0x4830: //SRAM toggle
       SPC7110Sram(data);
       s7r.reg4830 = data;
       break;
-   //Bank DX mapping
-   case 0x4831:
+   case 0x4831: //Bank DX mapping
       s7r.reg4831 = data;
       break;
-   //Bank EX mapping
-   case 0x4832:
+   case 0x4832: //Bank EX mapping
       s7r.reg4832 = data;
       break;
-   //Bank FX mapping
-   case 0x4833:
+   case 0x4833: //Bank FX mapping
       s7r.reg4833 = data;
       break;
-   //S-RAM mapping? who knows?
-   case 0x4834:
+   case 0x4834: //S-RAM mapping? who knows?
       s7r.reg4834 = data;
       break;
-   //RTC Toggle
-   case 0x4840:
-      if (0 == data)
-      {
+   case 0x4840: //RTC Toggle
+      if(!data)
          S9xUpdateRTC();
-      }
-      if (data & 0x01)
+      else if(data & 0x01)
       {
          s7r.reg4842 = 0x80;
          rtc_f9.init = false;
@@ -1234,11 +742,10 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.reg4840 = data;
       break;
-   //RTC init/command/index register
-   case 0x4841:
+   case 0x4841: //RTC init/command/index register
       if (rtc_f9.init)
       {
-         if (-1 == rtc_f9.index)
+         if (rtc_f9.index == -1)
          {
             rtc_f9.index = data & 0x0F;
             break;
@@ -1251,8 +758,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
          }
          else
          {
-
-            if (0x0D == rtc_f9.index)
+            if (rtc_f9.index == 0x0D)
             {
                if (data & 0x08)
                {
@@ -1285,7 +791,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
                   }
                }
             }
-            if (0x0F == rtc_f9.index)
+            if (rtc_f9.index == 0x0F)
             {
                if (data & 0x01 && !(rtc_f9.reg[0x0F] & 0x01))
                {
@@ -1315,10 +821,6 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
          }
       }
       break;
-   //writes to RTC status register aren't expected to be meaningful
-   default:
-      break;
-      //16 BIT MULTIPLIER: ($FF00) high byte, defval:00
    }
 }
 
@@ -1352,35 +854,25 @@ uint8_t S9xGetSPC7110Byte(uint32_t Address)
 /**********************************************************************************************/
 int32_t S9xRTCDaysInMonth(int32_t month, int32_t year)
 {
-   int32_t mdays;
-
-   switch (month)
+   switch(month)
    {
    case 2:
-      if ((year % 4 == 0))        // DKJM2 only uses 199x - 22xx
-         mdays = 29;
-      else
-         mdays = 28;
-      break;
-
+      if(year % 4 == 0) // DKJM2 only uses 199x - 22xx
+         return 29;
+      return 28;
    case 4:
    case 6:
    case 9:
    case 11:
-      mdays = 30;
-      break;
-
+      return 30;
    default: // months 1,3,5,7,8,10,12
-      mdays = 31;
-      break;
+      return 31;
    }
-
-   return mdays;
 }
 
-#define DAYTICKS (60*60*24)
-#define HOURTICKS (60*60)
-#define MINUTETICKS 60
+#define MINUTETICKS  60
+#define HOURTICKS   (60 * MINUTETICKS)
+#define DAYTICKS    (24 * HOURTICKS)
 
 /**********************************************************************************************/
 /* S9xUpdateRTC()                                                                   */
@@ -1416,10 +908,8 @@ void  S9xUpdateRTC(void)
          int32_t month;
          int32_t year;
          int32_t temp_days;
-
          int32_t year_tens;
          int32_t year_ones;
-
 
          if (time_diff > DAYTICKS)
          {
@@ -1535,296 +1025,12 @@ uint8_t* Get7110BasePtr(uint32_t Address)
    return &Memory.ROM[i];
 }
 
-//loads the index into memory.
-//index.bin is little-endian
-//format index (1)-table(3)-file offset(4)-length(4)
-bool Load7110Index(char* filename)
-{
-   FILE* fp;
-   uint8_t buffer[12];
-   int32_t table = 0;
-   uint8_t index = 0;
-   uint32_t offset = 0;
-   uint32_t size = 0;
-   int32_t i = 0;
-   fp = fopen(filename, "rb");
-   if (NULL == fp)
-      return false;
-
-   int32_t f_len;
-   while (1)
-   {
-      i = 0;
-      f_len = fread(buffer, 1, 12, fp);
-      if (f_len < 12) break;
-
-      table = (buffer[3] << 16) | (buffer[2] << 8) | buffer[1];
-      index = buffer[0];
-      offset = (buffer[7] << 24) | (buffer[6] << 16) | (buffer[5] << 8) | buffer[4];
-      size = (buffer[11] << 24) | (buffer[10] << 16) | (buffer[9] << 8) | buffer[8];
-      while (i < MAX_TABLES && decompack->tableEnts[i].table != table
-             && decompack->tableEnts[i].table != 0)
-         i++;
-      if (i == MAX_TABLES)
-         return false;
-      //added
-      decompack->tableEnts[i].table = table;
-      //-----
-      decompack->tableEnts[i].location[index].offset = offset;
-      decompack->tableEnts[i].location[index].size = size;
-      decompack->tableEnts[i].location[index].used_len = 0;
-      decompack->tableEnts[i].location[index].used_offset = 0;
-   }
-   fclose(fp);
-   return true;
-}
-
-//Cache 1 load function
-void SPC7110Load(char* dirname)
-{
-   char temp_path[PATH_MAX];
-   int32_t i = 0;
-
-   decompack = (Pack7110*)malloc(sizeof(Pack7110));
-
-#if !defined(_XBOX) && !defined(VITA)
-   getcwd(temp_path, PATH_MAX);
-#endif
-
-   memset(decompack, 0, sizeof(Pack7110));
-
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(dirname);
-#endif
-
-#ifndef _XBOX
-   Load7110Index("index.bin");
-#else
-   // D:\\ is always app.path in Xbox
-   Load7110Index("d:\\index.bin");
-#endif
-
-   for (i = 0; i < MAX_TABLES; i++)
-   {
-      if (decompack->tableEnts[i].table != 0)
-      {
-         char binname[PATH_MAX];
-#ifndef _XBOX
-         sprintf(binname, "%06X.bin", decompack->tableEnts[i].table);
-#else
-         sprintf(binname, "%s%06X.bin", filename, decompack->tableEnts[i].table);
-#endif
-         struct stat buf;
-         if (-1 != stat(binname, &buf))
-            decompack->binfiles[i] = (uint8_t*)malloc(buf.st_size);
-         FILE* fp = fopen(binname, "rb");
-         if (fp)
-         {
-            fread(decompack->binfiles[i], buf.st_size, 1, fp);
-            fclose(fp);
-         }
-      }
-   }
-
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(temp_path);
-#endif
-
-   Copy7110 = &MovePackData;
-   CleanUp7110 = &Del7110Gfx;
-
-}
-
-//Cache 2 load function
-void SPC7110Open(char* dirname)
-{
-   char temp_path[PATH_MAX];
-   int32_t i = 0;
-
-   decompack = (Pack7110*)malloc(sizeof(Pack7110));
-
-#if !defined(_XBOX) && !defined(VITA)
-   getcwd(temp_path, PATH_MAX);
-#endif
-
-   memset(decompack, 0, sizeof(Pack7110));
-
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(dirname);
-#endif
-
-#ifndef _XBOX
-   Load7110Index("index.bin");
-#else
-   // D:\\ is always app.path in Xbox
-   Load7110Index("d:\\index.bin");
-#endif
-
-   for (i = 0; i < MAX_TABLES; i++)
-      decompack->binfiles[i] = NULL;
-
-   ReadPackData();
-
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(temp_path);
-#endif
-
-   Copy7110 = &ReadPackData;
-   CleanUp7110 = &Close7110Gfx;
-}
-
-//Cache 3's load function
-void SPC7110Grab(char* dirname)
-{
-   char temp_path[PATH_MAX];
-   int32_t i = 0;
-
-   decompack = (Pack7110*)malloc(sizeof(Pack7110));
-
-#if !defined(_XBOX) && !defined(VITA)
-   getcwd(temp_path, PATH_MAX);
-#endif
-
-   int32_t buffer_size = 1024 * 1024 * cacheMegs; //*some setting
-
-   memset(decompack, 0, sizeof(Pack7110));
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(dirname);
-#endif
-
-#ifndef _XBOX
-   Load7110Index("index.bin");
-#else
-   // D:\\ is always app.path in Xbox
-   Load7110Index("d:\\index.bin");
-#endif
-
-   for (i = 0; i < MAX_TABLES; i++)
-   {
-      if (decompack->tableEnts[i].table != 0)
-      {
-         char binname[PATH_MAX];
-#ifndef _XBOX
-         sprintf(binname, "%06X.bin", decompack->tableEnts[i].table);
-#else
-         sprintf(binname, "%s%06X.bin", filename, decompack->tableEnts[i].table);
-#endif
-         struct stat buf;
-         //add load/no load calculations here
-         if (-1 != stat(binname, &buf))
-         {
-            if (buf.st_size < buffer_size)
-               decompack->binfiles[i] = (uint8_t*)malloc(buf.st_size);
-            FILE* fp = fopen(binname, "rb");
-            //use them here
-            if (fp)
-            {
-               if (buf.st_size < buffer_size)
-               {
-                  fread(decompack->binfiles[i], buf.st_size, 1, fp);
-                  fclose(fp);
-                  buffer_size -= buf.st_size;
-                  decompack->tableEnts[i].is_file = false;
-               }
-               else
-               {
-                  decompack->binfiles[i] = (uint8_t*)fp;
-                  decompack->tableEnts[i].is_file = true;
-               }
-            }
-         }
-      }
-   }
-
-#if !defined(_XBOX) && !defined(VITA)
-   chdir(temp_path);
-#endif
-
-   Copy7110 = &GetPackData;
-   CleanUp7110 = &Drop7110Gfx;
-}
-
 //Cache 1 clean up function
 void Del7110Gfx(void)
 {
-   int32_t i;
-   if (Settings.SPC7110)
-   {
-      Do7110Logging();
-   }
-   for (i = 0; i < MAX_TABLES; i++)
-   {
-      if (decompack->binfiles[i] != NULL)
-      {
-         free(decompack->binfiles[i]);
-         decompack->binfiles[i] = NULL;
-      }
-   }
+   spc7110dec_deinit();
    Settings.SPC7110 = false;
    Settings.SPC7110RTC = false;
-   if (NULL != decompack)
-      free(decompack);
-   decompack = NULL;
-   CleanUp7110 = NULL;
-   Copy7110 = NULL;
-}
-
-//Cache2 cleanup function
-void Close7110Gfx(void)
-{
-   int32_t i;
-   if (Settings.SPC7110)
-   {
-      Do7110Logging();
-   }
-   for (i = 0; i < MAX_TABLES; i++)
-   {
-      if (decompack->binfiles[i] != NULL)
-      {
-         fclose((FILE*)decompack->binfiles[i]);
-         decompack->binfiles[i] = NULL;
-      }
-   }
-   Settings.SPC7110 = false;
-   Settings.SPC7110RTC = false;
-   if (NULL != decompack)
-      free(decompack);
-   decompack = NULL;
-   CleanUp7110 = NULL;
-   Copy7110 = NULL;
-}
-
-//cache 3's clean-up code
-void Drop7110Gfx(void)
-{
-   int32_t i;
-   if (Settings.SPC7110)
-   {
-      Do7110Logging();
-   }
-   for (i = 0; i < MAX_TABLES; i++)
-   {
-      if (decompack->binfiles[i] != NULL)
-      {
-         if (decompack->tableEnts[i].is_file)
-         {
-            fclose((FILE*)decompack->binfiles[i]);
-            decompack->binfiles[i] = NULL;
-         }
-         else
-         {
-            free(decompack->binfiles[i]);
-            decompack->binfiles[i] = NULL;
-         }
-      }
-   }
-   Settings.SPC7110 = false;
-   Settings.SPC7110RTC = false;
-   if (NULL != decompack)
-      free(decompack);
-   decompack = NULL;
-   CleanUp7110 = NULL;
-   Copy7110 = NULL;
 }
 
 //emulate a reset.
@@ -1880,266 +1086,5 @@ void S9xSpc7110Reset(void)
    s7r.AlignBy = 1;
    s7r.bank50Internal = 0;
    memset(s7r.bank50, 0x00, DECOMP_BUFFER_SIZE);
-}
-
-//outputs a cumulative log for the game.
-//there's nothing really weird here, just
-//reading the old log, and writing a new one.
-//note the logs are explicitly little-endian, not host byte order.
-void Do7110Logging(void)
-{
-   uint8_t ent_temp;
-   FILE* flog;
-   int32_t entries = 0;
-
-   if (Settings.SPC7110)
-   {
-      //flush last read into logging
-      (*Copy7110)();
-
-      if (!strncmp((char*)&Memory.ROM [0xffc0], "SUPER POWER LEAG 4   ", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\spl4-sp7.dat", "rb");
-#else
-         flog = fopen("spl4-sp7.dat", "rb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "MOMOTETSU HAPPY      ", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\smht-sp7.dat", "rb");
-#else
-         flog = fopen("smht-sp7.dat", "rb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "HU TENGAI MAKYO ZERO ", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\feoezsp7.dat", "rb");
-#else
-         flog = fopen("feoezsp7.dat", "rb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "JUMP TENGAIMAKYO ZERO", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\sjumpsp7.dat", "rb");
-#else
-         flog = fopen("sjumpsp7.dat", "rb");
-#endif
-      }
-      else
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\misc-sp7.dat", "rb");
-#else
-         flog = fopen("misc-sp7.dat", "rb");
-#endif
-      }
-
-      if (flog)
-      {
-         uint8_t buffer[8];
-         int32_t table = 0;
-         uint16_t offset = 0;
-         uint16_t length = 0;
-         fseek(flog, 35, 0);
-
-         int32_t f_len;
-         while (1)
-         {
-            int32_t i = 0;
-            Data7110* log = NULL;
-            f_len = fread(buffer, 1, 8, flog);
-            if (f_len < 8) break;
-
-            table = buffer[0] | (buffer[1] << 8) | (buffer[2] << 16);
-            offset = buffer[6] | (buffer[7] << 8);
-            length = buffer[4] | (buffer[5] << 8);
-            while (i < MAX_TABLES && log == NULL)
-            {
-               if (decompack->tableEnts[i].table == table)
-               {
-                  log = &(decompack->tableEnts[i].location[(buffer[3])]);
-                  if ((log->used_offset + log->used_len) < (offset + length))
-                  {
-                     log->used_offset = offset;
-                     log->used_len = length;
-                  }
-               }
-               i++;
-            }
-         }
-         fclose(flog);
-      }
-
-
-      if (!strncmp((char*)&Memory.ROM [0xffc0], "SUPER POWER LEAG 4   ", 21))
-      {
-#ifdef _XBOX   // cwd could be the dvd-rom, so write to T:\\ which is storage region for each title
-         flog = fopen("T:\\spl4-sp7.dat", "wb");
-#else
-         flog = fopen("spl4-sp7.dat", "wb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "MOMOTETSU HAPPY      ", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\smht-sp7.dat", "wb");
-#else
-         flog = fopen("smht-sp7.dat", "wb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "HU TENGAI MAKYO ZERO ", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\feoezsp7.dat", "wb");
-#else
-         flog = fopen("feoezsp7.dat", "wb");
-#endif
-      }
-      else if (!strncmp((char*)&Memory.ROM [0xffc0], "JUMP TENGAIMAKYO ZERO", 21))
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\sjumpsp7.dat", "wb");
-#else
-         flog = fopen("sjumpsp7.dat", "wb");
-#endif
-      }
-      else
-      {
-#ifdef _XBOX
-         flog = fopen("T:\\misc-sp7.dat", "wb");
-#else
-         flog = fopen("misc-sp7.dat", "wb");
-#endif
-      }
-      //count entries
-      if (flog)
-      {
-         int32_t j = 0;
-         int32_t temp = 0;
-         for (j = 0; j < MAX_TABLES; j++)
-         {
-            int32_t k;
-            for (k = 0; k < 256; k++)
-            {
-               if (decompack->tableEnts[j].location[k].used_len != 0)
-                  entries++;
-            }
-         }
-         ent_temp = entries & 0xFF;
-         fwrite(&ent_temp, 1, 1, flog);
-         ent_temp = (entries >> 8) & 0xFF;
-         fwrite(&ent_temp, 1, 1, flog);
-         ent_temp = (entries >> 16) & 0xFF;
-         fwrite(&ent_temp, 1, 1, flog);
-         ent_temp = (entries >> 24) & 0xFF;
-         fwrite(&ent_temp, 1, 1, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-
-         ent_temp = 0;
-         fwrite(&ent_temp, 1, 1, flog);
-         ent_temp = 0;
-         fwrite(&ent_temp, 1, 1, flog);
-         ent_temp = 0;
-         fwrite(&ent_temp, 1, 1, flog);
-
-         for (j = 0; j < MAX_TABLES; j++)
-         {
-            int32_t k;
-            for (k = 0; k < 256; k++)
-            {
-               if (decompack->tableEnts[j].location[k].used_len != 0)
-               {
-                  ent_temp = decompack->tableEnts[j].table & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //801
-                  ent_temp = (decompack->tableEnts[j].table >> 8) & 0xFF;;
-                  fwrite(&ent_temp, 1, 1, flog); //802
-                  ent_temp = (decompack->tableEnts[j].table >> 16) & 0xFF;;
-                  fwrite(&ent_temp, 1, 1, flog); //803
-                  ent_temp = k & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //804
-                  ent_temp = decompack->tableEnts[j].location[k].used_len & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //lsb of
-                  ent_temp = (decompack->tableEnts[j].location[k].used_len >> 8) & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //msb of
-                  ent_temp = (decompack->tableEnts[j].location[k].used_offset) & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //lsb of
-                  ent_temp = (decompack->tableEnts[j].location[k].used_offset >> 8) & 0xFF;
-                  fwrite(&ent_temp, 1, 1, flog); //msb of
-               }
-            }
-         }
-         fwrite(&temp, 1, 4, flog);
-         fwrite(&temp, 1, 4, flog);
-         fclose(flog);
-      }
-   }
-}
-
-bool S9xSaveSPC7110RTC(S7RTC* rtc_f9)
-{
-   FILE* fp;
-
-   if ((fp = fopen(S9xGetFilename("rtc"), "wb")) == NULL)
-      return (false);
-   int32_t i = 0;
-   uint8_t temp = 0;
-   for (i = 0; i < 16; i++)
-      fwrite(&rtc_f9->reg[i], 1, 1, fp);
-   temp = rtc_f9->index & 0x00FF;
-   fwrite(&temp, 1, 1, fp);
-   temp = (rtc_f9->index) >> 8;
-   fwrite(&temp, 1, 1, fp);
-   temp = (uint8_t)rtc_f9->control;
-   fwrite(&temp, 1, 1, fp);
-   temp = (uint8_t)rtc_f9->init;
-   fwrite(&temp, 1, 1, fp);
-   temp = rtc_f9->last_used & 0x00FF;
-   fwrite(&temp, 1, 1, fp);
-   temp = (rtc_f9->last_used >> 8) & 0x00FF;
-   fwrite(&temp, 1, 1, fp);
-   temp = (rtc_f9->last_used >> 16) & 0x00FF;
-   fwrite(&temp, 1, 1, fp);
-   temp = (rtc_f9->last_used >> 24) & 0x00FF;;
-   fwrite(&temp, 1, 1, fp);
-   fclose(fp);
-   return (true);
-}
-
-bool S9xLoadSPC7110RTC(S7RTC* rtc_f9)
-{
-   FILE* fp;
-
-   if ((fp = fopen(S9xGetFilename("rtc"), "rb")) == NULL)
-      return (false);
-   int32_t i;
-   for (i = 0; i < 16; i++)
-      fread(&(rtc_f9->reg[i]), 1, 1, fp);
-   uint8_t temp = 0;
-   fread(&temp, 1, 1, fp);
-   rtc_f9->index = temp;
-   fread(&temp, 1, 1, fp);
-   rtc_f9->index |= (temp << 8);
-   fread(&rtc_f9->control, 1, 1, fp);
-   fread(&rtc_f9->init, 1, 1, fp);
-
-   fread(&temp, 1, 1, fp);
-   rtc_f9->last_used = temp;
-   fread(&temp, 1, 1, fp);
-   rtc_f9->last_used |= (temp << 8);
-   fread(&temp, 1, 1, fp);
-   rtc_f9->last_used |= (temp << 16);
-   fread(&temp, 1, 1, fp);
-   rtc_f9->last_used |= (temp << 24);
-   fclose(fp);
-   return (true);
+   spc7110dec_reset();
 }

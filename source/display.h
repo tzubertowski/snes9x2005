@@ -14,5 +14,4 @@ void S9xToggleSoundChannel(int32_t channel);
 void S9xNextController(void);
 
 const char* S9xGetFilename(const char* extension);
-
 #endif

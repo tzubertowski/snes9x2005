@@ -6,15 +6,7 @@
 
 #define DECOMP_BUFFER_SIZE 0x10000
 
-extern void (*LoadUp7110)(char*);
-extern void (*CleanUp7110)(void);
-extern void (*Copy7110)(void);
-
-extern uint16_t cacheMegs;
-
 void Del7110Gfx(void);
-void Close7110Gfx(void);
-void Drop7110Gfx(void);
 uint8_t S9xGetSPC7110(uint16_t Address);
 uint8_t S9xGetSPC7110Byte(uint32_t Address);
 uint8_t* Get7110BasePtr(uint32_t);
@@ -25,12 +17,6 @@ void S9xSpc7110Reset(void);
 void S9xUpdateRTC(void);
 void Do7110Logging(void);
 int32_t S9xRTCDaysInMonth(int32_t month, int32_t year);
-
-//These are platform-dependant functions, but should work on
-//most systems that use GNU compilers, and on Win32.
-void SPC7110Load(char*);
-void SPC7110Open(char*);
-void SPC7110Grab(char*);
 
 typedef struct
 {
@@ -99,9 +85,4 @@ typedef struct
 
 extern SPC7110Regs s7r;
 extern S7RTC rtc_f9;
-
-// These are defined in spc7110.cpp
-bool S9xSaveSPC7110RTC(S7RTC* rtc_f9);
-bool S9xLoadSPC7110RTC(S7RTC* rtc_f9);
-
 #endif

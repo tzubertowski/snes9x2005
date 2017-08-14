@@ -131,16 +131,6 @@ typedef struct
    int32_t  HBlankStart;
    int32_t  CyclesPercentage;
    bool     DisableIRQ;
-   bool     Paused;
-   bool     ForcedPause;
-   bool     StopEmulation;
-
-   /* Tracing options */
-   bool     TraceDMA;
-   bool     TraceHDMA;
-   bool     TraceVRAM;
-   bool     TraceUnknownRegisters;
-   bool     TraceDSP;
 
    /* Joystick options */
    bool     JoystickEnabled;
@@ -152,7 +142,6 @@ typedef struct
    uint32_t FrameTimePAL;
    uint32_t FrameTimeNTSC;
    uint32_t FrameTime;
-   uint32_t SkipFrames;
 
    /* ROM image options */
    bool     ForceLoROM;
@@ -179,7 +168,6 @@ typedef struct
    bool     SuperScope;
    bool     SRTC;
    uint32_t ControllerOption;
-   bool     ShutdownMaster;
    bool     MultiPlayer5Master;
    bool     SuperScopeMaster;
    bool     MouseMaster;
@@ -212,18 +200,6 @@ typedef struct
    bool     Mute;
    bool     NextAPUEnabled;
 
-   /* Graphics options */
-   bool     Transparency;
-   bool     Mode7Interpolate;
-
-   /* SNES graphics options */
-   bool     BGLayering;
-   bool     DisableGraphicWindows;
-   bool     ForceTransparency;
-   bool     ForceNoTransparency;
-   bool     DisableHDMA;
-   bool     DisplayFrameRate;
-
    /* Others */
    bool     ApplyCheats;
 
@@ -231,35 +207,16 @@ typedef struct
    bool     StarfoxHack;
    bool     WinterGold;
    bool     BS; /* Japanese Satellite System games. */
-   uint8_t  APURAMInitialValue;
-   bool     SampleCatchup;
    bool     JustifierMaster;
    bool     Justifier;
    bool     SecondJustifier;
    int8_t   SETA;
-   bool     TakeScreenshot;
-   int8_t   StretchScreenshots;
-   uint16_t DisplayColor;
-   int32_t  SoundDriver;
-   int32_t  AIDOShmId;
-   bool     NoPatch;
-   bool     ForceInterleaveGD24;
 } SSettings;
-
-typedef struct
-{
-   uint8_t APU_OutPorts_ReturnValueFix;
-   uint8_t SoundEnvelopeHeightReading2;
-   uint8_t SRAMInitialValue;
-   bool    EchoOnlyOutput;
-} SSNESGameFixes;
 
 extern SSettings Settings;
 extern SCPUState CPU;
-extern SSNESGameFixes SNESGameFixes;
 extern char String [513];
 
 void S9xSetPause(uint32_t mask);
 void S9xClearPause(uint32_t mask);
-
 #endif

@@ -54,7 +54,9 @@ static int32_t samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
        perf_cb.perf_register(&(name)); \
     current_ticks = name.total
 
-#define RETRO_PERFORMANCE_START(name) perf_cb.perf_start(&(name))
+#define RETRO_PERFORMANCE_START(name) \
+    perf_cb.perf_start(&(name))
+
 #define RETRO_PERFORMANCE_STOP(name) \
     perf_cb.perf_stop(&(name)); \
     current_ticks = name.total - current_ticks;
@@ -67,7 +69,6 @@ static int32_t samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
 void retro_set_environment(retro_environment_t cb)
 {
    struct retro_log_callback log;
-
    environ_cb = cb;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
@@ -166,11 +167,6 @@ void S9xInitDisplay(void)
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
 }
 
-bool S9xInitUpdate()
-{
-   return (true);
-}
-
 #ifndef __WIN32__
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext)
 {
@@ -265,8 +261,6 @@ void init_sfc_setting(void)
    Settings.APUEnabled = true;
 
    Settings.H_Max = SNES_CYCLES_PER_SCANLINE;
-   Settings.SkipFrames = AUTO_FRAMERATE;
-   Settings.ShutdownMaster = true;
    Settings.FrameTimePAL = 20000;
    Settings.FrameTimeNTSC = 16667;
    Settings.DisableMasterVolume = false;
@@ -274,14 +268,10 @@ void init_sfc_setting(void)
    Settings.SuperScope = true;
    Settings.MultiPlayer5 = true;
    Settings.ControllerOption = SNES_JOYPAD;
-
-   Settings.Transparency = true;
 #ifdef USE_BLARGG_APU
    Settings.SoundSync = false;
 #endif
    Settings.ApplyCheats = true;
-   Settings.StretchScreenshots = 1;
-
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
 }
 
@@ -303,7 +293,9 @@ void retro_init(void)
 {
    struct retro_log_callback log;
    enum retro_pixel_format rgb565;
-   static const struct retro_variable vars[] = {
+
+   static const struct retro_variable vars[] =
+   {
       { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
       { NULL, NULL },
    };
@@ -319,8 +311,7 @@ void retro_init(void)
 
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
    if (environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb565) && log_cb)
-      log_cb(RETRO_LOG_INFO,
-             "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
+      log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 - will use that instead of XRGB1555.\n");
 
    init_sfc_setting();
    S9xInitMemory();
@@ -340,7 +331,7 @@ void retro_init(void)
 void retro_deinit(void)
 {
    if (Settings.SPC7110)
-      (*CleanUp7110)();
+      Del7110Gfx();
 
    S9xDeinitGFX();
    S9xDeinitDisplay();
@@ -419,7 +410,6 @@ void retro_run(void)
 
 #ifndef USE_BLARGG_APU
    static int16_t audio_buf[2048];
-
    samples_to_play += samples_per_frame;
 
    if (samples_to_play > 512)
@@ -441,32 +431,19 @@ void retro_run(void)
 
 #ifdef PSP
       static unsigned int __attribute__((aligned(16))) d_list[32];
-      void* const texture_vram_p = (void*)(0x44200000 - (512 *
-                                           512)); // max VRAM address - frame size
-
-      sceKernelDcacheWritebackRange(GFX.Screen,
-                                    GFX.Pitch * IPPU.RenderedScreenHeight);
-
+      void* const texture_vram_p = (void*)(0x44200000 - (512 * 512)); // max VRAM address - frame size
+      sceKernelDcacheWritebackRange(GFX.Screen, GFX.Pitch * IPPU.RenderedScreenHeight);
       sceGuStart(GU_DIRECT, d_list);
-
-      sceGuCopyImage(GU_PSM_4444, 0, 0, IPPU.RenderedScreenWidth,
-                     IPPU.RenderedScreenHeight, GFX.Pitch >> 1, GFX.Screen, 0,
-                     0,
-                     512, texture_vram_p);
-
+      sceGuCopyImage(GU_PSM_4444, 0, 0, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch >> 1, GFX.Screen, 0, 0, 512, texture_vram_p);
       sceGuTexSync();
       sceGuTexImage(0, 512, 512, 512, texture_vram_p);
       sceGuTexMode(GU_PSM_5551, 0, 0, GU_FALSE);
       sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
       sceGuDisable(GU_BLEND);
-
       sceGuFinish();
-
-      video_cb(texture_vram_p, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight,
-               GFX.Pitch);
+      video_cb(texture_vram_p, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch);
 #else
-      video_cb(GFX.Screen, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight,
-               GFX.Pitch);
+      video_cb(GFX.Screen, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch);
 #endif
 
 #ifdef FRAMESKIP
@@ -482,65 +459,21 @@ void retro_run(void)
 
 bool S9xReadMousePosition(int32_t which1, int32_t* x, int32_t* y, uint32_t* buttons)
 {
-   return (false);
+   return false;
 }
 
 bool S9xReadSuperScopePosition(int32_t* x, int32_t* y, uint32_t* buttons)
 {
-   return (true);
+   return true;
 }
 
 bool JustifierOffscreen()
 {
-   return (false);
+   return false;
 }
 
 void JustifierButtons(uint32_t* justifiers)
 {
-}
-
-char* osd_GetPackDir()
-{
-   static char filename[_MAX_PATH];
-   memset(filename, 0, _MAX_PATH);
-
-   char dir [_MAX_DIR + 1];
-   char drive [_MAX_DRIVE + 1];
-   char name [_MAX_FNAME + 1];
-   char ext [_MAX_EXT + 1];
-   _splitpath(Memory.ROMFilename, drive, dir, name, ext);
-   _makepath(filename, drive, dir, NULL, NULL);
-
-   if (!strncmp((char*)&Memory.ROM [0xffc0], "SUPER POWER LEAG 4   ", 21))
-   {
-      if (getenv("SPL4PACK"))
-         return getenv("SPL4PACK");
-      else
-         strcat(filename, "/SPL4-SP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "MOMOTETSU HAPPY      ", 21))
-   {
-      if (getenv("MDHPACK"))
-         return getenv("MDHPACK");
-      else
-         strcat(filename, "/SMHT-SP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "HU TENGAI MAKYO ZERO ", 21))
-   {
-      if (getenv("FEOEZPACK"))
-         return getenv("FEOEZPACK");
-      else
-         strcat(filename, "/FEOEZSP7");
-   }
-   else if (!strncmp((char*)&Memory.ROM [0xffc0], "JUMP TENGAIMAKYO ZERO", 21))
-   {
-      if (getenv("SJNSPACK"))
-         return getenv("SJNSPACK");
-      else
-         strcat(filename, "/SJUMPSP7");
-   }
-   else strcat(filename, "/MISC-SP7");
-   return filename;
 }
 
 unsigned retro_get_region()
@@ -577,11 +510,9 @@ void retro_get_system_av_info(struct retro_system_av_info* info)
    info->geometry.aspect_ratio = 4.0 / 3.0;
 
    if (!Settings.PAL)
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE *
-                          SNES_MAX_NTSC_VCOUNTER));
+      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_NTSC_VCOUNTER));
    else
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE *
-                          SNES_MAX_PAL_VCOUNTER));
+      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_PAL_VCOUNTER));
 
    info->timing.sample_rate = samplerate;
 }
@@ -597,18 +528,16 @@ size_t retro_serialize_size(void)
    return sizeof(CPU) + sizeof(ICPU) + sizeof(PPU) + sizeof(DMA) +
           0x10000 + 0x20000 + 0x20000 + 0x8000 +
 #ifndef USE_BLARGG_APU
-          sizeof(APU) + sizeof(IAPU) + 0x10000
+          sizeof(APU) + sizeof(IAPU) + 0x10000 +
 #else
-          SPC_SAVE_STATE_BLOCK_SIZE
+          SPC_SAVE_STATE_BLOCK_SIZE +
 #endif
-          + sizeof(SA1) +
-          sizeof(s7r) + sizeof(rtc_f9);
+          sizeof(SA1) + sizeof(s7r) + sizeof(rtc_f9);
 }
 
 bool retro_serialize(void* data, size_t size)
 {
    int32_t i;
-
    S9xUpdateRTC();
    S9xSRTCPreSaveState();
    uint8_t* buffer = data;
@@ -662,7 +591,7 @@ bool retro_unserialize(const void* data, size_t size)
    S9xReset();
 #ifndef USE_BLARGG_APU
    uint8_t* IAPU_RAM_current = IAPU.RAM;
-   uint32_t IAPU_RAM_offset;
+   uintptr_t IAPU_RAM_offset;
 #endif
    memcpy(&CPU, buffer, sizeof(CPU));
    buffer += sizeof(CPU);
@@ -721,7 +650,6 @@ bool retro_unserialize(const void* data, size_t size)
    S9xUnpackStatus();
    S9xFixCycles();
    S9xReschedule();
-
    return true;
 }
 
@@ -741,12 +669,8 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
    bool sram;
    uint8_t bytes[3];//used only by GoldFinger, ignored for now
 
-   if (S9xGameGenieToRaw(code, &address, &val)!=NULL &&
-       S9xProActionReplayToRaw(code, &address, &val)!=NULL &&
-       S9xGoldFingerToRaw(code, &address, &sram, &val, bytes)!=NULL)
-   { // bad code, ignore
-      return;
-   }
+   if (S9xGameGenieToRaw(code, &address, &val) && S9xProActionReplayToRaw(code, &address, &val) && S9xGoldFingerToRaw(code, &address, &sram, &val, bytes))
+      return; // bad code, ignore
    if (index > Cheat.num_cheats)
       return; // cheat added in weird order, ignore
    if (index == Cheat.num_cheats)
@@ -755,7 +679,6 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
    Cheat.c[index].address = address;
    Cheat.c[index].byte = val;
    Cheat.c[index].enabled = enabled;
-
    Cheat.c[index].saved = false; // it'll be saved next time cheats run anyways
 
    Settings.ApplyCheats = true;
@@ -764,7 +687,8 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
 
 static void init_descriptors(void)
 {
-   struct retro_input_descriptor desc[] = {
+   struct retro_input_descriptor desc[] =
+   {
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,   "D-Pad Left" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,     "D-Pad Up" },
       { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,   "D-Pad Down" },
