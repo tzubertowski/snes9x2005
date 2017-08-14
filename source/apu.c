@@ -37,9 +37,7 @@ uint8_t APUROM [64];
 void S9xResetAPU()
 {
    int32_t i, j;
-
    Settings.APUEnabled = true;
-
    memset(IAPU.RAM, 0, 0x100);
    memset(IAPU.RAM + 0x20, 0xFF, 0x20);
    memset(IAPU.RAM + 0x60, 0xFF, 0x20);
@@ -49,7 +47,7 @@ void S9xResetAPU()
    for (i = 1; i < 256; i++)
       memcpy(IAPU.RAM + (i << 8), IAPU.RAM, 0x100);
 
-   memset(APU.OutPorts, 0, 4);
+   memset(APU.OutPorts, 0, sizeof(APU.OutPorts));
    IAPU.DirectPage = IAPU.RAM;
    // memmove converted: Different mallocs [Neb]
    // DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb]
@@ -68,7 +66,7 @@ void S9xResetAPU()
    IAPU.APUExecuting = Settings.APUEnabled;
    IAPU.WaitAddress1 = NULL;
    IAPU.WaitAddress2 = NULL;
-   IAPU.WaitCounter = 0;
+   IAPU.WaitCounter = 1;
    APU.ShowROM = true;
    IAPU.RAM [0xf1] = 0x80;
 
@@ -89,7 +87,7 @@ void S9xResetAPU()
    APU.DSP [APU_ENDX] = 0;
    APU.DSP [APU_KOFF] = 0;
    APU.DSP [APU_KON] = 0;
-   APU.DSP [APU_FLG] = APU_MUTE | APU_ECHO_DISABLED;
+   APU.DSP[APU_FLG] = APU_SOFT_RESET | APU_MUTE;
    APU.KeyedChannels = 0;
 
    S9xResetSound(true);
@@ -335,7 +333,7 @@ void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
       if(S9xSetSoundMode(channel, MODE_ADSR))
          S9xSetSoundADSR(channel, adsr1 & 0xf, (adsr1 >> 4) & 7, adsr2 & 0x1f, (adsr2 >> 5) & 7, 8);
    } // Gain mode
-   else if ((gain & 0x80) == 0)
+   else if (!(gain & 0x80))
    {
       if (S9xSetSoundMode(channel, MODE_GAIN))
       {
@@ -346,9 +344,7 @@ void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
    else if (gain & 0x40)
    {
       // Increase mode
-      if(S9xSetSoundMode(channel, (gain & 0x20) ?
-                         MODE_INCREASE_BENT_LINE :
-                         MODE_INCREASE_LINEAR))
+      if(S9xSetSoundMode(channel, (gain & 0x20) ? MODE_INCREASE_BENT_LINE : MODE_INCREASE_LINEAR))
          S9xSetEnvelopeRate(channel, gain, 1, 127, (3 << 28) | gain);
    }
    else if (gain & 0x20)
@@ -365,30 +361,30 @@ void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
 
 void S9xSetAPUControl(uint8_t byte)
 {
-   if ((byte & 1) != 0 && !APU.TimerEnabled [0])
+   if ((byte & 1) && !APU.TimerEnabled [0])
    {
       APU.Timer [0] = 0;
       IAPU.RAM [0xfd] = 0;
       if ((APU.TimerTarget [0] = IAPU.RAM [0xfa]) == 0)
          APU.TimerTarget [0] = 0x100;
    }
-   if ((byte & 2) != 0 && !APU.TimerEnabled [1])
+   if ((byte & 2) && !APU.TimerEnabled [1])
    {
       APU.Timer [1] = 0;
       IAPU.RAM [0xfe] = 0;
       if ((APU.TimerTarget [1] = IAPU.RAM [0xfb]) == 0)
          APU.TimerTarget [1] = 0x100;
    }
-   if ((byte & 4) != 0 && !APU.TimerEnabled [2])
+   if ((byte & 4) && !APU.TimerEnabled [2])
    {
       APU.Timer [2] = 0;
       IAPU.RAM [0xff] = 0;
       if ((APU.TimerTarget [2] = IAPU.RAM [0xfc]) == 0)
          APU.TimerTarget [2] = 0x100;
    }
-   APU.TimerEnabled [0] = (bool) (byte & 1);
-   APU.TimerEnabled [1] = (bool) (byte & 2);
-   APU.TimerEnabled [2] = (bool) (byte & 4);
+   APU.TimerEnabled [0] = !!(byte & 1);
+   APU.TimerEnabled [1] = !!(byte & 2);
+   APU.TimerEnabled [2] = !!(byte & 4);
 
    if (byte & 0x10)
       IAPU.RAM [0xF4] = IAPU.RAM [0xF5] = 0;
@@ -432,9 +428,8 @@ uint8_t S9xGetAPUDSP()
    case APU_OUTX + 0x60:
    case APU_OUTX + 0x70:
       if(SoundData.channels [reg >> 4].state == SOUND_SILENT)
-         return (0);
-      return ((SoundData.channels [reg >> 4].sample >> 8) |
-              (SoundData.channels [reg >> 4].sample & 0xff));
+         return 0;
+      return (SoundData.channels [reg >> 4].sample >> 8) | (SoundData.channels [reg >> 4].sample & 0xff);
    case APU_ENVX + 0x00:
    case APU_ENVX + 0x10:
    case APU_ENVX + 0x20:
@@ -450,7 +445,7 @@ uint8_t S9xGetAPUDSP()
    default:
       break;
    }
-   return (byte);
+   return byte;
 }
 
 #endif

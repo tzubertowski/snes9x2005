@@ -86,6 +86,5 @@ void ResetOBC1()
    OBC1_BasePtr = 0x1c00;
    OBC1_Shift = 0;
    OBC1_RAM = &Memory.FillRAM[0x6000];
-
    memset(OBC1_RAM, 0x00, 0x2000);
 }

@@ -48,7 +48,7 @@ void S9xDoDMA(uint8_t Channel)
    if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80 && !d->TransferDirection)
    {
       d->AAddress += d->TransferBytes;
-      //does an invalid DMA actually take time?
+      // Does an invalid DMA actually take time?
       // I'd say yes, since 'invalid' is probably just the WRAM chip
       // not being able to read and write itself at the same time
       CPU.Cycles += (d->TransferBytes + 1) * SLOW_ONE_CYCLE;
@@ -67,7 +67,6 @@ void S9xDoDMA(uint8_t Channel)
       if (d->AAddressFixed && Memory.FillRAM [0x4801] > 0)
       {
          uint8_t* in_ptr;
-
          // XXX: Should probably verify that we're DMAing from ROM?
          // And somewhere we should make sure we're not running across a mapping boundary too.
          inc = !d->AAddressDecrement ? 1 : -1;
@@ -102,7 +101,6 @@ void S9xDoDMA(uint8_t Channel)
       int32_t i;
       int32_t num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
       int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 : (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
-
       int32_t bytes_per_char = 8 * depth;
       int32_t bytes_per_line = depth * num_chars;
       int32_t char_line_bytes = bytes_per_char * num_chars;
@@ -112,7 +110,6 @@ void S9xDoDMA(uint8_t Channel)
       uint8_t* p = buffer;
       uint32_t inc = char_line_bytes - (d->AAddress % char_line_bytes);
       uint32_t char_count = inc / bytes_per_char;
-
       in_sa1_dma = true;
 
       switch (depth)
@@ -210,7 +207,6 @@ void S9xDoDMA(uint8_t Channel)
    {
       uint8_t* base;
       uint16_t p;
-
       /* XXX: DMA is potentially broken here for cases where we DMA across
        * XXX: memmap boundries. A possible solution would be to re-call
        * XXX: GetBasePointer whenever we cross a boundry, and when
@@ -237,7 +233,6 @@ void S9xDoDMA(uint8_t Channel)
          base = &Memory.ROM [MAX_ROM_SIZE - 0x10000];
          p = 0;
       }
-
       if (in_sdd1_dma)
       {
          base = in_sdd1_dma;
@@ -572,7 +567,7 @@ update_address:
    CPU.InDMA = false;
 }
 
-void S9xStartHDMA()
+void S9xStartHDMA(void)
 {
    uint8_t i;
    IPPU.HDMA = Memory.FillRAM [0x420c];
@@ -600,7 +595,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
    uint8_t mask;
    SDMA* p = &DMA [0];
    int32_t d = 0;
-
    CPU.InDMA = true;
    CPU.Cycles += ONE_CYCLE * 3;
 
@@ -611,7 +605,6 @@ uint8_t S9xDoHDMA(uint8_t byte)
          if (!p->LineCount)
          {
             uint8_t line;
-
             //remember, InDMA is set.
             //Get/Set incur no charges!
             CPU.Cycles += SLOW_ONE_CYCLE;
@@ -743,7 +736,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
    return byte;
 }
 
-void S9xResetDMA()
+void S9xResetDMA(void)
 {
    int32_t c, d;
    for (d = 0; d < 8; d++)

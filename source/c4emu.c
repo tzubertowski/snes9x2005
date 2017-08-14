@@ -15,7 +15,7 @@ uint8_t S9xGetC4(uint16_t Address)
 {
    if (Address == 0x7f5e)
       return 0;
-   return (Memory.C4RAM [Address - 0x6000]);
+   return Memory.C4RAM [Address - 0x6000];
 }
 
 static uint8_t C4TestPattern [12 * 4] =
@@ -68,8 +68,7 @@ static void C4ConvOAM()
             SprY = READ_WORD(srcptr + 2) - globalY;
             SprName = srcptr[5];
             SprAttr = srcptr[4] | srcptr[0x06]; // XXX: mask bits?
-
-             sprptr = S9xGetMemPointer(READ_3WORD(srcptr + 7));
+            sprptr = S9xGetMemPointer(READ_3WORD(srcptr + 7));
             if (*sprptr != 0)
             {
                int32_t SprCnt;
@@ -314,7 +313,6 @@ static void C4DrawWireFrame()
    int16_t X1, Y1, Z1;
    int16_t X2, Y2, Z2;
    uint8_t Color;
-
    int32_t i;
    for (i = Memory.C4RAM[0x0295]; i > 0; i--, line += 5)
    {
@@ -345,7 +343,6 @@ static void C4TransformLines()
    int32_t i;
    uint8_t *ptr;
    uint8_t* ptr2;
-
    C4WFX2Val = Memory.C4RAM[0x1f83];
    C4WFY2Val = Memory.C4RAM[0x1f86];
    C4WFDist = Memory.C4RAM[0x1f89];
@@ -353,18 +350,17 @@ static void C4TransformLines()
 
    // transform vertices
    ptr = Memory.C4RAM;
+   
+   for (i = READ_WORD(Memory.C4RAM + 0x1f80); i > 0; i--, ptr += 0x10)
    {
-      for (i = READ_WORD(Memory.C4RAM + 0x1f80); i > 0; i--, ptr += 0x10)
-      {
-         C4WFXVal = READ_WORD(ptr + 1);
-         C4WFYVal = READ_WORD(ptr + 5);
-         C4WFZVal = READ_WORD(ptr + 9);
-         C4TransfWireFrame();
+      C4WFXVal = READ_WORD(ptr + 1);
+      C4WFYVal = READ_WORD(ptr + 5);
+      C4WFZVal = READ_WORD(ptr + 9);
+      C4TransfWireFrame();
 
-         // displace
-         WRITE_WORD(ptr + 1, C4WFXVal + 0x80);
-         WRITE_WORD(ptr + 5, C4WFYVal + 0x50);
-      }
+      // displace
+      WRITE_WORD(ptr + 1, C4WFXVal + 0x80);
+      WRITE_WORD(ptr + 5, C4WFYVal + 0x50);
    }
    WRITE_WORD(Memory.C4RAM + 0x600, 23);
    WRITE_WORD(Memory.C4RAM + 0x602, 0x60);
@@ -403,7 +399,6 @@ static void C4BitPlaneWave()
    uint32_t waveptr = Memory.C4RAM[0x1f83];
    uint16_t mask1 = 0xc0c0;
    uint16_t mask2 = 0x3f3f;
-
    int32_t i, j;
    for (j = 0; j < 0x10; j++)
    {
@@ -426,8 +421,7 @@ static void C4BitPlaneWave()
          waveptr = (waveptr + 1) & 0x7f;
          mask1 = (mask1 >> 2) | (mask1 << 6);
          mask2 = (mask2 >> 2) | (mask2 << 6);
-      }
-      while (mask1 != 0xc0c0);
+      } while (mask1 != 0xc0c0);
       dst += 16;
 
       do
@@ -450,8 +444,7 @@ static void C4BitPlaneWave()
          waveptr = (waveptr + 1) & 0x7f;
          mask1 = (mask1 >> 2) | (mask1 << 6);
          mask2 = (mask2 >> 2) | (mask2 << 6);
-      }
-      while (mask1 != 0xc0c0);
+      } while (mask1 != 0xc0c0);
       dst += 16;
    }
 }

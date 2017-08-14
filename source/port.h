@@ -54,8 +54,7 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
 
-#if defined(__i386__)  || defined(__i486__) || defined(__i586__) || \
-    defined(__WIN32__) || defined(__alpha__)
+#if defined(__i386__)  || defined(__i486__) || defined(__i586__) || defined(__WIN32__) || defined(__alpha__)
 #define FAST_LSB_WORD_ACCESS
 #elif defined(__MIPSEL__)
 // On little-endian MIPS, a 16-bit word can be read directly from an address
@@ -88,12 +87,12 @@ static INLINE int32_t _isqrt(int32_t val)
          remainder -= (squaredbit | root);
          root >>= 1;
          root |= squaredbit;
-      } else
+      }
+      else
          root >>= 1;
       squaredbit >>= 2;
    }
 
    return root;
 }
-
 #endif

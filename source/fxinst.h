@@ -135,13 +135,11 @@ typedef struct
    uint32_t    vRomBankReg;              /* Rom bank index register */
    uint32_t    vRamBankReg;              /* Ram bank index register */
    uint32_t    vCacheBaseReg;            /* Cache base address register */
-   uint32_t    vCacheFlags;              /* Saying what parts of the cache was written to */
    uint32_t    vLastRamAdr;              /* Last RAM address accessed */
    uint32_t*   pvDreg;                   /* Pointer to current destination register */
    uint32_t*   pvSreg;                   /* Pointer to current source register */
    uint8_t     vRomBuffer;               /* Current byte read by R14 */
    uint8_t     vPipe;                    /* Instructionset pipe */
-   uint32_t    vPipeAdr;                 /* The address of where the pipe was read from */
 
    /* status register optimization stuff */
    uint32_t    vSign;                    /* v & 0x8000 */
@@ -150,11 +148,6 @@ typedef struct
    int32_t     vOverflow;                /* (v >= 0x8000 || v < -0x8000) */
 
    /* Other emulator variables */
-   int32_t     vErrorCode;
-   uint32_t    vIllegalAddress;
-   uint8_t     bBreakPoint;
-   uint32_t    vBreakPoint;
-   uint32_t    vStepPoint;
    uint8_t*    pvRegisters;              /* 768 bytes located in the memory at address 0x3000 */
    uint32_t    nRamBanks;                /* Number of 64kb-banks in FxRam (Don't confuse it with SNES-Ram!!!) */
    uint8_t*    pvRam;                    /* Pointer to FxRam */
@@ -177,30 +170,12 @@ typedef struct
    uint8_t*    apvRamBank[FX_RAM_BANKS]; /* Ram bank table (max 256kb) */
    uint8_t*    apvRomBank[256];          /* Rom bank table */
    uint8_t     bCacheActive;
-   uint8_t*    pvCache;                  /* Pointer to the GSU cache */
-   uint8_t     avCacheBackup[512];       /* Backup of ROM when the cache has replaced it */
    uint32_t    vCounter;
    uint32_t    vInstCount;
    uint32_t    vSCBRDirty;               /* if SCBR is written, our cached screen pointers need updating */
 } FxRegs_s;
 
 /* GSU registers */
-#define GSU_R0       0x000
-#define GSU_R1       0x002
-#define GSU_R2       0x004
-#define GSU_R3       0x006
-#define GSU_R4       0x008
-#define GSU_R5       0x00a
-#define GSU_R6       0x00c
-#define GSU_R7       0x00e
-#define GSU_R8       0x010
-#define GSU_R9       0x012
-#define GSU_R10      0x014
-#define GSU_R11      0x016
-#define GSU_R12      0x018
-#define GSU_R13      0x01a
-#define GSU_R14      0x01c
-#define GSU_R15      0x01e
 #define GSU_SFR      0x030
 #define GSU_BRAMR    0x033
 #define GSU_PBR      0x034
@@ -212,7 +187,6 @@ typedef struct
 #define GSU_VCR      0x03b
 #define GSU_RAMBR    0x03c
 #define GSU_CBR      0x03e
-#define GSU_CACHERAM 0x100
 
 /* SFR flags */
 #define FLG_Z    (1 << 1)
@@ -234,7 +208,7 @@ typedef struct
 #define SF(a) (GSU.vStatusReg |=  FLG_##a )
 
 /* Test and set flag if condition, clear if not */
-#define TS(a,b) GSU.vStatusReg = ((GSU.vStatusReg & (~FLG_##a)) | ((!!(##b)) * FLG_##a ))
+#define TS(a, b) (GSU.vStatusReg = ((GSU.vStatusReg & (~FLG_##a)) | ((!!(##b)) * FLG_##a)))
 
 /* Testing ALT1 & ALT2 bits */
 #define ALT0 (!TF(ALT1) && !TF(ALT2))
@@ -263,7 +237,7 @@ typedef struct
     GSU.pvDreg = GSU.pvSreg = &R0;
 
 /* Read current RAM-Bank */
-#define RAM(adr) GSU.pvRamBank[USEX16(adr)]
+#define RAM(adr) (GSU.pvRamBank[USEX16(adr)])
 
 /* Read current ROM-Bank */
 #define ROM(idx) (GSU.pvRomBank[USEX16(idx)])
@@ -283,23 +257,14 @@ typedef struct
 /* Access destination register */
 #define DREG (*GSU.pvDreg)
 
-#ifndef FX_DO_ROMBUFFER
-
-/* Don't read R14 */
-#define READR14
-
-/* Don't test and/or read R14 */
-#define TESTR14
-
-#else
-
 /* Read R14 */
-#define READR14 GSU.vRomBuffer = ROM(R14)
+#define READR14 \
+    GSU.vRomBuffer = ROM(R14)
 
 /* Test and/or read R14 */
-#define TESTR14 if(GSU.pvDreg == &R14) READR14
-
-#endif
+#define TESTR14 \
+    if(GSU.pvDreg == &R14) \
+       READR14
 
 /* Access to registers */
 #define R0 GSU.avReg[0]
@@ -337,16 +302,11 @@ typedef struct
 { \
     uint32_t vOpcode = (uint32_t) PIPE; \
     FETCHPIPE; \
-    (*fx_apfOpcodeTable[ (GSU.vStatusReg & 0x300) | vOpcode ])(); \
+    (*fx_apfOpcodeTable[(GSU.vStatusReg & 0x300) | vOpcode])(); \
 }
 
 extern void (*fx_apfOpcodeTable[])(void);
 extern void (*fx_apfPlotTable[])(void);
 
 uint32_t fx_run(uint32_t nInstructions);
-
-/* Set this define if branches are relative to the instruction in the delay slot */
-/* (I think they are) */
-#define BRANCH_DELAY_RELATIVE
-
 #endif

@@ -64,7 +64,7 @@ typedef struct
 
 SPC7110Decomp decomp;
 
-uint8_t spc7110dec_read()
+uint8_t spc7110dec_read(void)
 {
    decomp.read_counter++;
 
@@ -87,7 +87,6 @@ uint8_t spc7110dec_read()
    }
 
    uint8_t data = decomp.buffer[decomp.buffer_rdoffset++];
-
    decomp.buffer_rdoffset &= SPC7110_DECOMP_BUFFER_SIZE - 1;
    decomp.buffer_length--;
    return data;
@@ -100,10 +99,9 @@ void spc7110dec_write(uint8_t data)
    decomp.buffer_length++;
 }
 
-uint8_t spc7110dec_dataread()
+uint8_t spc7110dec_dataread(void)
 {
    uint32_t size = Memory.CalculatedSize - 0x100000;
-
    while(decomp.offset >= size)
       decomp.offset -= size;
    return Memory.ROM[0x100000 + decomp.offset++];
@@ -164,7 +162,6 @@ void spc7110dec_mode0(bool init)
    while(decomp.buffer_length < (SPC7110_DECOMP_BUFFER_SIZE >> 1))
    {
       uint32_t bit;
-
       for(bit = 0; bit < 8; bit++)
       {
          /* Get decomp.context */
@@ -240,7 +237,6 @@ void spc7110dec_mode1(bool init)
    if(init)
    {
       uint32_t i;
-
       for(i = 0; i < 4; i++)
          pixelorder[i] = i;
       out = inverts = lps = 0;
@@ -501,7 +497,6 @@ void spc7110dec_mode2(bool init)
             /* Update processing info */
             lps = (lps << 1) + flag_lps;
             uint32_t invertbit = decomp.context[con].invert;
-
             inverts = (inverts << 1) + invertbit;
 
             /* Update decomp.context state */
@@ -525,7 +520,6 @@ void spc7110dec_mode2(bool init)
 
       /* Convert pixel data into bitplanes */
       uint32_t data = spc7110dec_morton_4x8(out0);
-
       spc7110dec_write(data >> 24);
       spc7110dec_write(data >> 16);
       bitplanebuffer[buffer_index++] = data >> 8;
@@ -534,7 +528,6 @@ void spc7110dec_mode2(bool init)
       if(buffer_index == 16)
       {
          uint32_t i;
-
          for(i = 0; i < 16; i++)
             spc7110dec_write(bitplanebuffer[i]);
          buffer_index = 0;
@@ -580,7 +573,7 @@ uint32_t spc7110dec_morton_4x8(uint32_t data)
    return decomp.morton32[0][(data >> 0) & 255] + decomp.morton32[1][(data >> 8) & 255] + decomp.morton32[2][(data >> 16) & 255] + decomp.morton32[3][(data >> 24) & 255];
 }
 
-void spc7110dec_reset()
+void spc7110dec_reset(void)
 {
    /* Mode 3 is invalid; this is treated as a special case to always return 0x00
     * set to mode 3 so that reading decomp port before starting first decomp will return 0x00 */
@@ -590,14 +583,13 @@ void spc7110dec_reset()
    decomp.buffer_length = 0;
 }
 
-void spc7110dec_init()
+void spc7110dec_init(void)
 {
    decomp.buffer = malloc(SPC7110_DECOMP_BUFFER_SIZE);
    spc7110dec_reset();
 
    /* Initialize reverse morton lookup tables */
    uint32_t i;
-
    for(i = 0; i < 256; i++)
    {
       #define map(x, y) (((i >> x) & 1) << y)
@@ -613,7 +605,7 @@ void spc7110dec_init()
    }
 }
 
-void spc7110dec_deinit()
+void spc7110dec_deinit(void)
 {
    free(decomp.buffer);
 }

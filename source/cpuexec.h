@@ -116,10 +116,8 @@ static INLINE void S9xReschedule(void)
    }
 
    if (PPU.HTimerEnabled &&
-         (int32_t) PPU.HTimerPosition < max &&
-         (int32_t) PPU.HTimerPosition > CPU.NextEvent &&
-         (!PPU.VTimerEnabled ||
-         (PPU.VTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)))
+         (int32_t) PPU.HTimerPosition < max && (int32_t) PPU.HTimerPosition > CPU.NextEvent &&
+         (!PPU.VTimerEnabled || (PPU.VTimerEnabled && CPU.V_Counter == PPU.IRQVBeamPos)))
    {
       which = (int32_t) PPU.HTimerPosition < Settings.HBlankStart ? HTIMER_BEFORE_EVENT : HTIMER_AFTER_EVENT;
       max = PPU.HTimerPosition;
@@ -127,5 +125,4 @@ static INLINE void S9xReschedule(void)
    CPU.NextEvent = max;
    CPU.WhichEvent = which;
 }
-
 #endif

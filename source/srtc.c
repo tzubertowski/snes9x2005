@@ -68,7 +68,7 @@ void S9xHardResetSRTC(void)
 }
 
 /**********************************************************************************************/
-/* S9xSRTCComputeDayOfWeek(void)                                                                  */
+/* S9xSRTCComputeDayOfWeek(void)                                                              */
 /* Return 0-6 for Sunday-Saturday                                                             */
 /**********************************************************************************************/
 uint32_t S9xSRTCComputeDayOfWeek(void)
@@ -132,11 +132,6 @@ void S9xUpdateSrtcTime(void)
 
    // Keep track of game time by computing the number of seconds that pass on the system
    // clock and adding the same number of seconds to the S-RTC clock structure.
-   // I originally tried using mktime and localtime library functions to keep track
-   // of time but some of the GNU time functions fail when the year goes to 2099
-   // (and maybe less) and this would have caused a bug with DKJM2 so I'm doing
-   // it this way to get around that problem.
-
    // Note: Dai Kaijyu Monogatari II only allows dates in the range 1996-21xx.
 
    if (rtc.count_enable && !rtc.needs_init)
@@ -250,9 +245,8 @@ void S9xUpdateSrtcTime(void)
    }
 }
 
-
 /**********************************************************************************************/
-/* S9xSetSRTC(void)                                                                               */
+/* S9xSetSRTC(void)                                                                           */
 /* This function sends data to the S-RTC used in Dai Kaijyu Monogatari II                     */
 /**********************************************************************************************/
 void S9xSetSRTC(uint8_t data, uint16_t Address)

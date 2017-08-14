@@ -13,24 +13,27 @@ typedef struct
 } Band;
 
 #define BAND_EMPTY(B) (B.Left >= B.Right)
-#define BANDS_INTERSECT(A,B) ((A.Left >= B.Left && A.Left < B.Right) || \
-                       (B.Left >= A.Left && B.Left < A.Right))
-#define OR_BANDS(R,A,B) {\
+#define BANDS_INTERSECT(A,B) ((A.Left >= B.Left && A.Left < B.Right) || (B.Left >= A.Left && B.Left < A.Right))
+#define OR_BANDS(R,A,B) \
+{ \
     R.Left = MIN(A.Left, B.Left); \
-      R.Right = MAX(A.Right, B.Right);}
+    R.Right = MAX(A.Right, B.Right); \
+}
 
-#define AND_BANDS(R,A,B) {\
+#define AND_BANDS(R,A,B) \
+{ \
     R.Left = MAX(A.Left, B.Left); \
-      R.Right = MIN(A.Right, B.Right);}
+    R.Right = MIN(A.Right, B.Right); \
+}
 
 static int32_t IntCompare(const void* d1, const void* d2)
 {
-   return (*(uint32_t*) d1 - * (uint32_t*) d2);
+   return *(uint32_t*) d1 - *(uint32_t*) d2;
 }
 
 static int32_t BandCompare(const void* d1, const void* d2)
 {
-   return (((Band*) d1)->Left - ((Band*) d2)->Left);
+   return ((Band*) d1)->Left  - ((Band*) d2)->Left;
 }
 
 void ComputeClipWindows()
@@ -53,8 +56,7 @@ void ComputeClipWindows()
             {
                if ((Memory.FillRAM [0x2130] & 0xc0) == 0xc0)
                {
-                  // The whole of the main screen is switched off,
-                  // completely clip everything.
+                  // The whole of the main screen is switched off, completely clip everything.
                   for (i = 0; i < 6; i++)
                   {
                      IPPU.Clip [c].Count [i] = 1;
@@ -66,37 +68,29 @@ void ComputeClipWindows()
                else if ((Memory.FillRAM [0x2130] & 0xc0) == 0x00)
                   continue;
             }
-            else
+            else if ((Memory.FillRAM [0x2130] & 0x30) == 0x30) // .. colour window on the sub-screen.
             {
-               // .. colour window on the sub-screen.
-               if ((Memory.FillRAM [0x2130] & 0x30) == 0x30)
+               // The sub-screen is switched off, completely clip everything.
+               int32_t i;
+               for (i = 0; i < 6; i++)
                {
-                  // The sub-screen is switched off, completely
-                  // clip everything.
-                  int32_t i;
-                  for (i = 0; i < 6; i++)
-                  {
-                     IPPU.Clip [1].Count [i] = 1;
-                     IPPU.Clip [1].Left [0][i] = 1;
-                     IPPU.Clip [1].Right [0][i] = 0;
-                  }
-                  return;
+                  IPPU.Clip [1].Count [i] = 1;
+                  IPPU.Clip [1].Left [0][i] = 1;
+                  IPPU.Clip [1].Right [0][i] = 0;
                }
-               else if ((Memory.FillRAM [0x2130] & 0x30) == 0x00)
-                  continue;
+               return;
             }
+            else if ((Memory.FillRAM [0x2130] & 0x30) == 0x00)
+               continue;
          }
 
-         if (w == 5 || pClip->Count [5] ||
-               (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
+         if (w == 5 || pClip->Count [5] || (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
          {
             Band Win1[3];
             Band Win2[3];
             uint32_t Window1Enabled = 0;
             uint32_t Window2Enabled = 0;
-            bool invert = (w == 5 &&
-                            ((c == 1 && (Memory.FillRAM [0x2130] & 0x30) == 0x10) ||
-                            (c == 0 && (Memory.FillRAM [0x2130] & 0xc0) == 0x40)));
+            bool invert = (w == 5 && ((c == 1 && (Memory.FillRAM [0x2130] & 0x30) == 0x10) || (c == 0 && (Memory.FillRAM [0x2130] & 0xc0) == 0x40)));
 
             if (w == 5 || (Memory.FillRAM [0x212c + c] & Memory.FillRAM [0x212e + c] & (1 << w)))
             {
@@ -107,33 +101,30 @@ void ComputeClipWindows()
                      Win1[Window1Enabled].Left = PPU.Window1Left;
                      Win1[Window1Enabled++].Right = PPU.Window1Right + 1;
                   }
-                  else
+                  else if (PPU.Window1Left <= PPU.Window1Right)
                   {
-                     if (PPU.Window1Left <= PPU.Window1Right)
+                     if (PPU.Window1Left > 0)
                      {
-                        if (PPU.Window1Left > 0)
-                        {
-                           Win1[Window1Enabled].Left = 0;
-                           Win1[Window1Enabled++].Right = PPU.Window1Left;
-                        }
-                        if (PPU.Window1Right < 255)
-                        {
-                           Win1[Window1Enabled].Left = PPU.Window1Right + 1;
-                           Win1[Window1Enabled++].Right = 256;
-                        }
-                        if (Window1Enabled == 0)
-                        {
-                           Win1[Window1Enabled].Left = 1;
-                           Win1[Window1Enabled++].Right = 0;
-                        }
-                     }
-                     else
-                     {
-                        // 'outside' a window with no range -
-                        // appears to be the whole screen.
                         Win1[Window1Enabled].Left = 0;
+                        Win1[Window1Enabled++].Right = PPU.Window1Left;
+                     }
+                     if (PPU.Window1Right < 255)
+                     {
+                        Win1[Window1Enabled].Left = PPU.Window1Right + 1;
                         Win1[Window1Enabled++].Right = 256;
                      }
+                     if (Window1Enabled == 0)
+                     {
+                        Win1[Window1Enabled].Left = 1;
+                        Win1[Window1Enabled++].Right = 0;
+                     }
+                  }
+                  else
+                  {
+                     // 'outside' a window with no range -
+                     // appears to be the whole screen.
+                     Win1[Window1Enabled].Left = 0;
+                     Win1[Window1Enabled++].Right = 256;
                   }
                }
                if (PPU.ClipWindow2Enable [w])
@@ -198,48 +189,42 @@ void ComputeClipWindows()
                         {
                            if (BAND_EMPTY(Win2[0]))
                               Bands[B++] = Win1[0];
+                           else if (BANDS_INTERSECT(Win1[0], Win2[0]))
+                           {
+                              OR_BANDS(Bands[0], Win1[0], Win2[0])
+                              B = 1;
+                           }
                            else
                            {
-                              if (BANDS_INTERSECT(Win1[0], Win2[0]))
-                              {
-                                 OR_BANDS(Bands[0], Win1[0], Win2[0])
-                                 B = 1;
-                              }
-                              else
-                              {
-                                 Bands[B++] = Win1[0];
-                                 Bands[B++] = Win2[0];
-                              }
+                              Bands[B++] = Win1[0];
+                              Bands[B++] = Win2[0];
                            }
+                        }
+                        else if (BANDS_INTERSECT(Win1[0], Win2[0]))
+                        {
+                           OR_BANDS(Bands[0], Win1[0], Win2[0])
+                           if (BANDS_INTERSECT(Win1[0], Win2[1]))
+                              OR_BANDS(Bands[1], Win1[0], Win2[1])
+                           else
+                              Bands[1] = Win2[1];
+                           B = 1;
+                           if (BANDS_INTERSECT(Bands[0], Bands[1]))
+                              OR_BANDS(Bands[0], Bands[0], Bands[1])
+                           else
+                              B = 2;
+                        }
+                        else if (BANDS_INTERSECT(Win1[0], Win2[1]))
+                        {
+                           Bands[B++] = Win2[0];
+                           OR_BANDS(Bands[B], Win1[0], Win2[1]);
+                           B++;
                         }
                         else
                         {
-                           if (BANDS_INTERSECT(Win1[0], Win2[0]))
-                           {
-                              OR_BANDS(Bands[0], Win1[0], Win2[0])
-                              if (BANDS_INTERSECT(Win1[0], Win2[1]))
-                                 OR_BANDS(Bands[1], Win1[0], Win2[1])
-                              else
-                                 Bands[1] = Win2[1];
-                              B = 1;
-                              if (BANDS_INTERSECT(Bands[0], Bands[1]))
-                                 OR_BANDS(Bands[0], Bands[0], Bands[1])
-                              else
-                                 B = 2;
-                           }
-                           else if (BANDS_INTERSECT(Win1[0], Win2[1]))
-                           {
-                              Bands[B++] = Win2[0];
-                              OR_BANDS(Bands[B], Win1[0], Win2[1]);
-                              B++;
-                           }
-                           else
-                           {
-                              Bands[0] = Win2[0];
-                              Bands[1] = Win1[0];
-                              Bands[2] = Win2[1];
-                              B = 3;
-                           }
+                           Bands[0] = Win2[0];
+                           Bands[1] = Win1[0];
+                           Bands[2] = Win2[1];
+                           B = 3;
                         }
                      }
                   }
@@ -426,7 +411,6 @@ void ComputeClipWindows()
                      {
                         j = 0;
                         // Easy case to deal with, so special case it.
-
                         if (Bands[0].Left > 0)
                         {
                            pClip->Left[j][w] = 0;
@@ -500,7 +484,6 @@ void ComputeClipWindows()
             {
                // Only one window enabled so no need to perform
                // complex overlap logic...
-
                if (Window1Enabled)
                {
                   if (invert)

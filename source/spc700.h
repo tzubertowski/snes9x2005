@@ -70,10 +70,8 @@ typedef struct
 
 #define APU_EXECUTE() \
 if (IAPU.APUExecuting) \
-{\
     while (APU.Cycles <= CPU.Cycles) \
-       APU_EXECUTE1(); \
-}
+       APU_EXECUTE1();
 
 #endif
 #endif

@@ -88,7 +88,8 @@ enum
    MAP_RONLY_SRAM, MAP_OBC_RAM, MAP_SETA_DSP, MAP_SETA_RISC, MAP_LAST
 };
 
-enum {
+enum
+{
    MAX_ROM_SIZE = 0x800000
 };
 
@@ -149,5 +150,4 @@ uint8_t* S9xGetMemPointer(uint32_t Address);
 uint8_t* GetBasePointer(uint32_t Address);
 
 extern uint8_t OpenBus;
-
 #endif // _memmap_h_

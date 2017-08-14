@@ -165,7 +165,7 @@ void S9xSetSoundVolume(int32_t channel, int16_t volume_left, int16_t volume_righ
 
 void S9xSetMasterVolume(int16_t volume_left, int16_t volume_right)
 {
-   if (Settings.DisableMasterVolume || SNESGameFixes.EchoOnlyOutput)
+   if (Settings.DisableMasterVolume)
       SoundData.master_volume [0] = SoundData.master_volume [1] = 127;
    else
    {

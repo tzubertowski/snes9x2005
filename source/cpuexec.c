@@ -367,7 +367,6 @@ void S9xDoHBlankProcessing_SFX()
          if (!PPU.ForcedBlanking)
          {
             uint8_t tmp = 0;
-
             PPU.OAMAddr = PPU.SavedOAMAddr;
 
             if (PPU.OAMPriorityRotation)
@@ -399,45 +398,42 @@ void S9xDoHBlankProcessing_SFX()
          CPU.Flags &= ~NMI_FLAG;
          S9xStartScreenRefresh();
       }
-      if (CPU.V_Counter >= FIRST_VISIBLE_LINE &&
-            CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE)
+      if (CPU.V_Counter >= FIRST_VISIBLE_LINE && CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE)
          RenderLine(CPU.V_Counter - FIRST_VISIBLE_LINE);
 #ifndef USE_BLARGG_APU
+      if (APU.TimerEnabled [2])
       {
-         if (APU.TimerEnabled [2])
+         APU.Timer [2] += 4;
+         while (APU.Timer [2] >= APU.TimerTarget [2])
          {
-            APU.Timer [2] += 4;
-            while (APU.Timer [2] >= APU.TimerTarget [2])
+            IAPU.RAM [0xff] = (IAPU.RAM [0xff] + 1) & 0xf;
+            APU.Timer [2] -= APU.TimerTarget [2];
+            IAPU.WaitCounter++;
+            IAPU.APUExecuting = true;
+         }
+      }
+      if (CPU.V_Counter & 1)
+      {
+         if (APU.TimerEnabled [0])
+         {
+            APU.Timer [0]++;
+            if (APU.Timer [0] >= APU.TimerTarget [0])
             {
-               IAPU.RAM [0xff] = (IAPU.RAM [0xff] + 1) & 0xf;
-               APU.Timer [2] -= APU.TimerTarget [2];
+               IAPU.RAM [0xfd] = (IAPU.RAM [0xfd] + 1) & 0xf;
+               APU.Timer [0] = 0;
                IAPU.WaitCounter++;
                IAPU.APUExecuting = true;
             }
          }
-         if (CPU.V_Counter & 1)
+         if (APU.TimerEnabled [1])
          {
-            if (APU.TimerEnabled [0])
+            APU.Timer [1]++;
+            if (APU.Timer [1] >= APU.TimerTarget [1])
             {
-               APU.Timer [0]++;
-               if (APU.Timer [0] >= APU.TimerTarget [0])
-               {
-                  IAPU.RAM [0xfd] = (IAPU.RAM [0xfd] + 1) & 0xf;
-                  APU.Timer [0] = 0;
-                  IAPU.WaitCounter++;
-                  IAPU.APUExecuting = true;
-               }
-            }
-            if (APU.TimerEnabled [1])
-            {
-               APU.Timer [1]++;
-               if (APU.Timer [1] >= APU.TimerTarget [1])
-               {
-                  IAPU.RAM [0xfe] = (IAPU.RAM [0xfe] + 1) & 0xf;
-                  APU.Timer [1] = 0;
-                  IAPU.WaitCounter++;
-                  IAPU.APUExecuting = true;
-               }
+               IAPU.RAM [0xfe] = (IAPU.RAM [0xfe] + 1) & 0xf;
+               APU.Timer [1] = 0;
+               IAPU.WaitCounter++;
+               IAPU.APUExecuting = true;
             }
          }
       }
@@ -501,7 +497,6 @@ void S9xDoHBlankProcessing_NoSFX()
          if (!PPU.ForcedBlanking)
          {
             uint8_t tmp = 0;
-
             PPU.OAMAddr = PPU.SavedOAMAddr;
 
             if (PPU.OAMPriorityRotation)
@@ -533,45 +528,42 @@ void S9xDoHBlankProcessing_NoSFX()
          CPU.Flags &= ~NMI_FLAG;
          S9xStartScreenRefresh();
       }
-      if (CPU.V_Counter >= FIRST_VISIBLE_LINE &&
-            CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE)
+      if (CPU.V_Counter >= FIRST_VISIBLE_LINE && CPU.V_Counter < PPU.ScreenHeight + FIRST_VISIBLE_LINE)
          RenderLine(CPU.V_Counter - FIRST_VISIBLE_LINE);
 #ifndef USE_BLARGG_APU
+      if (APU.TimerEnabled [2])
       {
-         if (APU.TimerEnabled [2])
+         APU.Timer [2] += 4;
+         while (APU.Timer [2] >= APU.TimerTarget [2])
          {
-            APU.Timer [2] += 4;
-            while (APU.Timer [2] >= APU.TimerTarget [2])
+            IAPU.RAM [0xff] = (IAPU.RAM [0xff] + 1) & 0xf;
+            APU.Timer [2] -= APU.TimerTarget [2];
+            IAPU.WaitCounter++;
+            IAPU.APUExecuting = true;
+         }
+      }
+      if (CPU.V_Counter & 1)
+      {
+         if (APU.TimerEnabled [0])
+         {
+            APU.Timer [0]++;
+            if (APU.Timer [0] >= APU.TimerTarget [0])
             {
-               IAPU.RAM [0xff] = (IAPU.RAM [0xff] + 1) & 0xf;
-               APU.Timer [2] -= APU.TimerTarget [2];
+               IAPU.RAM [0xfd] = (IAPU.RAM [0xfd] + 1) & 0xf;
+               APU.Timer [0] = 0;
                IAPU.WaitCounter++;
                IAPU.APUExecuting = true;
             }
          }
-         if (CPU.V_Counter & 1)
+         if (APU.TimerEnabled [1])
          {
-            if (APU.TimerEnabled [0])
+            APU.Timer [1]++;
+            if (APU.Timer [1] >= APU.TimerTarget [1])
             {
-               APU.Timer [0]++;
-               if (APU.Timer [0] >= APU.TimerTarget [0])
-               {
-                  IAPU.RAM [0xfd] = (IAPU.RAM [0xfd] + 1) & 0xf;
-                  APU.Timer [0] = 0;
-                  IAPU.WaitCounter++;
-                  IAPU.APUExecuting = true;
-               }
-            }
-            if (APU.TimerEnabled [1])
-            {
-               APU.Timer [1]++;
-               if (APU.Timer [1] >= APU.TimerTarget [1])
-               {
-                  IAPU.RAM [0xfe] = (IAPU.RAM [0xfe] + 1) & 0xf;
-                  APU.Timer [1] = 0;
-                  IAPU.WaitCounter++;
-                  IAPU.APUExecuting = true;
-               }
+               IAPU.RAM [0xfe] = (IAPU.RAM [0xfe] + 1) & 0xf;
+               APU.Timer [1] = 0;
+               IAPU.WaitCounter++;
+               IAPU.APUExecuting = true;
             }
          }
       }

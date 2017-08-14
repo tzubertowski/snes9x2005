@@ -7,9 +7,9 @@
 
 const char* S9xGetFilename(const char*);
 
-SPC7110Regs s7r;            // SPC7110 registers, about 33KB
-S7RTC rtc_f9;               // FEOEZ (and Shounen Jump no SHou) RTC
-void S9xUpdateRTC(void);    // S-RTC function hacked to work with the RTC
+SPC7110Regs s7r;         // SPC7110 registers, about 33KB
+S7RTC rtc_f9;            // FEOEZ (and Shounen Jump no SHou) RTC
+void S9xUpdateRTC(void); // S-RTC function hacked to work with the RTC
 
 void S9xSpc7110Init(void) // Emulate power on state
 {
@@ -82,7 +82,6 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    case 0x4800:
    {
       uint16_t count = s7r.reg4809 | (s7r.reg480A << 8);
-
       if (count > 0)
          count--;
       else
@@ -909,10 +908,8 @@ void  S9xUpdateRTC(void)
          int32_t month;
          int32_t year;
          int32_t temp_days;
-
          int32_t year_tens;
          int32_t year_ones;
-
 
          if (time_diff > DAYTICKS)
          {

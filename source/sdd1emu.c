@@ -98,7 +98,8 @@ static INLINE uint8_t GetCodeword(int32_t bits)
    in_stream <<= 1;
    valid_bits--;
    in_stream ^= 0x8000;
-   if (in_stream & 0x8000) return 0x80 + (1 << bits);
+   if (in_stream & 0x8000)
+      return 0x80 + (1 << bits);
    tmp = (in_stream >> 8) | (0x7f >> bits);
    in_stream <<= bits;
    valid_bits -= bits;
@@ -112,7 +113,8 @@ static INLINE uint8_t GetCodeword(int32_t bits)
 
 static INLINE uint8_t GolombGetBit(int32_t code_size)
 {
-   if (!bit_ctr[code_size]) bit_ctr[code_size] = GetCodeword(code_size);
+   if (!bit_ctr[code_size])
+      bit_ctr[code_size] = GetCodeword(code_size);
    bit_ctr[code_size]--;
    if (bit_ctr[code_size] == 0x80)
    {
@@ -150,12 +152,7 @@ static INLINE uint8_t ProbGetBit(uint8_t context)
 
 static INLINE uint8_t GetBit(uint8_t cur_bitplane)
 {
-   uint8_t bit;
-
-   bit = ProbGetBit(((cur_bitplane & 1) << 4)
-                    | ((prev_bits[cur_bitplane] & high_context_bits) >> 5)
-                    | (prev_bits[cur_bitplane] & low_context_bits));
-
+   uint8_t bit = ProbGetBit(((cur_bitplane & 1) << 4) | ((prev_bits[cur_bitplane] & high_context_bits) >> 5) | (prev_bits[cur_bitplane] & low_context_bits));
    prev_bits[cur_bitplane] <<= 1;
    prev_bits[cur_bitplane] |= bit;
    return bit;
@@ -165,9 +162,8 @@ void SDD1_decompress(uint8_t* out, uint8_t* in, int32_t len)
 {
    uint8_t bit, i, plane;
    uint8_t byte1, byte2;
-
-   if (len == 0) len = 0x10000;
-
+   if (len == 0)
+      len = 0x10000;
    bitplane_type = in[0] >> 6;
 
    switch (in[0] & 0x30)
@@ -205,13 +201,17 @@ void SDD1_decompress(uint8_t* out, uint8_t* in, int32_t len)
       {
          for (byte1 = byte2 = 0, bit = 0x80; bit; bit >>= 1)
          {
-            if (GetBit(0)) byte1 |= bit;
-            if (GetBit(1)) byte2 |= bit;
+            if(GetBit(0))
+               byte1 |= bit;
+            if(GetBit(1))
+               byte2 |= bit;
          }
          *(out++) = byte1;
-         if (!--len) return;
+         if(!--len)
+            return;
          *(out++) = byte2;
-         if (!--len) return;
+         if(!--len)
+            return;
       }
       break;
    case 1:
@@ -220,14 +220,19 @@ void SDD1_decompress(uint8_t* out, uint8_t* in, int32_t len)
       {
          for (byte1 = byte2 = 0, bit = 0x80; bit; bit >>= 1)
          {
-            if (GetBit(plane)) byte1 |= bit;
-            if (GetBit(plane + 1)) byte2 |= bit;
+            if(GetBit(plane))
+               byte1 |= bit;
+            if(GetBit(plane + 1))
+               byte2 |= bit;
          }
          *(out++) = byte1;
-         if (!--len) return;
+         if(!--len)
+            return;
          *(out++) = byte2;
-         if (!--len) return;
-         if (!(i += 32)) plane = (plane + 2) & 7;
+         if(!--len)
+            return;
+         if(!(i += 32))
+            plane = (plane + 2) & 7;
       }
       break;
    case 2:
@@ -236,26 +241,29 @@ void SDD1_decompress(uint8_t* out, uint8_t* in, int32_t len)
       {
          for (byte1 = byte2 = 0, bit = 0x80; bit; bit >>= 1)
          {
-            if (GetBit(plane)) byte1 |= bit;
-            if (GetBit(plane + 1)) byte2 |= bit;
+            if(GetBit(plane))
+               byte1 |= bit;
+            if(GetBit(plane + 1))
+               byte2 |= bit;
          }
          *(out++) = byte1;
-         if (!--len) return;
+         if(!--len)
+            return;
          *(out++) = byte2;
-         if (!--len) return;
-         if (!(i += 32)) plane ^= 2;
+         if(!--len)
+            return;
+         if(!(i += 32))
+            plane ^= 2;
       }
       break;
    case 3:
       do
       {
-         for (byte1 = plane = 0, bit = 1; bit; bit <<= 1, plane++)
-         {
-            if (GetBit(plane)) byte1 |= bit;
-         }
+         for(byte1 = plane = 0, bit = 1; bit; bit <<= 1, plane++)
+            if(GetBit(plane))
+               byte1 |= bit;
          *(out++) = byte1;
-      }
-      while (--len);
+      } while(--len);
       break;
    }
 }
