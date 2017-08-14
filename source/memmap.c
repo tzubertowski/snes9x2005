@@ -598,8 +598,7 @@ again:
 
    if (!TotalFileSize)
       return false; // it ends here
-   else if (!Settings.NoPatch)
-      CheckForIPSPatch(filename, Memory.HeaderCount != 0, &TotalFileSize);
+   CheckForIPSPatch(filename, Memory.HeaderCount != 0, &TotalFileSize);
 #endif
    //fix hacked games here.
    if ((strncmp("HONKAKUHA IGO GOSEI", (char*)&Memory.ROM[0x7FC0], 19) == 0) && (Memory.ROM[0x7FD5] != 0x31))
