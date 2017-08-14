@@ -22,7 +22,7 @@ void fx_flushCache(void)
 
 void fx_updateRamBank(uint8_t Byte)
 {
-   // Update BankReg and Bank pointer
+   /* Update BankReg and Bank pointer */
    GSU.vRamBankReg = (uint32_t) Byte & (FX_RAM_BANKS - 1);
    GSU.pvRamBank = GSU.apvRamBank[Byte & 0x3];
 }

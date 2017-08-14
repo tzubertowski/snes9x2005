@@ -38,10 +38,10 @@ inline uint8_t S9xGetByte(uint32_t Address)
       return S9xGetDSP(Address & 0xffff);
    case MAP_SA1RAM:
    case MAP_LOROM_SRAM:
-      //Address & 0x7FFF - offset into bank
-      //Address & 0xFF0000 - bank
-      //bank >> 1 | offset = s-ram address, unbound
-      //unbound & SRAMMask = Sram offset
+      /*Address & 0x7FFF - offset into bank
+       *Address & 0xFF0000 - bank
+       *bank >> 1 | offset = s-ram address, unbound
+       *unbound & SRAMMask = Sram offset */
       return Memory.SRAM[(((Address & 0xFF0000) >> 1) | (Address & 0x7FFF)) &Memory.SRAMMask];
    case MAP_RONLY_SRAM:
    case MAP_HIROM_SRAM:
@@ -99,10 +99,10 @@ inline uint16_t S9xGetWord(uint32_t Address)
       return S9xGetDSP(Address & 0xffff) | (S9xGetDSP((Address + 1) & 0xffff) << 8);
    case MAP_SA1RAM:
    case MAP_LOROM_SRAM:
-      //Address & 0x7FFF - offset into bank
-      //Address & 0xFF0000 - bank
-      //bank >> 1 | offset = s-ram address, unbound
-      //unbound & SRAMMask = Sram offset
+      /*Address & 0x7FFF - offset into bank
+       *Address & 0xFF0000 - bank
+       *bank >> 1 | offset = s-ram address, unbound
+       *unbound & SRAMMask = Sram offset */
       /* BJ: no FAST_LSB_WORD_ACCESS here, since if Memory.SRAMMask=0x7ff
        * then the high byte doesn't follow the low byte. */
       return *(Memory.SRAM + ((((Address & 0xFF0000) >> 1) | (Address & 0x7FFF)) & Memory.SRAMMask)) | ((*(Memory.SRAM + (((((Address + 1) & 0xFF0000) >> 1) | ((Address + 1) & 0x7FFF)) & Memory.SRAMMask))) << 8);
@@ -320,8 +320,8 @@ inline uint8_t* GetBasePointer(uint32_t Address)
       return s7r.bank50;
    case MAP_SPC7110_ROM:
       return Get7110BasePtr(Address);
-   case MAP_PPU: //just a guess, but it looks like this should match the CPU as a source.
-   case MAP_CPU: //fixes Ogre Battle's green lines
+   case MAP_PPU: /*just a guess, but it looks like this should match the CPU as a source. */
+   case MAP_CPU: /*fixes Ogre Battle's green lines */
    case MAP_OBC_RAM:
       return Memory.FillRAM;
    case MAP_DSP:

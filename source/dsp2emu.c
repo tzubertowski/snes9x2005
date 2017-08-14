@@ -11,30 +11,31 @@ uint8_t DSP2Op05Transparent = 0;
 void DSP2_Op05(void)
 {
    uint8_t color;
-   // Overlay bitmap with transparency.
-   // Input:
-   //
-   //   Bitmap 1:  i[0] <=> i[size-1]
-   //   Bitmap 2:  i[size] <=> i[2*size-1]
-   //
-   // Output:
-   //
-   //   Bitmap 3:  o[0] <=> o[size-1]
-   //
-   // Processing:
-   //
-   //   Process all 4-bit pixels (nibbles) in the bitmap
-   //
-   //   if ( BM2_pixel == transparent_color )
-   //      pixelout = BM1_pixel
-   //   else
-   //      pixelout = BM2_pixel
+   /* Overlay bitmap with transparency.
+    * Input:
+    *
+    *   Bitmap 1:  i[0] <=> i[size-1]
+    *   Bitmap 2:  i[size] <=> i[2*size-1]
+    *
+    * Output:
+    *
+    *   Bitmap 3:  o[0] <=> o[size-1]
+    *
+    * Processing:
+    *
+    *   Process all 4-bit pixels (nibbles) in the bitmap
+    *
+    *   if ( BM2_pixel == transparent_color )
+    *      pixelout = BM1_pixel
+    *   else
+    *      pixelout = BM2_pixel
 
-   // The max size bitmap is limited to 255 because the size parameter is a byte
-   // I think size=0 is an error.  The behavior of the chip on size=0 is to
-   // return the last value written to DR if you read DR on Op05 with
-   // size = 0.  I don't think it's worth implementing this quirk unless it's
-   // proven necessary.
+    * The max size bitmap is limited to 255 because the size parameter is a byte
+    * I think size=0 is an error.  The behavior of the chip on size=0 is to
+    * return the last value written to DR if you read DR on Op05 with
+    * size = 0.  I don't think it's worth implementing this quirk unless it's
+    * proven necessary.
+    */
 
    int32_t n;
    uint8_t c1;
@@ -55,15 +56,15 @@ void DSP2_Op05(void)
 
 void DSP2_Op01(void)
 {
-   // Op01 size is always 32 bytes input and output.
-   // The hardware does strange things if you vary the size.
+   /* Op01 size is always 32 bytes input and output.
+    * The hardware does strange things if you vary the size. */
    int32_t j;
    uint8_t c0, c1, c2, c3;
    uint8_t* p1 = DSP1.parameters;
    uint8_t* p2a = DSP1.output;
-   uint8_t* p2b = &DSP1.output[16]; // halfway
+   uint8_t* p2b = &DSP1.output[16]; /* halfway */
 
-   // Process 8 blocks of 4 bytes each
+   /* Process 8 blocks of 4 bytes each */
    for (j = 0; j < 8; j++)
    {
       c0 = *p1++;
@@ -79,9 +80,10 @@ void DSP2_Op01(void)
 
 void DSP2_Op06(void)
 {
-   // Input:
-   //    size
-   //    bitmap
+   /* Input:
+    *    size
+    *    bitmap
+    */
 
    int32_t i, j;
 
@@ -93,10 +95,10 @@ bool DSP2Op0DHasLen = false;
 int32_t DSP2Op0DOutLen = 0;
 int32_t DSP2Op0DInLen = 0;
 
-// Scale bitmap based on input length out output length
+/* Scale bitmap based on input length out output length */
 void DSP2_Op0D(void)
 {
-   // (Modified) Overload's algorithm
+   /* (Modified) Overload's algorithm */
    int32_t i;
    for(i = 0 ; i < DSP2Op0DOutLen ; i++)
    {

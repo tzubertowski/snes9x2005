@@ -851,7 +851,7 @@ static INLINE void fx_cmode(void)
    GSU.vPlotOptionReg = SREG;
 
    if (GSU.vPlotOptionReg & 0x10)
-      GSU.vScreenHeight = 256; // OBJ Mode (for drawing into sprites)
+      GSU.vScreenHeight = 256; /* OBJ Mode (for drawing into sprites) */
    else
       GSU.vScreenHeight = GSU.vScreenRealHeight;
 

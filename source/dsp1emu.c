@@ -168,7 +168,7 @@ int16_t Op10ExponentR;
 
 void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, int16_t* iExponent)
 {
-   // Step One: Division by Zero
+   /* Step One: Division by Zero */
    if (Coefficient == 0x0000)
    {
       *iCoefficient = 0x7fff;
@@ -178,7 +178,7 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
    {
       int16_t Sign = 1;
 
-      // Step Two: Remove Sign
+      /* Step Two: Remove Sign */
       if (Coefficient < 0)
       {
          if (Coefficient < -32767)
@@ -187,14 +187,14 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
          Sign = -1;
       }
 
-      // Step Three: Normalize
+      /* Step Three: Normalize */
       while (Coefficient < 0x4000)
       {
          Coefficient <<= 1;
          Exponent--;
       }
 
-      // Step Four: Special Case
+      /* Step Four: Special Case */
       if (Coefficient == 0x4000)
       {
          if (Sign == 1)
@@ -207,10 +207,10 @@ void DSP1_Inverse(int16_t Coefficient, int16_t Exponent, int16_t* iCoefficient, 
       }
       else
       {
-         // Step Five: Initial Guess
+         /* Step Five: Initial Guess */
          int16_t i = DSP1ROM[((Coefficient - 0x4000) >> 7) + 0x0065];
 
-         // Step Six: Iterate "estimated" Newton's Method
+         /* Step Six: Iterate "estimated" Newton's Method */
          i = (i + (-i * (Coefficient * i >> 15) >> 15)) << 1;
          i = (i + (-i * (Coefficient * i >> 15) >> 15)) << 1;
 
@@ -467,13 +467,13 @@ int16_t VOffset;
 int16_t VPlane_C;
 int16_t VPlane_E;
 
-// Azimuth and Zenith angles
+/* Azimuth and Zenith angles */
 int16_t SinAas;
 int16_t CosAas;
 int16_t SinAzs;
 int16_t CosAzs;
 
-// Clipped Zenith angle
+/* Clipped Zenith angle */
 int16_t SinAZS;
 int16_t CosAZS;
 int16_t SecAZS_C1;
@@ -498,10 +498,10 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    int16_t LesNx, LesNy, LesNz;
    int16_t CentreZ;
 
-   // Copy Zenith angle for clipping
+   /* Copy Zenith angle for clipping */
    int16_t AZS = Azs;
 
-   // Store Sine and Cosine of Azimuth and Zenith angle
+   /* Store Sine and Cosine of Azimuth and Zenith angle */
    SinAas = DSP1_Sin(Aas);
    CosAas = DSP1_Cos(Aas);
    SinAzs = DSP1_Sin(Azs);
@@ -515,7 +515,7 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    LfeNy = Lfe * Ny >> 15;
    LfeNz = Lfe * Nz >> 15;
 
-   // Center of Projection
+   /* Center of Projection */
    CentreX = Fx + LfeNx;
    CentreY = Fy + LfeNy;
    CentreZ = Fz + LfeNz;
@@ -538,7 +538,7 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    VPlane_C = C;
    VPlane_E = E;
 
-   // Determine clip boundary and clip Zenith angle if necessary
+   /* Determine clip boundary and clip Zenith angle if necessary */
    MaxAZS = MaxAZS_Exp[-E];
 
    if (AZS < 0)
@@ -550,7 +550,7 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    else if (AZS > MaxAZS)
       AZS = MaxAZS;
 
-   // Store Sine and Cosine of clipped Zenith angle
+   /* Store Sine and Cosine of clipped Zenith angle */
    SinAZS = DSP1_Sin(AZS);
    CosAZS = DSP1_Cos(AZS);
 
@@ -566,7 +566,7 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
    *Cx = CentreX;
    *Cy = CentreY;
 
-   // Raster number of imaginary center and horizontal line
+   /* Raster number of imaginary center and horizontal line */
    *Vof = 0;
 
    if ((Azs != AZS) || (Azs == MaxAZS))
@@ -601,7 +601,7 @@ void DSP1_Parameter(int16_t Fx, int16_t Fy, int16_t Fz, int16_t Lfe, int16_t Les
 
    *Vva = DSP1_Truncate(-C, E);
 
-   // Store Secant of clipped Zenith angle
+   /* Store Secant of clipped Zenith angle */
    DSP1_Inverse(CosAZS, 0, &SecAZS_C2, &SecAZS_E2);
 }
 
@@ -677,7 +677,7 @@ void DSP1_Project(int16_t X, int16_t Y, int16_t Z, int16_t *H, int16_t *V, int16
    DSP1_NormalizeDouble((int32_t) Y - Gy, &Py, &E);
    DSP1_NormalizeDouble((int32_t) Z - Gz, &Pz, &E3);
    Px>>=1;
-   E4--; // to avoid overflows when calculating the scalar products
+   E4--; /* to avoid overflows when calculating the scalar products */
    Py>>=1;
    E--;
    Pz>>=1;
@@ -686,56 +686,56 @@ void DSP1_Project(int16_t X, int16_t Y, int16_t Z, int16_t *H, int16_t *V, int16
    refE = MIN(E, E3);
    refE = MIN(refE, E4);
 
-   Px = DSP1_ShiftR(Px, E4 - refE); // normalize them to the same exponent
+   Px = DSP1_ShiftR(Px, E4 - refE); /* normalize them to the same exponent */
    Py = DSP1_ShiftR(Py, E - refE);
    Pz = DSP1_ShiftR(Pz, E3 - refE);
 
    C11 = -(Px * Nx >> 15);
    C8 = -(Py * Ny >> 15);
    C9 = -(Pz * Nz >> 15);
-   C12 = C11 + C8 + C9; // this cannot overflow!
+   C12 = C11 + C8 + C9; /* this cannot overflow! */
 
-   aux4 = C12; // de-normalization with 32-bit arithmetic
-   refE = 16 - refE; // refE can be up to 3
+   aux4 = C12; /* de-normalization with 32-bit arithmetic */
+   refE = 16 - refE; /* refE can be up to 3 */
    if (refE >= 0)
      aux4 <<= refE;
    else
      aux4 >>= -refE;
    if (aux4 == -1)
-      aux4 = 0; // why?
+      aux4 = 0; /* why? */
    aux4>>=1;
 
-   aux = ((int16_t) G_Les) + aux4; // Les - the scalar product of P with the normal vector of the screen
+   aux = ((int16_t) G_Les) + aux4; /* Les - the scalar product of P with the normal vector of the screen */
    DSP1_NormalizeDouble(aux, &C10, &E2);
    E2 = 15 - E2;
 
    DSP1_Inverse(C10, 0, &C4, &E4);
-   C2 = C4 * C_Les >> 15; // scale factor
+   C2 = C4 * C_Les >> 15; /* scale factor */
 
-   // H
+   /* H */
    E7 = 0;
    C16 = (Px * (CosAas * 0x7fff >> 15) >> 15);
    C20 = (Py * (SinAas * 0x7fff >> 15) >> 15);
-   C17 = C16 + C20; // scalar product of P with the normalized horizontal vector of the screen...
+   C17 = C16 + C20; /* scalar product of P with the normalized horizontal vector of the screen... */
 
-   C18 = C17 * C2 >> 15; // ... multiplied by the scale factor
+   C18 = C17 * C2 >> 15; /* ... multiplied by the scale factor */
    DSP1_Normalize(C18, &C19, &E7);
    *H = DSP1_Truncate(C19, E_Les - E2 + refE + E7);
 
-   // V
+   /* V */
    E6 = 0;
    C21 = Px * (CosAzs * -SinAas >> 15) >> 15;
    C22 = Py * (CosAzs * CosAas >> 15) >> 15;
    C23 = Pz * (-SinAzs * 0x7fff >> 15) >> 15;
-   C24 = C21 + C22 + C23; // scalar product of P with the normalized vertical vector of the screen...
+   C24 = C21 + C22 + C23; /* scalar product of P with the normalized vertical vector of the screen... */
 
-   C26 = C24 * C2 >> 15; // ... multiplied by the scale factor
+   C26 = C24 * C2 >> 15; /* ... multiplied by the scale factor */
    DSP1_Normalize(C26, &C25, &E6);
    *V = DSP1_Truncate(C25, E_Les - E2 + refE + E6);
 
-   // M
+   /* M */
    DSP1_Normalize(C2, &C6, &E4);
-   *M = DSP1_Truncate(C6, E4 + E_Les - E2 - 7); // M is the scale factor divided by 2^7
+   *M = DSP1_Truncate(C6, E4 + E_Les - E2 - 7); /* M is the scale factor divided by 2^7 */
 }
 
 int16_t Op06X;
@@ -935,7 +935,7 @@ void DSPOp14(void)
 
    DSP1_Inverse(DSP1_Cos(Op14Xr), 0, &CSec, &ESec);
 
-   // Rotation Around Z
+   /* Rotation Around Z */
    DSP1_NormalizeDouble(Op14U * DSP1_Cos(Op14Yr) - Op14F * DSP1_Sin(Op14Yr), &C, &E);
 
    E = ESec - E;
@@ -944,10 +944,10 @@ void DSPOp14(void)
 
    Op14Zrr = Op14Zr + DSP1_Truncate(C, E);
 
-   // Rotation Around X
+   /* Rotation Around X */
    Op14Xrr = Op14Xr + (Op14U * DSP1_Sin(Op14Yr) >> 15) + (Op14F * DSP1_Cos(Op14Yr) >> 15);
 
-   // Rotation Around Y
+   /* Rotation Around Y */
    DSP1_NormalizeDouble(Op14U * DSP1_Cos(Op14Yr) + Op14F * DSP1_Sin(Op14Yr), &C, &E);
 
    E = ESec - E;
@@ -1091,19 +1091,19 @@ int16_t Op1CZ2;
 
 void DSPOp1C(void)
 {
-   // Rotate Around Op1CZ1
+   /* Rotate Around Op1CZ1 */
    Op1CX1 = (Op1CYBR * DSP1_Sin(Op1CZ) >> 15) + (Op1CXBR * DSP1_Cos(Op1CZ) >> 15);
    Op1CY1 = (Op1CYBR * DSP1_Cos(Op1CZ) >> 15) - (Op1CXBR * DSP1_Sin(Op1CZ) >> 15);
    Op1CXBR = Op1CX1;
    Op1CYBR = Op1CY1;
 
-   // Rotate Around Op1CY1
+   /* Rotate Around Op1CY1 */
    Op1CZ1 = (Op1CXBR * DSP1_Sin(Op1CY) >> 15) + (Op1CZBR * DSP1_Cos(Op1CY) >> 15);
    Op1CX1 = (Op1CXBR * DSP1_Cos(Op1CY) >> 15) - (Op1CZBR * DSP1_Sin(Op1CY) >> 15);
    Op1CXAR = Op1CX1;
    Op1CZBR = Op1CZ1;
 
-   // Rotate Around Op1CX1
+   /* Rotate Around Op1CX1 */
    Op1CY1 = (Op1CZBR * DSP1_Sin(Op1CX) >> 15) + (Op1CYBR * DSP1_Cos(Op1CX) >> 15);
    Op1CZ1 = (Op1CZBR * DSP1_Cos(Op1CX) >> 15) - (Op1CYBR * DSP1_Sin(Op1CX) >> 15);
    Op1CYAR = Op1CY1;

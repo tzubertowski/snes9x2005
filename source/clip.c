@@ -56,7 +56,7 @@ void ComputeClipWindows()
             {
                if ((Memory.FillRAM [0x2130] & 0xc0) == 0xc0)
                {
-                  // The whole of the main screen is switched off, completely clip everything.
+                  /* The whole of the main screen is switched off, completely clip everything. */
                   for (i = 0; i < 6; i++)
                   {
                      IPPU.Clip [c].Count [i] = 1;
@@ -68,9 +68,9 @@ void ComputeClipWindows()
                else if ((Memory.FillRAM [0x2130] & 0xc0) == 0x00)
                   continue;
             }
-            else if ((Memory.FillRAM [0x2130] & 0x30) == 0x30) // .. colour window on the sub-screen.
+            else if ((Memory.FillRAM [0x2130] & 0x30) == 0x30) /* .. colour window on the sub-screen. */
             {
-               // The sub-screen is switched off, completely clip everything.
+               /* The sub-screen is switched off, completely clip everything. */
                int32_t i;
                for (i = 0; i < 6; i++)
                {
@@ -121,8 +121,8 @@ void ComputeClipWindows()
                   }
                   else
                   {
-                     // 'outside' a window with no range -
-                     // appears to be the whole screen.
+                     /* 'outside' a window with no range -
+                      * appears to be the whole screen. */
                      Win1[Window1Enabled].Left = 0;
                      Win1[Window1Enabled++].Right = 256;
                   }
@@ -164,12 +164,12 @@ void ComputeClipWindows()
             }
             if (Window1Enabled && Window2Enabled)
             {
-               // Overlap logic
-               //
-               // Each window will be in one of three states:
-               // 1. <no range> (Left > Right. One band)
-               // 2. |    ----------------             | (Left >= 0, Right <= 255, Left <= Right. One band)
-               // 3. |------------           ----------| (Left1 == 0, Right1 < Left2; Left2 > Right1, Right2 == 255. Two bands)
+               /* Overlap logic
+                *
+                * Each window will be in one of three states:
+                * 1. <no range> (Left > Right. One band)
+                * 2. |    ----------------             | (Left >= 0, Right <= 255, Left <= Right. One band)
+                * 3. |------------           ----------| (Left1 == 0, Right1 < Left2; Left2 > Right1, Right2 == 255. Two bands) */
                Band Bands [6];
                int32_t B = 0;
                switch (PPU.ClipWindowOverlapLogic [w] ^ 1)
@@ -180,7 +180,7 @@ void ComputeClipWindows()
                      if (BAND_EMPTY(Win1[0]))
                      {
                         B = Window2Enabled;
-                        // memmove converted: Different stack allocations [Neb]
+                        /* memmove converted: Different stack allocations [Neb] */
                         memcpy(Bands, Win2, sizeof(Win2[0]) * Window2Enabled);
                      }
                      else
@@ -232,17 +232,17 @@ void ComputeClipWindows()
                   {
                      if (BAND_EMPTY(Win2[0]))
                      {
-                        // Window 2 defines an empty range - just
-                        // use window 1 as the clipping (which
-                        // could also be empty).
+                        /* Window 2 defines an empty range - just
+                         * use window 1 as the clipping (which
+                         * could also be empty). */
                         B = Window1Enabled;
-                        // memmove converted: Different stack allocations [Neb]
+                        /* memmove converted: Different stack allocations [Neb] */
                         memcpy(Bands, Win1, sizeof(Win1[0]) * Window1Enabled);
                      }
                      else
                      {
-                        // Window 1 has two bands and Window 2 has one.
-                        // Neither is an empty region.
+                        /* Window 1 has two bands and Window 2 has one.
+                         * Neither is an empty region. */
                         if (BANDS_INTERSECT(Win2[0], Win1[0]))
                         {
                            OR_BANDS(Bands[0], Win2[0], Win1[0])
@@ -273,7 +273,7 @@ void ComputeClipWindows()
                   }
                   else
                   {
-                     // Both windows have two bands
+                     /* Both windows have two bands */
                      OR_BANDS(Bands[0], Win1[0], Win2[0]);
                      OR_BANDS(Bands[1], Win1[1], Win2[1]);
                      B = 1;
@@ -286,7 +286,7 @@ void ComputeClipWindows()
                case CLIP_AND:
                   if (Window1Enabled == 1)
                   {
-                     // Window 1 has one band
+                     /* Window 1 has one band */
                      if (BAND_EMPTY(Win1[0]))
                         Bands [B++] = Win1[0];
                      else if (Window2Enabled == 1)
@@ -312,7 +312,7 @@ void ComputeClipWindows()
                         Bands[B++] = Win2[0];
                      else
                      {
-                        // Window 1 has two bands.
+                        /* Window 1 has two bands. */
                         AND_BANDS(Bands[0], Win1[0], Win2[0]);
                         AND_BANDS(Bands[1], Win1[1], Win2[0]);
                         B = 2;
@@ -320,7 +320,7 @@ void ComputeClipWindows()
                   }
                   else
                   {
-                     // Both windows have two bands.
+                     /* Both windows have two bands. */
                      AND_BANDS(Bands[0], Win1[0], Win2[0]);
                      AND_BANDS(Bands[1], Win1[1], Win2[1]);
                      B = 2;
@@ -338,18 +338,18 @@ void ComputeClipWindows()
                   break;
                case CLIP_XNOR:
                   invert = !invert;
-                  // Fall...
+                  /* Fall... */
                case CLIP_XOR:
                   if (Window1Enabled == 1 && BAND_EMPTY(Win1[0]))
                   {
                      B = Window2Enabled;
-                     // memmove converted: Different stack allocations [Neb]
+                     /* memmove converted: Different stack allocations [Neb] */
                      memcpy(Bands, Win2, sizeof(Win2[0]) * Window2Enabled);
                   }
                   else if (Window2Enabled == 1 && BAND_EMPTY(Win2[0]))
                   {
                      B = Window1Enabled;
-                     // memmove converted: Different stack allocations [Neb]
+                     /* memmove converted: Different stack allocations [Neb] */
                      memcpy(Bands, Win1, sizeof(Win1[0]) * Window1Enabled);
                   }
                   else
@@ -359,7 +359,7 @@ void ComputeClipWindows()
                      uint32_t i;
 
                      invert = !invert;
-                     // Build an array of points (window edges)
+                     /* Build an array of points (window edges) */
                      points [p++] = 0;
                      for (i = 0; i < Window1Enabled; i++)
                      {
@@ -372,7 +372,7 @@ void ComputeClipWindows()
                         points [p++] = Win2[i].Right;
                      }
                      points [p++] = 256;
-                     // Sort them
+                     /* Sort them */
                      qsort((void*) points, p, sizeof(points [0]), IntCompare);
                      for (i = 0; i < p; i += 2)
                      {
@@ -392,7 +392,7 @@ void ComputeClipWindows()
                   int32_t j = 0;
                   int32_t empty_band_count = 0;
 
-                  // First remove all empty bands from the list.
+                  /* First remove all empty bands from the list. */
                   for (b = 0; b < B; b++)
                   {
                      if (!BAND_EMPTY(Bands[b]))
@@ -410,7 +410,7 @@ void ComputeClipWindows()
                      if (j == 1)
                      {
                         j = 0;
-                        // Easy case to deal with, so special case it.
+                        /* Easy case to deal with, so special case it. */
                         if (Bands[0].Left > 0)
                         {
                            pClip->Left[j][w] = 0;
@@ -429,11 +429,11 @@ void ComputeClipWindows()
                      }
                      else
                      {
-                        // Now sort the bands into order
+                        /* Now sort the bands into order */
                         B = j;
                         qsort((void*) Bands, B, sizeof(Bands [0]), BandCompare);
 
-                        // Now invert the area the bands cover
+                        /* Now invert the area the bands cover */
                         j = 0;
                         for (b = 0; b < B; b++)
                         {
@@ -457,9 +457,9 @@ void ComputeClipWindows()
                   }
                   else
                   {
-                     // Inverting a window that consisted of only
-                     // empty bands is the whole width of the screen.
-                     // Needed for Mario Kart's rear-view mirror display.
+                     /* Inverting a window that consisted of only
+                      * empty bands is the whole width of the screen.
+                      * Needed for Mario Kart's rear-view mirror display. */
                      if (empty_band_count)
                      {
                         pClip->Left[j][w] = 0;
@@ -482,8 +482,8 @@ void ComputeClipWindows()
             }
             else
             {
-               // Only one window enabled so no need to perform
-               // complex overlap logic...
+               /* Only one window enabled so no need to perform
+                * complex overlap logic... */
                if (Window1Enabled)
                {
                   if (invert)
@@ -587,9 +587,9 @@ void ComputeClipWindows()
 
             if (w != 5 && pClip->Count [5])
             {
-               // Colour window enabled. Set the
-               // clip windows for all remaining backgrounds to be
-               // the same as the colour window.
+               /* Colour window enabled. Set the
+                * clip windows for all remaining backgrounds to be
+                * the same as the colour window. */
                if (pClip->Count [w] == 0)
                {
                   uint32_t i;
@@ -602,8 +602,8 @@ void ComputeClipWindows()
                }
                else
                {
-                  // Intersect the colour window with the bg's
-                  // own clip window.
+                  /* Intersect the colour window with the bg's
+                   * own clip window. */
                   uint32_t i, j;
                   for (i = 0; i < pClip->Count [w]; i++)
                   {
@@ -614,20 +614,20 @@ void ComputeClipWindows()
                             (pClip->Left[j][5] >= pClip->Left[i][w] &&
                              pClip->Left[j][5] <  pClip->Right[i][w]))
                         {
-                           // Found an intersection!
+                           /* Found an intersection! */
                            pClip->Left[i][w] = MAX(pClip->Left[i][w], pClip->Left[j][5]);
                            pClip->Right[i][w] = MIN(pClip->Right[i][w], pClip->Right[j][5]);
                            goto Clip_ok;
                         }
                      }
-                     // no intersection, nullify it
+                     /* no intersection, nullify it */
                      pClip->Left[i][w] = 1;
                      pClip->Right[i][w] = 0;
 Clip_ok:;
                   }
                }
             }
-         } // if (w == 5 || pClip->Count [5] ...
-      } // for (w...
+         } /* if (w == 5 || pClip->Count [5] ... */
+      } /* for (w... */
    } /* for (c... */
 }

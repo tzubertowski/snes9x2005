@@ -9,7 +9,7 @@
 #define DSP4_WRITE_WORD(x,d) \
    WRITE_WORD(DSP4.output+x,d);
 
-// used to wait for dsp i/o
+/* used to wait for dsp i/o */
 #define DSP4_WAIT(x) \
     DSP4_Logic = x; \
     return
@@ -26,14 +26,14 @@ int16_t DSP4_UnknownOP11(int16_t A, int16_t B, int16_t C, int16_t D)
 
 void DSP4_Op06(bool size, bool msb)
 {
-   // save post-oam table data for future retrieval
+   /* save post-oam table data for future retrieval */
    op06_OAM[op06_index] |= (msb << (op06_offset + 0));
    op06_OAM[op06_index] |= (size << (op06_offset + 1));
    op06_offset += 2;
 
    if (op06_offset == 8)
    {
-      // move to next byte in buffer
+      /* move to next byte in buffer */
       op06_offset = 0;
       op06_index++;
    }
@@ -48,7 +48,7 @@ void DSP4_Op01(void)
    uint16_t command;
    DSP4.waiting4command = false;
 
-   switch (DSP4_Logic) // op flow control
+   switch (DSP4_Logic) /* op flow control */
    {
    case 1:
       goto resume1;
@@ -58,10 +58,11 @@ void DSP4_Op01(void)
       break;
    }
 
-   ////////////////////////////////////////////////////
-   // process initial inputs
+   /*
+    * process initial inputs
+    */
 
-   // sort inputs
+   /* sort inputs */
    project_focaly = DSP4_READ_WORD(0x02);
    raster = DSP4_READ_WORD(0x04);
    viewport_top = DSP4_READ_WORD(0x06);
@@ -78,36 +79,37 @@ void DSP4_Op01(void)
    far_plane = DSP4_READ_WORD(0x1e);
    project_y1low = DSP4_READ_WORD(0x22);
 
-   // pre-compute
+   /* pre-compute */
    view_plane = PLANE_START;
 
-   // find starting projection points
+   /* find starting projection points */
    project_x1 = project_focalx;
    project_y -= viewport_bottom;
    project_x = project_centerx + project_x1;
 
-   // multi-op storage
+   /* multi-op storage */
    multi_index1 = 0;
    multi_index2 = 0;
 
-   ////////////////////////////////////////////////////
-   // command check
+   /*
+    * command check
+    */
 
    do
    {
-      // scan next command
+      /* scan next command */
       DSP4.in_count = 2;
       DSP4_WAIT(1);
 
 resume1:
-      // inspect input
+      /* inspect input */
       command = DSP4_READ_WORD(0);
 
-      // check for termination
+      /* check for termination */
       if(command == 0x8000)
          break;
 
-      // already have 2 bytes in queue
+      /* already have 2 bytes in queue */
       DSP4.in_index = 2;
       DSP4.in_count = 8;
       DSP4_WAIT(2);
@@ -1226,7 +1228,7 @@ resume7:
       {
          sprite_type = 2;
 
-         // shift bytes
+         /* shift bytes */
          DSP4.parameters[2] = DSP4.parameters[0];
          DSP4.parameters[3] = DSP4.parameters[1];
          DSP4.parameters[0] = 0;
