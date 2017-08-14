@@ -240,8 +240,8 @@ bool S9xInitGFX(void)
       return false;
    }
 
-   // Build a lookup table that multiplies a packed RGB value by 2 with
-   // saturation.
+   /* Build a lookup table that multiplies a packed RGB value by 2 with
+    * saturation. */
    for (r = 0; r <= MAX_RED; r++)
    {
       uint32_t r2 = r << 1;
@@ -264,9 +264,9 @@ bool S9xInitGFX(void)
    }
    memset(GFX.ZERO, 0, 0x10000 * sizeof(uint16_t));
    memset(GFX.ZERO_OR_X2, 0, 0x10000 * sizeof(uint16_t));
-   // Build a lookup table that if the top bit of the color value is zero
-   // then the value is zero, otherwise multiply the value by 2. Used by
-   // the color subtraction code.
+   /* Build a lookup table that if the top bit of the color value is zero
+    * then the value is zero, otherwise multiply the value by 2. Used by
+    * the color subtraction code. */
    for (r = 0; r <= MAX_RED; r++)
    {
       uint32_t r2 = r;
@@ -297,8 +297,8 @@ bool S9xInitGFX(void)
       }
    }
 
-   // Build a lookup table that if the top bit of the color value is zero
-   // then the value is zero, otherwise its just the value.
+   /* Build a lookup table that if the top bit of the color value is zero
+    * then the value is zero, otherwise its just the value. */
    for (r = 0; r <= MAX_RED; r++)
    {
       uint32_t r2 = r;
@@ -332,7 +332,7 @@ bool S9xInitGFX(void)
 
 void S9xDeinitGFX(void)
 {
-   // Free any memory allocated in S9xInitGFX
+   /* Free any memory allocated in S9xInitGFX */
    if (GFX.X2)
    {
       free(GFX.X2);
@@ -355,7 +355,7 @@ void S9xBuildDirectColourMaps(void)
    uint32_t p, c;
    for (p = 0; p < 8; p++)
       for (c = 0; c < 256; c++)
-         DirectColourMaps [p][c] = BUILD_PIXEL(((c & 7) << 2) | ((p & 1) << 1), ((c & 0x38) >> 1) | (p & 2), ((c & 0xc0) >> 3) | (p & 4)); // XXX: Brightness
+         DirectColourMaps [p][c] = BUILD_PIXEL(((c & 7) << 2) | ((p & 1) << 1), ((c & 0x38) >> 1) | (p & 2), ((c & 0xc0) >> 3) | (p & 4)); /* XXX: Brightness */
    IPPU.DirectColourMapsNeedRebuild = false;
 }
 
@@ -453,7 +453,7 @@ void RenderLine(uint8_t C)
    else
    {
       /* if we're not rendering this frame, we still need to update this */
-      // XXX: Check ForceBlank? Or anything else?
+      /* XXX: Check ForceBlank? Or anything else? */
       if (IPPU.OBJChanged)
          S9xSetupOBJ();
       PPU.RangeTimeOver |= GFX.OBJLines[C].RTOFlags;
@@ -516,7 +516,7 @@ static INLINE void SelectTileRenderer(bool normal)
          }
          else
          {
-            // Fixed colour addition
+            /* Fixed colour addition */
             DrawTilePtr = DrawTile16FixedAdd1_2;
             DrawClippedTilePtr = DrawClippedTile16FixedAdd1_2;
          }
@@ -535,7 +535,7 @@ static INLINE void SelectTileRenderer(bool normal)
          }
          else
          {
-            // Fixed colour substraction
+            /* Fixed colour substraction */
             DrawTilePtr = DrawTile16FixedSub1_2;
             DrawClippedTilePtr = DrawClippedTile16FixedSub1_2;
          }
@@ -650,8 +650,8 @@ void S9xSetupOBJ(void)
                GFX.OBJLines[Y].OBJ[LineOBJ[Y]].Sprite = S;
                if (PPU.OBJ[S].VFlip)
                {
-                  // Yes, Width not Height. It so happens that the
-                  // sprites with H = 2 * W flip as two W * W sprites.
+                  /* Yes, Width not Height. It so happens that the
+                   * sprites with H = 2 * W flip as two W * W sprites. */
                   GFX.OBJLines[Y].OBJ[LineOBJ[Y]].Line = line ^ (GFX.OBJWidths[S] - 1);
                }
                else
@@ -663,7 +663,7 @@ void S9xSetupOBJ(void)
       } while (S != FirstSprite);
 
       for (Y = 0; Y < SNES_HEIGHT_EXTENDED; Y++)
-         if (LineOBJ[Y] < 32) // Add the sentinel
+         if (LineOBJ[Y] < 32) /* Add the sentinel */
             GFX.OBJLines[Y].OBJ[LineOBJ[Y]].Sprite = -1;
       for (Y = 1; Y < SNES_HEIGHT_EXTENDED; Y++)
          GFX.OBJLines[Y].RTOFlags |= GFX.OBJLines[Y - 1].RTOFlags;
@@ -715,8 +715,8 @@ void S9xSetupOBJ(void)
                }
                if (PPU.OBJ[S].VFlip)
                {
-                  // Yes, Width not Height. It so happens that the
-                  // sprites with H=2*W flip as two WxW sprites.
+                  /* Yes, Width not Height. It so happens that the
+                   * sprites with H=2*W flip as two WxW sprites. */
                   OBJOnLine[Y][S] = (line ^ (GFX.OBJWidths[S] - 1)) | 0x80;
                }
                else
@@ -808,7 +808,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
             Windows[j].Value = true;
          else
          {
-            // memmove required: Overlapping addresses [Neb]
+            /* memmove required: Overlapping addresses [Neb] */
             if (j < i)
                memmove(&Windows[j + 1], &Windows[j], sizeof(Windows[0]) * (i - j));
             Windows[j].Pos = GFX.pCurrentClip->Left[clip][4];
@@ -818,7 +818,7 @@ static void DrawOBJS(bool OnMain, uint8_t D)
          for (j = 0; j < i && Windows[j].Pos < GFX.pCurrentClip->Right[clip][4]; j++);
          if (j >= i || Windows[j].Pos != GFX.pCurrentClip->Right[clip][4])
          {
-            // memmove required: Overlapping addresses [Neb]
+            /* memmove required: Overlapping addresses [Neb] */
             if (j < i)
                memmove(&Windows[j + 1], &Windows[j], sizeof(Windows[0]) * (i - j));
             Windows[j].Pos = GFX.pCurrentClip->Right[clip][4];
@@ -830,10 +830,10 @@ static void DrawOBJS(bool OnMain, uint8_t D)
 
    if (PPU.BGMode == 5 || PPU.BGMode == 6)
    {
-      // Bah, OnMain is never used except to determine if calling
-      // SelectTileRenderer is necessary. So let's hack it to false here
-      // to stop SelectTileRenderer from being called when it causes
-      // problems.
+      /* Bah, OnMain is never used except to determine if calling
+       * SelectTileRenderer is necessary. So let's hack it to false here
+       * to stop SelectTileRenderer from being called when it causes
+       * problems. */
       OnMain = false;
       GFX.PixSize = 2;
       if (IPPU.DoubleHeightPixels)
@@ -1084,15 +1084,15 @@ static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
             Tile = READ_2BYTES(t);
             GFX.Z1 = GFX.Z2 = depths [(Tile & 0x2000) >> 13];
 
-            // Draw tile...
+            /* Draw tile... */
             if (BG.TileSize != 8)
             {
                if (Tile & H_FLIP)
                {
-                  // Horizontal flip, but what about vertical flip ?
+                  /* Horizontal flip, but what about vertical flip ? */
                   if (Tile & V_FLIP)
                   {
-                     // Both horzontal & vertical flip
+                     /* Both horzontal & vertical flip */
                      if (Rem16 < 8)
                         (*DrawLargePixelPtr)(Tile + 17 - (Quot & 1), s, HPos & 7, PixWidth, VirtAlign, Lines);
                      else
@@ -1100,7 +1100,7 @@ static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                   }
                   else
                   {
-                     // Horizontal flip only
+                     /* Horizontal flip only */
                      if (Rem16 > 7)
                         (*DrawLargePixelPtr)(Tile + 17 - (Quot & 1), s, HPos & 7, PixWidth, VirtAlign, Lines);
                      else
@@ -1109,10 +1109,10 @@ static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                }
                else
                {
-                  // No horizontal flip, but is there a vertical flip ?
+                  /* No horizontal flip, but is there a vertical flip ? */
                   if (Tile & V_FLIP)
                   {
-                     // Vertical flip only
+                     /* Vertical flip only */
                      if (Rem16 < 8)
                         (*DrawLargePixelPtr)(Tile + 16 + (Quot & 1), s, HPos & 7, PixWidth, VirtAlign, Lines);
                      else
@@ -1120,7 +1120,7 @@ static void DrawBackgroundMosaic(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                   }
                   else
                   {
-                     // Normal unflipped
+                     /* Normal unflipped */
                      if (Rem16 > 7)
                         (*DrawLargePixelPtr)(Tile + 16 + (Quot & 1), s, HPos & 7, PixWidth, VirtAlign, Lines);
                      else
@@ -1301,17 +1301,17 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
          {
             if (left_hand_edge)
             {
-               // The SNES offset-per-tile background mode has a
-               // hardware limitation that the offsets cannot be set
-               // for the tile at the left-hand edge of the screen.
+               /* The SNES offset-per-tile background mode has a
+                * hardware limitation that the offsets cannot be set
+                * for the tile at the left-hand edge of the screen. */
                VOffset = LineData [Y].BG[bg].VOffset;
                HOffset = LineHOffset;
                left_hand_edge = false;
             }
             else
             {
-               // All subsequent offset tile data is shifted left by one,
-               // hence the - 1 below.
+               /* All subsequent offset tile data is shifted left by one,
+                * hence the - 1 below. */
                Quot2 = ((HOff + Left - 1) & OffsetMask) >> 3;
 
                if (Quot2 > 31)
@@ -1341,12 +1341,12 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                   else
                      VOffset = LineData [Y].BG[bg].VOffset;
 
-                  //MKendora Strike Gunner fix
+                  /* MKendora Strike Gunner fix */
                   if ((HCellOffset & OffsetEnableMask))
                      HOffset = (HCellOffset & ~7) | (LineHOffset & 7);
                   else
                      HOffset = LineHOffset;
-                  //end MK
+                  /* end MK */
                }
             }
             VirtAlign = ((Y + VOffset) & 7) << 3;
@@ -1407,16 +1407,16 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
                (*DrawClippedTilePtr)(Tile, s, Offset, Count, VirtAlign, Lines);
             else
             {
-               if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+               if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                   (*DrawClippedTilePtr)(Tile + t1 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
                else if (Tile & H_FLIP)
                {
-                  if (Tile & V_FLIP) // H & V flip
+                  if (Tile & V_FLIP) /* H & V flip */
                      (*DrawClippedTilePtr)(Tile + t2 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
-                  else // H flip only
+                  else /* H flip only */
                      (*DrawClippedTilePtr)(Tile + t1 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
                }
-               else // V flip only
+               else /* V flip only */
                   (*DrawClippedTilePtr)(Tile + t2 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
             }
 
@@ -1569,7 +1569,7 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
             t = b1 + (Quot >> 1);
 
          Width = Right - Left;
-         // Left hand edge clipped tile
+         /* Left hand edge clipped tile */
          if (HPos & 7)
          {
             int32_t Offset = (HPos & 7);
@@ -1582,23 +1582,23 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
 
             if (BG.TileSize == 8)
             {
-               if (!(Tile & H_FLIP)) // Normal, unflipped
+               if (!(Tile & H_FLIP)) /* Normal, unflipped */
                   (*DrawHiResClippedTilePtr)(Tile + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
-               else // H flip
+               else /* H flip */
                   (*DrawHiResClippedTilePtr)(Tile + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
             }
             else
             {
-               if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+               if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                   (*DrawHiResClippedTilePtr)(Tile + t1 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
                else if (Tile & H_FLIP)
                {
-                  if (Tile & V_FLIP) // H & V flip
+                  if (Tile & V_FLIP) /* H & V flip */
                      (*DrawHiResClippedTilePtr)(Tile + t2 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
-                  else // H flip only
+                  else /* H flip only */
                      (*DrawHiResClippedTilePtr)(Tile + t1 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
                }
-               else // V flip only
+               else /* V flip only */
                   (*DrawHiResClippedTilePtr)(Tile + t2 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
             }
 
@@ -1611,7 +1611,7 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
             s += (IPPU.HalfWidthPixels ? 4 : 8);
          }
 
-         // Middle, unclipped tiles
+         /* Middle, unclipped tiles */
          Count = Width - Count;
          Middle = Count >> 3;
          Count &= 7;
@@ -1622,23 +1622,23 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
             GFX.Z1 = GFX.Z2 = depths [(Tile & 0x2000) >> 13];
             if (BG.TileSize == 8)
             {
-               if (!(Tile & H_FLIP)) // Normal, unflipped
+               if (!(Tile & H_FLIP)) /* Normal, unflipped */
                   (*DrawHiResTilePtr)(Tile + (Quot & 1), s, VirtAlign, Lines);
-               else // H flip
+               else /* H flip */
                   (*DrawHiResTilePtr)(Tile + 1 - (Quot & 1), s, VirtAlign, Lines);
             }
             else
             {
-               if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+               if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                   (*DrawHiResTilePtr)(Tile + t1 + (Quot & 1), s, VirtAlign, Lines);
                else if (Tile & H_FLIP)
                {
-                  if (Tile & V_FLIP) // H & V flip
+                  if (Tile & V_FLIP) /* H & V flip */
                      (*DrawHiResTilePtr)(Tile + t2 + 1 - (Quot & 1), s, VirtAlign, Lines);
-                  else // H flip only
+                  else /* H flip only */
                      (*DrawHiResTilePtr)(Tile + t1 + 1 - (Quot & 1), s, VirtAlign, Lines);
                }
-               else // V flip only
+               else /* V flip only */
                   (*DrawHiResTilePtr)(Tile + t2 + (Quot & 1), s, VirtAlign, Lines);
             }
 
@@ -1649,30 +1649,30 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
                t = b1;
          }
 
-         // Right-hand edge clipped tiles
+         /* Right-hand edge clipped tiles */
          if (Count)
          {
             Tile = READ_2BYTES(t);
             GFX.Z1 = GFX.Z2 = depths [(Tile & 0x2000) >> 13];
             if (BG.TileSize == 8)
             {
-               if (!(Tile & H_FLIP)) // Normal, unflipped
+               if (!(Tile & H_FLIP)) /* Normal, unflipped */
                   (*DrawHiResClippedTilePtr)(Tile + (Quot & 1), s, 0, Count, VirtAlign, Lines);
-               else // H flip
+               else /* H flip */
                   (*DrawHiResClippedTilePtr)(Tile + 1 - (Quot & 1), s, 0, Count, VirtAlign, Lines);
             }
             else
             {
-               if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+               if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                   (*DrawHiResClippedTilePtr)(Tile + t1 + (Quot & 1), s, 0, Count, VirtAlign, Lines);
                else if (Tile & H_FLIP)
                {
-                  if (Tile & V_FLIP) // H & V flip
+                  if (Tile & V_FLIP) /* H & V flip */
                      (*DrawHiResClippedTilePtr)(Tile + t2 + 1 - (Quot & 1), s, 0, Count, VirtAlign, Lines);
-                  else // H flip only
+                  else /* H flip only */
                      (*DrawHiResClippedTilePtr)(Tile + t1 + 1 - (Quot & 1), s, 0, Count, VirtAlign, Lines);
                }
-               else // V flip only
+               else /* V flip only */
                   (*DrawHiResClippedTilePtr)(Tile + t2 + (Quot & 1), s, 0, Count, VirtAlign, Lines);
             }
          }
@@ -1716,12 +1716,12 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
    switch (BGMode)
    {
    case 2:
-   case 4: // Used by Puzzle Bobble
+   case 4: /* Used by Puzzle Bobble */
       DrawBackgroundOffset(BGMode, bg, Z1, Z2);
       return;
 
    case 5:
-   case 6: // XXX: is also offset per tile.
+   case 6: /* XXX: is also offset per tile. */
       DrawBackgroundMode5(bg, Z1, Z2);
       return;
    }
@@ -1860,7 +1860,7 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
          }
 
          Width = Right - Left;
-         // Left hand edge clipped tile
+         /* Left hand edge clipped tile */
          if (HPos & 7)
          {
             uint32_t Offset = (HPos & 7);
@@ -1873,16 +1873,16 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 
             if (BG.TileSize == 8)
                (*DrawClippedTilePtr)(Tile, s, Offset, Count, VirtAlign, Lines);
-            else if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+            else if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                (*DrawClippedTilePtr)(Tile + t1 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
             else if (Tile & H_FLIP)
             {
-               if (Tile & V_FLIP) // H & V flip
+               if (Tile & V_FLIP) /* H & V flip */
                   (*DrawClippedTilePtr)(Tile + t2 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
-               else // H flip only
+               else /* H flip only */
                   (*DrawClippedTilePtr)(Tile + t1 + 1 - (Quot & 1), s, Offset, Count, VirtAlign, Lines);
             }
-            else // V flip only
+            else /* V flip only */
                (*DrawClippedTilePtr)(Tile + t2 + (Quot & 1), s, Offset, Count, VirtAlign, Lines);
 
             if (BG.TileSize == 8)
@@ -1905,7 +1905,7 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
             s += (IPPU.HalfWidthPixels ? 4 : 8) * GFX.PixSize;
          }
 
-         // Middle, unclipped tiles
+         /* Middle, unclipped tiles */
          Count = Width - Count;
          Middle = Count >> 3;
          Count &= 7;
@@ -1917,16 +1917,16 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
 
             if (BG.TileSize != 8)
             {
-               if (Tile & H_FLIP) // Horizontal flip, but what about vertical flip?
+               if (Tile & H_FLIP) /* Horizontal flip, but what about vertical flip? */
                {
-                  if (Tile & V_FLIP) // Both horzontal & vertical flip
+                  if (Tile & V_FLIP) /* Both horzontal & vertical flip */
                      (*DrawTilePtr)(Tile + t2 + 1 - (Quot & 1), s, VirtAlign, Lines);
-                  else // Horizontal flip only
+                  else /* Horizontal flip only */
                      (*DrawTilePtr)(Tile + t1 + 1 - (Quot & 1), s, VirtAlign, Lines);
                }
-               else if (Tile & V_FLIP) // Vertical flip only
+               else if (Tile & V_FLIP) /* Vertical flip only */
                   (*DrawTilePtr)(Tile + t2 + (Quot & 1), s, VirtAlign, Lines);
-               else // Normal unflipped
+               else /* Normal unflipped */
                   (*DrawTilePtr)(Tile + t1 + (Quot & 1), s, VirtAlign, Lines);
             }
             else
@@ -1949,7 +1949,7 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
                   t = b1;
             }
          }
-         // Right-hand edge clipped tiles
+         /* Right-hand edge clipped tiles */
          if (Count)
          {
             Tile = READ_2BYTES(t);
@@ -1959,16 +1959,16 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
                (*DrawClippedTilePtr)(Tile, s, 0, Count, VirtAlign, Lines);
             else
             {
-               if (!(Tile & (V_FLIP | H_FLIP))) // Normal, unflipped
+               if (!(Tile & (V_FLIP | H_FLIP))) /* Normal, unflipped */
                   (*DrawClippedTilePtr)(Tile + t1 + (Quot & 1), s, 0, Count, VirtAlign, Lines);
                else if (Tile & H_FLIP)
                {
-                  if (Tile & V_FLIP) // H & V flip
+                  if (Tile & V_FLIP) /* H & V flip */
                      (*DrawClippedTilePtr)(Tile + t2 + 1 - (Quot & 1), s, 0, Count, VirtAlign, Lines);
-                  else // H flip only
+                  else /* H flip only */
                      (*DrawClippedTilePtr)(Tile + t1 + 1 - (Quot & 1), s, 0, Count, VirtAlign, Lines);
                }
-               else // V flip only
+               else /* V flip only */
                   (*DrawClippedTilePtr)(Tile + t2 + (Quot & 1), s, 0, Count, VirtAlign, Lines);
             }
          }
@@ -2730,7 +2730,7 @@ void S9xUpdateScreen(void)
    if ((GFX.EndY = IPPU.CurrentLine - 1) >= PPU.ScreenHeight)
       GFX.EndY = PPU.ScreenHeight - 1;
 
-   // XXX: Check ForceBlank? Or anything else?
+   /* XXX: Check ForceBlank? Or anything else? */
    PPU.RangeTimeOver |= GFX.OBJLines[GFX.EndY].RTOFlags;
 
    uint32_t starty = GFX.StartY;
@@ -2752,8 +2752,8 @@ void S9xUpdateScreen(void)
 
       if ((PPU.BGMode == 5 || PPU.BGMode == 6) && !IPPU.DoubleWidthPixels)
       {
-         // The game has switched from lo-res to hi-res mode part way down
-         // the screen. Scale any existing lo-res pixels on screen
+         /* The game has switched from lo-res to hi-res mode part way down
+          * the screen. Scale any existing lo-res pixels on screen */
          uint32_t y;
          for (y = 0; y < starty; y++)
          {
@@ -2766,8 +2766,8 @@ void S9xUpdateScreen(void)
          IPPU.DoubleWidthPixels = true;
          IPPU.HalfWidthPixels = false;
       }
-      // BJ: And we have to change the height if Interlace gets set,
-      //     too.
+      /* BJ: And we have to change the height if Interlace gets set,
+       *     too. */
       if (IPPU.Interlace && !IPPU.DoubleHeightPixels)
       {
          starty = GFX.StartY * 2;
@@ -2779,15 +2779,15 @@ void S9xUpdateScreen(void)
          GFX.PPL = GFX.PPLx2 = GFX.RealPitch;
 
 
-         // The game has switched from non-interlaced to interlaced mode
-         // part way down the screen. Scale everything.
+         /* The game has switched from non-interlaced to interlaced mode
+          * part way down the screen. Scale everything. */
          int32_t y;
          for (y = (int32_t) GFX.StartY - 1; y >= 0; y--)
          {
-            // memmove converted: Same malloc, different addresses, and identical addresses at line 0 [Neb]
-            // DS2 DMA notes: This code path is unused [Neb]
+            /* memmove converted: Same malloc, different addresses, and identical addresses at line 0 [Neb]
+             * DS2 DMA notes: This code path is unused [Neb] */
             memcpy(GFX.Screen + y * 2 * GFX.Pitch2, GFX.Screen + y * GFX.Pitch2, GFX.Pitch2);
-            // memmove converted: Same malloc, different addresses [Neb]
+            /* memmove converted: Same malloc, different addresses [Neb] */
             memcpy(GFX.Screen + (y * 2 + 1) * GFX.Pitch2, GFX.Screen + y * GFX.Pitch2, GFX.Pitch2);
          }
       }
@@ -2809,14 +2809,14 @@ void S9xUpdateScreen(void)
 
       GFX.FixedColour = BUILD_PIXEL(IPPU.XB [PPU.FixedColourRed], IPPU.XB [PPU.FixedColourGreen], IPPU.XB [PPU.FixedColourBlue]);
 
-      // Clear the z-buffer, marking areas 'covered' by the fixed
-      // colour as depth 1.
+      /* Clear the z-buffer, marking areas 'covered' by the fixed
+       * colour as depth 1. */
       pClip = &IPPU.Clip [1];
 
-      // Clear the z-buffer
+      /* Clear the z-buffer */
       if (pClip->Count [5])
       {
-         // Colour window enabled.
+         /* Colour window enabled. */
          uint32_t y;
          for (y = starty; y <= endy; y++)
          {
@@ -2840,10 +2840,10 @@ void S9xUpdateScreen(void)
 
                   if (IPPU.Clip [0].Count [5])
                   {
-                     // Blast, have to clear the sub-screen to the fixed-colour
-                     // because there is a colour window in effect clipping
-                     // the main screen that will allow the sub-screen
-                     // 'underneath' to show through.
+                     /* Blast, have to clear the sub-screen to the fixed-colour
+                      * because there is a colour window in effect clipping
+                      * the main screen that will allow the sub-screen
+                      * 'underneath' to show through. */
 
                      uint16_t* p = (uint16_t*)(GFX.SubScreen + y * GFX.Pitch2);
                      uint16_t* q = p + pClip->Right [c][5] * x2;
@@ -2866,10 +2866,10 @@ void S9xUpdateScreen(void)
 
             if (IPPU.Clip [0].Count [5])
             {
-               // Blast, have to clear the sub-screen to the fixed-colour
-               // because there is a colour window in effect clipping
-               // the main screen that will allow the sub-screen
-               // 'underneath' to show through.
+               /* Blast, have to clear the sub-screen to the fixed-colour
+                * because there is a colour window in effect clipping
+                * the main screen that will allow the sub-screen
+                * 'underneath' to show through. */
                uint32_t b = GFX.FixedColour | (GFX.FixedColour << 16);
                uint32_t* p = (uint32_t*)(GFX.SubScreen + y * GFX.Pitch2);
                uint32_t* q = (uint32_t*)((uint16_t*) p + IPPU.RenderedScreenWidth);
@@ -2972,7 +2972,7 @@ void S9xUpdateScreen(void)
                   }
                   else
                   {
-                     // Subtract
+                     /* Subtract */
                      uint16_t* p = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + Left;
                      uint8_t* s = GFX.SubZBuffer + y * GFX.ZPitch + Left;
                      uint8_t* d = GFX.ZBuffer + y * GFX.ZPitch;
@@ -3058,10 +3058,10 @@ void S9xUpdateScreen(void)
                {
                   if (!pClip->Count [5])
                   {
-                     // The backdrop has not been cleared yet - so
-                     // copy the sub-screen to the main screen
-                     // or fill it with the back-drop colour if the
-                     // sub-screen is clear.
+                     /* The backdrop has not been cleared yet - so
+                      * copy the sub-screen to the main screen
+                      * or fill it with the back-drop colour if the
+                      * sub-screen is clear. */
                      uint16_t* p = (uint16_t*)(GFX.Screen + y * GFX.Pitch2) + Left;
                      uint8_t* d = GFX.ZBuffer + y * GFX.ZPitch;
                      uint8_t* s = GFX.SubZBuffer + y * GFX.ZPitch + Left;
@@ -3089,11 +3089,11 @@ void S9xUpdateScreen(void)
                }
             }
          }
-      } // --if (SUB_OR_ADD(5))
+      } /* --if (SUB_OR_ADD(5)) */
       else
       {
          uint32_t y;
-         // Subscreen not being added to back
+         /* Subscreen not being added to back */
          uint32_t back = IPPU.ScreenColors [0] | (IPPU.ScreenColors [0] << 16);
          pClip = &IPPU.Clip [0];
 
@@ -3139,11 +3139,11 @@ void S9xUpdateScreen(void)
             }
          }
       }
-   } //force blanking
+   } /* force blanking */
    else
    {
-      // 16bit and transparency but currently no transparency effects in
-      // operation.
+      /* 16bit and transparency but currently no transparency effects in
+       * operation. */
 
       uint32_t back = IPPU.ScreenColors [0] | (IPPU.ScreenColors [0] << 16);
 
@@ -3200,8 +3200,8 @@ void S9xUpdateScreen(void)
 
    if (PPU.BGMode != 5 && PPU.BGMode != 6 && IPPU.DoubleWidthPixels)
    {
-      // Mixture of background modes used on screen - scale width
-      // of all non-mode 5 and 6 pixels.
+      /* Mixture of background modes used on screen - scale width
+       * of all non-mode 5 and 6 pixels. */
       uint32_t y;
       for (y = starty; y <= endy; y++)
       {
@@ -3213,7 +3213,7 @@ void S9xUpdateScreen(void)
       }
    }
 
-   // Double the height of the pixels just drawn
+   /* Double the height of the pixels just drawn */
    FIX_INTERLACE(GFX.Screen, false, GFX.ZBuffer);
 
    IPPU.PreviousLine = IPPU.CurrentLine;

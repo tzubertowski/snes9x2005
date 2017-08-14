@@ -188,10 +188,10 @@ typedef struct
    uint16_t Address;
    uint8_t  BAddress;
 
-   // General DMA only:
+   /* General DMA only: */
    uint16_t TransferBytes;
 
-   // H-DMA only:
+   /* H-DMA only: */
    bool     HDMAIndirectAddressing;
    uint16_t IndirectAddress;
    uint8_t  IndirectBank;
@@ -240,7 +240,7 @@ extern SnesModel M2SNES;
 #define MAX_5A22_VERSION 0x02
 #define MAX_5C78_VERSION 0x03
 
-//Platform specific input functions used by PPU.CPP
+/* Platform specific input functions used by PPU.C */
 void JustifierButtons(uint32_t*);
 bool JustifierOffscreen(void);
 
@@ -262,7 +262,7 @@ static INLINE void REGISTER_2104(uint8_t byte)
          PPU.OAMData [addr] = byte;
          IPPU.OBJChanged = true;
 
-         // X position high bit, and sprite size (x4)
+         /* X position high bit, and sprite size (x4) */
          pObj = &PPU.OBJ [(addr & 0x1f) * 4];
 
          pObj->HPos = (pObj->HPos & 0xFF) | SignExtend[(byte >> 0) & 1];
@@ -314,10 +314,9 @@ static INLINE void REGISTER_2104(uint8_t byte)
          IPPU.OBJChanged = true;
          if (addr & 2)
          {
-            // Tile
+            /* Tile */
             PPU.OBJ[addr = PPU.OAMAddr >> 1].Name = PPU.OAMWriteRegister & 0x1ff;
-
-            // priority, h and v flip.
+            /* priority, h and v flip. */
             PPU.OBJ[addr].Palette = (highbyte >> 1) & 7;
             PPU.OBJ[addr].Priority = (highbyte >> 4) & 3;
             PPU.OBJ[addr].HFlip = (highbyte >> 6) & 1;
@@ -325,11 +324,11 @@ static INLINE void REGISTER_2104(uint8_t byte)
          }
          else
          {
-            // X position (low)
+            /* X position (low) */
             PPU.OBJ[addr = PPU.OAMAddr >> 1].HPos &= 0xFF00;
             PPU.OBJ[addr].HPos |= lowbyte;
 
-            // Sprite Y position
+            /* Sprite Y position */
             PPU.OBJ[addr].VPos = highbyte;
          }
       }

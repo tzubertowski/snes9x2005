@@ -2382,10 +2382,10 @@ static INLINE void CPUShutdown(void)
 {
    if (Settings.Shutdown && CPU.PC == CPU.WaitAddress)
    {
-      // Don't skip cycles with a pending NMI or IRQ - could cause delayed
-      // interrupt. Interrupts are delayed for a few cycles already, but
-      // the delay could allow the shutdown code to cycle skip again.
-      // Was causing screen flashing on Top Gear 3000.
+      /* Don't skip cycles with a pending NMI or IRQ - could cause delayed
+       * interrupt. Interrupts are delayed for a few cycles already, but
+       * the delay could allow the shutdown code to cycle skip again.
+       * Was causing screen flashing on Top Gear 3000. */
       if (CPU.WaitCounter == 0 && !(CPU.Flags & (IRQ_PENDING_FLAG | NMI_FLAG)))
       {
          CPU.WaitAddress = NULL;
@@ -2424,7 +2424,7 @@ static INLINE void CPUShutdown(void)
 }
 #endif
 
-// From the speed-hacks branch of CatSFC
+/* From the speed-hacks branch of CatSFC */
 static INLINE void ForceShutdown(void)
 {
 #ifndef SA1_OPCODES
@@ -3586,7 +3586,7 @@ static void Op20(void)
 #endif
 }
 
-//JSR a,x
+/* JSR a,x */
 static void OpFCE1(void)
 {
    AbsoluteIndexedIndirect(false);
@@ -3777,7 +3777,7 @@ static void OpCB(void)
 #ifdef SA1_OPCODES
    SA1.WaitingForInterrupt = true;
    SA1.PC--;
-#else // SA_OPCODES
+#else /* SA_OPCODES */
    CPU.WaitingForInterrupt = true;
    CPU.PC--;
    if (Settings.Shutdown)
@@ -3799,7 +3799,7 @@ static void OpCB(void)
 #endif
 }
 
-// Usually an STP opcode; SNESAdvance speed hack, not implemented in Snes9xTYL | Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
+/* Usually an STP opcode; SNESAdvance speed hack, not implemented in Snes9xTYL | Snes9x-Euphoria (from the speed-hacks branch of CatSFC) */
 static void OpDB(void)
 {
 #ifndef NO_SPEEDHACKS
@@ -3809,12 +3809,12 @@ static void OpDB(void)
    ForceShutdown();
 
    BranchOffset = (NextByte & 0x7F) | ((NextByte & 0x40) << 1);
-   // ^ -64 .. +63, sign extend bit 6 into 7 for unpacking
+   /* ^ -64 .. +63, sign extend bit 6 into 7 for unpacking */
    OpAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
    switch (NextByte & 0x80)
    {
-   case 0x00: // BNE
+   case 0x00: /* BNE */
       BranchCheck();
       if (!CheckZero ())
       {
@@ -3825,7 +3825,7 @@ static void OpDB(void)
          CPUShutdown ();
       }
       return;
-   case 0x80: // BEQ
+   case 0x80: /* BEQ */
       BranchCheck();
       if (CheckZero ())
       {
@@ -3843,7 +3843,7 @@ static void OpDB(void)
 #endif
 }
 
-// SNESAdvance speed hack, as implemented in Snes9xTYL / Snes9x-Euphoria (from the speed-hacks branch of CatSFC)
+/* SNESAdvance speed hack, as implemented in Snes9xTYL / Snes9x-Euphoria (from the speed-hacks branch of CatSFC) */
 static void Op42(void)
 {
 #ifndef NO_SPEEDHACKS
@@ -3852,12 +3852,12 @@ static void Op42(void)
 
    ForceShutdown();
 
-   BranchOffset = 0xF0 | (NextByte & 0xF); // always negative
+   BranchOffset = 0xF0 | (NextByte & 0xF); /* always negative */
    OpAddress = ((int32_t) (CPU.PC - CPU.PCBase) + BranchOffset) & 0xffff;
 
    switch (NextByte & 0xF0)
    {
-   case 0x10: // BPL
+   case 0x10: /* BPL */
       BranchCheck();
       if (!CheckNegative ())
       {
@@ -3868,7 +3868,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0x30: // BMI
+   case 0x30: /* BMI */
       BranchCheck();
       if (CheckNegative ())
       {
@@ -3879,7 +3879,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0x50: // BVC
+   case 0x50: /* BVC */
       BranchCheck();
       if (!CheckOverflow ())
       {
@@ -3890,7 +3890,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0x70: // BVS
+   case 0x70: /* BVS */
       BranchCheck();
       if (CheckOverflow ())
       {
@@ -3901,14 +3901,14 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0x80: // BRA
+   case 0x80: /* BRA */
       CPU.PC = CPU.PCBase + OpAddress;
 #ifndef SA1_OPCODES
       CPU.Cycles += ONE_CYCLE;
 #endif
       CPUShutdown ();
       return;
-   case 0x90: // BCC
+   case 0x90: /* BCC */
       BranchCheck();
       if (!CheckCarry ())
       {
@@ -3919,7 +3919,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0xB0: // BCS
+   case 0xB0: /* BCS */
       BranchCheck();
       if (CheckCarry ())
       {
@@ -3930,7 +3930,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0xD0: // BNE
+   case 0xD0: /* BNE */
       BranchCheck();
       if (!CheckZero ())
       {
@@ -3941,7 +3941,7 @@ static void Op42(void)
          CPUShutdown ();
       }
       return;
-   case 0xF0: // BEQ
+   case 0xF0: /* BEQ */
       BranchCheck();
       if (CheckZero ())
       {

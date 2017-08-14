@@ -101,12 +101,12 @@ typedef struct
    uint8_t* PCAtOpcodeStart;
    uint8_t* WaitAddress;
    uint32_t WaitCounter;
-   long     Cycles;       // For savestate compatibility can't change to int32_t
-   long     NextEvent;    // For savestate compatibility can't change to int32_t
-   long     V_Counter;    // For savestate compatibility can't change to int32_t
-   long     MemSpeed;     // For savestate compatibility can't change to int32_t
-   long     MemSpeedx2;   // For savestate compatibility can't change to int32_t
-   long     FastROMSpeed; // For savestate compatibility can't change to int32_t
+   long     Cycles;       /* For savestate compatibility can't change to int32_t */
+   long     NextEvent;    /* For savestate compatibility can't change to int32_t */
+   long     V_Counter;    /* For savestate compatibility can't change to int32_t */
+   long     MemSpeed;     /* For savestate compatibility can't change to int32_t */
+   long     MemSpeedx2;   /* For savestate compatibility can't change to int32_t */
+   long     FastROMSpeed; /* For savestate compatibility can't change to int32_t */
    uint32_t SaveStateVersion;
    bool     SRAMModified;
    uint32_t NMITriggerPoint;
@@ -188,7 +188,7 @@ typedef struct
    uint32_t SoundInputRate;
 #endif
    bool     TraceSoundDSP;
-   bool     EightBitConsoleSound; // due to caching, this needs S9xSetEightBitConsoleSound()
+   bool     EightBitConsoleSound; /* due to caching, this needs S9xSetEightBitConsoleSound() */
    int32_t  SoundBufferSize;
    int32_t  SoundMixInterval;
    bool     SoundEnvelopeHeightReading;

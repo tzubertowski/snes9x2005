@@ -44,7 +44,7 @@ typedef struct
 {
    int32_t  playback_rate;
    int32_t  noise_gen;
-   uint32_t freqbase; // notaz
+   uint32_t freqbase; /* notaz */
    bool     mute_sound;
 } SoundStatus;
 

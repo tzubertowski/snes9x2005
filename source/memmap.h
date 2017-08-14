@@ -27,7 +27,7 @@
 #define MEMMAP_SHIFT 12
 #define MEMMAP_MASK (MEMMAP_BLOCK_SIZE - 1)
 
-//Extended ROM Formats
+/* Extended ROM Formats */
 #define NOPE 0
 #define YEAH 1
 #define BIGFIRST 2
@@ -150,4 +150,4 @@ uint8_t* S9xGetMemPointer(uint32_t Address);
 uint8_t* GetBasePointer(uint32_t Address);
 
 extern uint8_t OpenBus;
-#endif // _memmap_h_
+#endif /* _memmap_h_ */

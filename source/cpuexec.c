@@ -297,8 +297,8 @@ void S9xSetIRQ(uint32_t source)
    CPU.IRQCycleCount = 3;
    if (CPU.WaitingForInterrupt)
    {
-      // Force IRQ to trigger immediately after WAI -
-      // Final Fantasy Mystic Quest crashes without this.
+      /* Force IRQ to trigger immediately after WAI -
+       * Final Fantasy Mystic Quest crashes without this. */
       CPU.IRQCycleCount = 0;
       CPU.WaitingForInterrupt = false;
       CPU.PC++;
@@ -358,10 +358,10 @@ void S9xDoHBlankProcessing_SFX()
 
       if (CPU.V_Counter == PPU.ScreenHeight + FIRST_VISIBLE_LINE)
       {
-         // Start of V-blank
+         /* Start of V-blank */
          S9xEndScreenRefresh();
          IPPU.HDMA = 0;
-         // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
+         /* Bits 7 and 6 of $4212 are computed when read in S9xGetPPU. */
          PPU.ForcedBlanking = (Memory.FillRAM [0x2100] >> 7) & 1;
 
          if (!PPU.ForcedBlanking)
@@ -488,10 +488,10 @@ void S9xDoHBlankProcessing_NoSFX()
 
       if (CPU.V_Counter == PPU.ScreenHeight + FIRST_VISIBLE_LINE)
       {
-         // Start of V-blank
+         /* Start of V-blank */
          S9xEndScreenRefresh();
          IPPU.HDMA = 0;
-         // Bits 7 and 6 of $4212 are computed when read in S9xGetPPU.
+         /* Bits 7 and 6 of $4212 are computed when read in S9xGetPPU. */
          PPU.ForcedBlanking = (Memory.FillRAM [0x2100] >> 7) & 1;
 
          if (!PPU.ForcedBlanking)

@@ -49,11 +49,11 @@ void S9xResetAPU()
 
    memset(APU.OutPorts, 0, sizeof(APU.OutPorts));
    IAPU.DirectPage = IAPU.RAM;
-   // memmove converted: Different mallocs [Neb]
-   // DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb]
+   /* memmove converted: Different mallocs [Neb]
+    * DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb] */
    memcpy(&IAPU.RAM [0xffc0], APUROM, sizeof(APUROM));
-   // memmove converted: Different mallocs [Neb]
-   // DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb]
+   /* memmove converted: Different mallocs [Neb]
+    * DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb] */
    memcpy(APU.ExtraRAM, APUROM, sizeof(APUROM));
    IAPU.PC = IAPU.RAM + IAPU.RAM [0xfffe] + (IAPU.RAM [0xffff] << 8);
    APU.Cycles = 0;
@@ -112,7 +112,7 @@ void S9xSetAPUDSP(uint8_t byte)
          APU.DSP [APU_KON] = 0;
          S9xSetEchoWriteEnable(false);
 
-         // Kill sound
+         /* Kill sound */
          S9xResetSound(false);
       }
       else
@@ -200,8 +200,8 @@ void S9xSetAPUDSP(uint8_t byte)
          {
             if ((byte & mask) != 0)
             {
-               // Pac-In-Time requires that channels can be key-on
-               // regardeless of their current state.
+               /* Pac-In-Time requires that channels can be key-on
+                * regardeless of their current state. */
                if ((APU.DSP [APU_KOFF] & mask) == 0)
                {
                   KeyOnPrev &= ~mask;
@@ -325,14 +325,14 @@ void S9xSetAPUDSP(uint8_t byte)
 
 void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
 {
-   if (adsr1 & 0x80) // ADSR mode
+   if (adsr1 & 0x80) /* ADSR mode */
    {
-      // XXX: can DSP be switched to ADSR mode directly from GAIN/INCREASE/
-      // DECREASE mode? And if so, what stage of the sequence does it start
-      // at?
+      /* XXX: can DSP be switched to ADSR mode directly from GAIN/INCREASE/
+       * DECREASE mode? And if so, what stage of the sequence does it start
+       * at? */
       if(S9xSetSoundMode(channel, MODE_ADSR))
          S9xSetSoundADSR(channel, adsr1 & 0xf, (adsr1 >> 4) & 7, adsr2 & 0x1f, (adsr2 >> 5) & 7, 8);
-   } // Gain mode
+   } /* Gain mode */
    else if (!(gain & 0x80))
    {
       if (S9xSetSoundMode(channel, MODE_GAIN))
@@ -343,7 +343,7 @@ void S9xFixEnvelope(int32_t channel, uint8_t gain, uint8_t adsr1, uint8_t adsr2)
    }
    else if (gain & 0x40)
    {
-      // Increase mode
+      /* Increase mode */
       if(S9xSetSoundMode(channel, (gain & 0x20) ? MODE_INCREASE_BENT_LINE : MODE_INCREASE_LINEAR))
          S9xSetEnvelopeRate(channel, gain, 1, 127, (3 << 28) | gain);
    }
@@ -396,8 +396,8 @@ void S9xSetAPUControl(uint8_t byte)
    {
       if (!APU.ShowROM)
       {
-         // memmove converted: Different mallocs [Neb]
-         // DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb]
+         /* memmove converted: Different mallocs [Neb]
+          * DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb] */
          memcpy(&IAPU.RAM [0xffc0], APUROM, sizeof(APUROM));
          APU.ShowROM = true;
       }
@@ -405,8 +405,8 @@ void S9xSetAPUControl(uint8_t byte)
    else if (APU.ShowROM)
    {
       APU.ShowROM = false;
-      // memmove converted: Different mallocs [Neb]
-      // DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb]
+      /* memmove converted: Different mallocs [Neb]
+       * DS2 DMA notes: The APU ROM is not 32-byte aligned [Neb] */
       memcpy(&IAPU.RAM [0xffc0], APU.ExtraRAM, sizeof(APUROM));
    }
    IAPU.RAM [0xf1] = byte;

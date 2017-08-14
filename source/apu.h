@@ -78,8 +78,8 @@ void S9xSetAPUDSP(uint8_t byte);
 uint8_t S9xGetAPUDSP(void);
 bool S9xInitSound(void);
 void S9xPrintAPUState(void);
-extern uint8_t S9xAPUCycles [256];       // Scaled cycle lengths
-extern uint8_t S9xAPUCycleLengths [256]; // Raw data.
+extern uint8_t S9xAPUCycles [256];       /* Scaled cycle lengths */
+extern uint8_t S9xAPUCycleLengths [256]; /* Raw data. */
 extern void (*S9xApuOpcodes [256])(void);
 
 #define APU_VOL_LEFT  0x00

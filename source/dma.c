@@ -39,7 +39,7 @@ void S9xDoDMA(uint8_t Channel)
    d = &DMA[Channel];
    count = d->TransferBytes;
 
-   // Prepare for custom chip DMA
+   /* Prepare for custom chip DMA */
    if (count == 0)
       count = 0x10000;
 
@@ -48,9 +48,9 @@ void S9xDoDMA(uint8_t Channel)
    if ((d->ABank == 0x7E || d->ABank == 0x7F) && d->BAddress == 0x80 && !d->TransferDirection)
    {
       d->AAddress += d->TransferBytes;
-      // Does an invalid DMA actually take time?
-      // I'd say yes, since 'invalid' is probably just the WRAM chip
-      // not being able to read and write itself at the same time
+      /* Does an invalid DMA actually take time?
+       * I'd say yes, since 'invalid' is probably just the WRAM chip
+       * not being able to read and write itself at the same time */
       CPU.Cycles += (d->TransferBytes + 1) * SLOW_ONE_CYCLE;
       goto update_address;
    }
@@ -67,8 +67,8 @@ void S9xDoDMA(uint8_t Channel)
       if (d->AAddressFixed && Memory.FillRAM [0x4801] > 0)
       {
          uint8_t* in_ptr;
-         // XXX: Should probably verify that we're DMAing from ROM?
-         // And somewhere we should make sure we're not running across a mapping boundary too.
+         /* XXX: Should probably verify that we're DMAing from ROM?
+          * And somewhere we should make sure we're not running across a mapping boundary too. */
          inc = !d->AAddressDecrement ? 1 : -1;
 
          in_ptr = GetBasePointer(((d->ABank << 16) | d->AAddress));
@@ -96,8 +96,8 @@ void S9xDoDMA(uint8_t Channel)
    }
    if (d->BAddress == 0x18 && SA1.in_char_dma && (d->ABank & 0xf0) == 0x40)
    {
-      // Perform packed bitmap to PPU character format conversion on the
-      // data before transmitting it to V-RAM via-DMA.
+      /* Perform packed bitmap to PPU character format conversion on the
+       * data before transmitting it to V-RAM via-DMA. */
       int32_t i;
       int32_t num_chars = 1 << ((Memory.FillRAM [0x2231] >> 2) & 7);
       int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 : (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
@@ -219,7 +219,7 @@ void S9xDoDMA(uint8_t Channel)
        * XXX: PPU->PPU transfers don't work).
        */
 
-      //reflects extra cycle used by DMA
+      /* reflects extra cycle used by DMA */
       CPU.Cycles += SLOW_ONE_CYCLE * (count + 1);
 
       base = GetBasePointer((d->ABank << 16) + d->AAddress);
@@ -332,7 +332,7 @@ void S9xDoDMA(uint8_t Channel)
       {
          if (d->BAddress == 0x18)
          {
-            // Write to V-RAM
+            /* Write to V-RAM */
             IPPU.FirstVRAMRead = true;
             if (!PPU.VMA.FullGraphicCount)
             {
@@ -375,7 +375,7 @@ void S9xDoDMA(uint8_t Channel)
          }
          else
          {
-            // DMA mode 1 general case
+            /* DMA mode 1 general case */
             while (count > 1)
             {
                Work = *(base + p);
@@ -553,11 +553,11 @@ void S9xDoDMA(uint8_t Channel)
       free(spc7110_dma);
 
 update_address:
-   // Super Punch-Out requires that the A-BUS address be updated after the DMA transfer.
+   /* Super Punch-Out requires that the A-BUS address be updated after the DMA transfer. */
    Memory.FillRAM[0x4302 + (Channel << 4)] = (uint8_t) d->AAddress;
    Memory.FillRAM[0x4303 + (Channel << 4)] = d->AAddress >> 8;
 
-   // Secret of the Mana requires that the DMA bytes transfer count be set to zero when DMA has completed.
+   /* Secret of Mana requires that the DMA bytes transfer count be set to zero when DMA has completed. */
    Memory.FillRAM [0x4305 + (Channel << 4)] = 0;
    Memory.FillRAM [0x4306 + (Channel << 4)] = 0;
 
@@ -605,8 +605,8 @@ uint8_t S9xDoHDMA(uint8_t byte)
          if (!p->LineCount)
          {
             uint8_t line;
-            //remember, InDMA is set.
-            //Get/Set incur no charges!
+            /* remember, InDMA is set.
+             * Get/Set incur no charges! */
             CPU.Cycles += SLOW_ONE_CYCLE;
             line        = S9xGetByte((p->ABank << 16) + p->Address);
 
@@ -621,8 +621,8 @@ uint8_t S9xDoHDMA(uint8_t byte)
                p->LineCount = line & 0x7f;
             }
 
-            // Disable H-DMA'ing into V-RAM (register 2118) for Hook
-            /* XXX: instead of p->BAddress == 0x18, make S9xSetPPU fail
+            /* Disable H-DMA'ing into V-RAM (register 2118) for Hook
+             * XXX: instead of p->BAddress == 0x18, make S9xSetPPU fail
              * XXX: writes to $2118/9 when appropriate
              */
             if (!p->LineCount || p->BAddress == 0x18)
@@ -639,7 +639,7 @@ uint8_t S9xDoHDMA(uint8_t byte)
             if (p->HDMAIndirectAddressing)
             {
                p->IndirectBank = Memory.FillRAM [0x4307 + (d << 4)];
-               //again, no cycle charges while InDMA is set!
+               /* again, no cycle charges while InDMA is set! */
                CPU.Cycles += SLOW_ONE_CYCLE << 2;
                p->IndirectAddress = S9xGetWord((p->ABank << 16) + p->Address);
                p->Address += 2;

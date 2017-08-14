@@ -51,7 +51,7 @@ void S9xResetCPU()
    CPU.PCAtOpcodeStart = NULL;
    CPU.WaitAddress = NULL;
    CPU.WaitCounter = 1;
-   CPU.Cycles = 188; // This is the cycle count just after the jump to the Reset Vector.
+   CPU.Cycles = 188; /* This is the cycle count just after the jump to the Reset Vector. */
    CPU.NextEvent = Settings.HBlankStart;
    CPU.V_Counter = 0;
    CPU.MemSpeed = SLOW_ONE_CYCLE;

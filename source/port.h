@@ -13,8 +13,8 @@
 #else
 #define PIXEL_FORMAT RGB565
 #endif
-// The above is used to disable the 16-bit graphics mode checks sprinkled
-// throughout the code, if the pixel format is always 16-bit.
+/* The above is used to disable the 16-bit graphics mode checks sprinkled
+ * throughout the code, if the pixel format is always 16-bit. */
 
 #include "pixform.h"
 
@@ -57,8 +57,8 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext
 #if defined(__i386__)  || defined(__i486__) || defined(__i586__) || defined(__WIN32__) || defined(__alpha__)
 #define FAST_LSB_WORD_ACCESS
 #elif defined(__MIPSEL__)
-// On little-endian MIPS, a 16-bit word can be read directly from an address
-// only if it's aligned.
+/* On little-endian MIPS, a 16-bit word can be read directly from an address
+ * only if it's aligned. */
 #define FAST_ALIGNED_LSB_WORD_ACCESS
 #endif
 

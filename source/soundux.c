@@ -31,7 +31,7 @@ extern int32_t MixBuffer [SOUND_BUFFER_SIZE];
 extern int32_t EchoBuffer [SOUND_BUFFER_SIZE];
 extern int32_t FilterTaps [8];
 static uint8_t FilterTapDefinitionBitfield;
-// In the above, bit I is set if FilterTaps[I] is non-zero.
+/* In the above, bit I is set if FilterTaps[I] is non-zero. */
 extern uint32_t Z;
 extern int32_t Loop [16];
 
@@ -66,7 +66,7 @@ uint32_t IncreaseRate [32] =
 
 #define SustainRate DecreaseRateExp
 
-// precalculated env rates for S9xSetEnvRate
+/* precalculated env rates for S9xSetEnvRate */
 uint32_t AttackERate     [16][10];
 uint32_t DecayERate       [8][10];
 uint32_t SustainERate    [32][10];
@@ -81,8 +81,8 @@ uint32_t KeyOffERate         [10];
 #define VOL_DIV16 0x0080
 #define ENVX_SHIFT 24
 
-// F is channel's current frequency and M is the 16-bit modulation waveform
-// from the previous channel multiplied by the current envelope volume level.
+/* F is channel's current frequency and M is the 16-bit modulation waveform
+ * from the previous channel multiplied by the current envelope volume level. */
 #define PITCH_MOD(F,M) ((F) * ((((uint32_t) (M)) + 0x800000) >> 16) >> 7)
 
 #define LAST_SAMPLE 0xffffff

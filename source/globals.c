@@ -84,7 +84,7 @@ uint16_t SignExtend [2] =
    0x00, 0xff00
 };
 
-//modified per anomie Mode 5 findings
+/*modified per anomie Mode 5 findings */
 int32_t HDMA_ModeByteCounts [8] =
 {
    1, 2, 2, 4, 4, 4, 2, 4
@@ -92,8 +92,8 @@ int32_t HDMA_ModeByteCounts [8] =
 
 uint8_t BitShifts[8][4] =
 {
-   {2, 2, 2, 2}, // 0
-   {4, 4, 2, 0}, // 1
+   {2, 2, 2, 2}, /* 0 */
+   {4, 4, 2, 0}, /* 1 */
    {4, 4, 0, 0}, // 2
    {8, 4, 0, 0}, // 3
    {8, 2, 0, 0}, // 4
@@ -192,7 +192,7 @@ uint8_t APUROM [64] =
    0xF6, 0xDA, 0x00, 0xBA, 0xF4, 0xC4, 0xF4, 0xDD, 0x5D, 0xD0, 0xDB, 0x1F, 0x00, 0x00, 0xC0, 0xFF
 };
 
-// Raw SPC700 instruction cycle lengths
+/* Raw SPC700 instruction cycle lengths */
 uint8_t S9xAPUCycleLengths [256] =
 {
    /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e,  f, */
@@ -214,8 +214,8 @@ uint8_t S9xAPUCycleLengths [256] =
    /* f0 */  2, 8, 4, 5, 4, 5, 5, 6, 3, 4, 5, 4, 2, 2, 4,  3
 };
 
-// Actual data used by CPU emulation, will be scaled by APUReset routine
-// to be relative to the 65c816 instruction lengths.
+/* Actual data used by CPU emulation, will be scaled by APUReset routine
+ * to be relative to the 65c816 instruction lengths. */
 uint8_t S9xAPUCycles [256] =
 {
    /*        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e,  f, */

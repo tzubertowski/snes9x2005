@@ -41,18 +41,18 @@ void ComputeClipWindows()
    ClipData* pClip = &IPPU.Clip [0];
    int32_t c, w, i;
 
-   // Loop around the main screen then the sub-screen.
+   /* Loop around the main screen then the sub-screen. */
    for (c = 0; c < 2; c++, pClip++)
    {
-      // Loop around the colour window then a clip window for each of the
-      // background layers.
+      /* Loop around the colour window then a clip window for each of the
+       * background layers. */
       for (w = 5; w >= 0; w--)
       {
          pClip->Count[w] = 0;
 
-         if (w == 5) // The colour window...
+         if (w == 5) /* The colour window... */
          {
-            if (c == 0) // ... on the main screen
+            if (c == 0) /* ... on the main screen */
             {
                if ((Memory.FillRAM [0x2130] & 0xc0) == 0xc0)
                {
@@ -629,5 +629,5 @@ Clip_ok:;
             }
          } // if (w == 5 || pClip->Count [5] ...
       } // for (w...
-   } // for (c...
+   } /* for (c... */
 }

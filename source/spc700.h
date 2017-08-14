@@ -59,7 +59,7 @@ typedef struct
    uint16_t  PC;
 } SAPURegisters;
 
-// Needed by ILLUSION OF GAIA
+/* Needed by ILLUSION OF GAIA */
 #define ONE_APU_CYCLE 21
 
 #define APU_EXECUTE1() \

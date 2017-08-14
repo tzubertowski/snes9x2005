@@ -36,17 +36,17 @@ typedef struct
    uint16_t*   X2;
    uint16_t*   ZERO_OR_X2;
    uint16_t*   ZERO;
-   uint32_t    RealPitch;  // True pitch of Screen buffer.
-   uint32_t    Pitch2;     // Same as RealPitch except while using speed up hack for Glide.
-   uint32_t    ZPitch;     // Pitch of ZBuffer
-   uint32_t    PPL;        // Number of pixels on each of Screen buffer
+   uint32_t    RealPitch;  /* True pitch of Screen buffer. */
+   uint32_t    Pitch2;     /* Same as RealPitch except while using speed up hack for Glide. */
+   uint32_t    ZPitch;     /* Pitch of ZBuffer */
+   uint32_t    PPL;        /* Number of pixels on each of Screen buffer */
    uint32_t    PPLx2;
    uint32_t    PixSize;
    uint8_t*    S;
    uint8_t*    DB;
    ptrdiff_t   DepthDelta;
-   uint8_t     Z1;         // Depth for comparison
-   uint8_t     Z2;         // Depth to save
+   uint8_t     Z1;         /* Depth for comparison */
+   uint8_t     Z2;         /* Depth to save */
    uint32_t    FixedColour;
    uint32_t    StartY;
    uint32_t    EndY;
@@ -75,7 +75,7 @@ typedef struct
    bool        Pseudo;
 } SGFX;
 
-// External port interface which must be implemented or initialised for each port.
+/* External port interface which must be implemented or initialised for each port. */
 extern SGFX GFX;
 
 typedef struct
@@ -126,7 +126,7 @@ extern uint16_t DirectColourMaps [8][256];
 
 extern uint8_t mul_brightness [16][32];
 
-// Could use BSWAP instruction on Intel port...
+/* Could use BSWAP instruction on Intel port... */
 #define SWAP_DWORD(dword) dword = ((((dword) & 0x000000ff) << 24) \
                                 |  (((dword) & 0x0000ff00) <<  8) \
                                 |  (((dword) & 0x00ff0000) >>  8) \

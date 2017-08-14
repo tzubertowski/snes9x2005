@@ -48,7 +48,7 @@ typedef struct
    uint8_t*      WriteMap [MEMMAP_NUM_BLOCKS];
    int16_t       op1;
    int16_t       op2;
-   int           arithmetic_op; // For savestate compatibility can't change to int32_t
+   int           arithmetic_op; /* For savestate compatibility can't change to int32_t */
    int64_t       sum;
    bool          overflow;
    uint8_t       VirtualBitmapFormat;

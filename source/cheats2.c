@@ -41,7 +41,7 @@ void S9xDeleteCheat(uint32_t which1)
       if (Cheat.c [which1].enabled)
          S9xRemoveCheat(which1);
 
-      // memmove required: Overlapping addresses [Neb]
+      /* memmove required: Overlapping addresses [Neb] */
       memmove(&Cheat.c [which1], &Cheat.c [which1 + 1], sizeof(Cheat.c [0]) * (Cheat.num_cheats - which1 - 1));
       Cheat.num_cheats--;
    }
@@ -84,7 +84,7 @@ void S9xRemoveCheat(uint32_t which1)
          *(ptr + (address & 0xffff)) = Cheat.c [which1].saved_byte;
       else
          S9xSetByte(Cheat.c [which1].saved_byte, address);
-      // Unsave the address for the next call to S9xRemoveCheat.
+      /* Unsave the address for the next call to S9xRemoveCheat. */
       Cheat.c [which1].saved = false;
    }
 }

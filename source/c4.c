@@ -137,22 +137,22 @@ void C4TransfWireFrame()
    c4y = C4WFYVal;
    c4z = C4WFZVal - 0x95;
 
-   // Rotate X
+   /* Rotate X */
    tanval = -C4WFX2Val << 9;
    c4y2 = (c4y * C4_Cos(tanval) - c4z * C4_Sin(tanval)) >> 15;
    c4z2 = (c4y * C4_Sin(tanval) + c4z * C4_Cos(tanval)) >> 15;
 
-   // Rotate Y
+   /* Rotate Y */
    tanval = -C4WFY2Val << 9;
    c4x2 = (c4x * C4_Cos(tanval) + c4z2 * C4_Sin(tanval)) >> 15;
    c4z = (c4x * -C4_Sin(tanval) + c4z2 * C4_Cos(tanval)) >> 15;
 
-   // Rotate Z
+   /* Rotate Z */
    tanval = -C4WFDist << 9;
    c4x = (c4x2 * C4_Cos(tanval) - c4y2 * C4_Sin(tanval)) >> 15;
    c4y = (c4x2 * C4_Sin(tanval) + c4y2 * C4_Cos(tanval)) >> 15;
 
-   // Scale
+   /* Scale */
    C4WFXVal = (int16_t)(((int32_t)c4x * C4WFScale * 0x95) / (0x90 * (c4z + 0x95)));
    C4WFYVal = (int16_t)(((int32_t)c4y * C4WFScale * 0x95) / (0x90 * (c4z + 0x95)));
 }
@@ -163,22 +163,22 @@ void C4TransfWireFrame2()
    c4y = C4WFYVal;
    c4z = C4WFZVal;
 
-   // Rotate X
+   /* Rotate X */
    tanval = -C4WFX2Val << 9;
    c4y2 = (c4y * C4_Cos(tanval) - c4z * C4_Sin(tanval)) >> 15;
    c4z2 = (c4y * C4_Sin(tanval) + c4z * C4_Cos(tanval)) >> 15;
 
-   // Rotate Y
+   /* Rotate Y */
    tanval = -C4WFY2Val << 9;
    c4x2 = (c4x * C4_Cos(tanval) + c4z2 * C4_Sin(tanval)) >> 15;
    c4z = (c4x * -C4_Sin(tanval) + c4z2 * C4_Cos(tanval)) >> 15;
 
-   // Rotate Z
+   /* Rotate Z */
    tanval = -C4WFDist << 9;
    c4x = (c4x2 * C4_Cos(tanval) - c4y2 * C4_Sin(tanval)) >> 15;
    c4y = (c4x2 * C4_Sin(tanval) + c4y2 * C4_Cos(tanval)) >> 15;
 
-   // Scale
+   /* Scale */
    C4WFXVal = (int16_t)(((int32_t)c4x * C4WFScale) / 0x100);
    C4WFYVal = (int16_t)(((int32_t)c4y * C4WFScale) / 0x100);
 }
