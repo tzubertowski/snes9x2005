@@ -56,11 +56,11 @@ void S9xDoDMA(uint8_t Channel)
    }
    switch (d->BAddress)
    {
-   case 0x18:
-   case 0x19:
-      if (IPPU.RenderThisFrame)
-         FLUSH_REDRAW();
-      break;
+      case 0x18:
+      case 0x19:
+         if (IPPU.RenderThisFrame)
+            FLUSH_REDRAW();
+         break;
    }
    if (Settings.SDD1)
    {
@@ -74,8 +74,8 @@ void S9xDoDMA(uint8_t Channel)
          in_ptr = GetBasePointer(((d->ABank << 16) | d->AAddress));
          if (in_ptr)
          {
-               in_ptr += d->AAddress;
-               SDD1_decompress(sdd1_decode_buffer, in_ptr, d->TransferBytes);
+            in_ptr += d->AAddress;
+            SDD1_decompress(sdd1_decode_buffer, in_ptr, d->TransferBytes);
          }
          in_sdd1_dma = sdd1_decode_buffer;
       }
@@ -84,14 +84,16 @@ void S9xDoDMA(uint8_t Channel)
    }
    if (Settings.SPC7110 && (d->AAddress == 0x4800 || d->ABank == 0x50))
    {
-      int32_t c;
+      int32_t c, icount;
       spc7110_dma = &s7r.bank50[0];
+
       for(c = 0; c < count; c++)
          s7r.bank50[c] = spc7110dec_read();
-      int32_t icount = (s7r.reg4809 | (s7r.reg480A << 8)) - count;
-      s7r.reg4809 = 0x00ff & icount;
-      s7r.reg480A = (0xff00 & icount) >> 8;
-      inc = 1;
+
+      icount       = (s7r.reg4809 | (s7r.reg480A << 8)) - count;
+      s7r.reg4809  = 0x00ff & icount;
+      s7r.reg480A  = (0xff00 & icount) >> 8;
+      inc          = 1;
       d->AAddress -= count;
    }
    if (d->BAddress == 0x18 && SA1.in_char_dma && (d->ABank & 0xf0) == 0x40)
@@ -114,92 +116,92 @@ void S9xDoDMA(uint8_t Channel)
 
       switch (depth)
       {
-      case 2:
-         for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
-         {
-            uint32_t j;
-            uint8_t* line = base + (num_chars - char_count) * 2;
-            for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 2)
+         case 2:
+            for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
             {
-               int32_t b, l;
-               uint8_t* q = line;
-               for (l = 0; l < 8; l++, q += bytes_per_line)
+               uint32_t j;
+               uint8_t* line = base + (num_chars - char_count) * 2;
+               for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 2)
                {
-                  for (b = 0; b < 2; b++)
+                  int32_t b, l;
+                  uint8_t* q = line;
+                  for (l = 0; l < 8; l++, q += bytes_per_line)
                   {
-                     uint8_t r = *(q + b);
-                     *(p + 0) = (*(p + 0) << 1) | ((r >> 0) & 1);
-                     *(p + 1) = (*(p + 1) << 1) | ((r >> 1) & 1);
-                     *(p + 0) = (*(p + 0) << 1) | ((r >> 2) & 1);
-                     *(p + 1) = (*(p + 1) << 1) | ((r >> 3) & 1);
-                     *(p + 0) = (*(p + 0) << 1) | ((r >> 4) & 1);
-                     *(p + 1) = (*(p + 1) << 1) | ((r >> 5) & 1);
-                     *(p + 0) = (*(p + 0) << 1) | ((r >> 6) & 1);
-                     *(p + 1) = (*(p + 1) << 1) | ((r >> 7) & 1);
+                     for (b = 0; b < 2; b++)
+                     {
+                        uint8_t r = *(q + b);
+                        *(p + 0) = (*(p + 0) << 1) | ((r >> 0) & 1);
+                        *(p + 1) = (*(p + 1) << 1) | ((r >> 1) & 1);
+                        *(p + 0) = (*(p + 0) << 1) | ((r >> 2) & 1);
+                        *(p + 1) = (*(p + 1) << 1) | ((r >> 3) & 1);
+                        *(p + 0) = (*(p + 0) << 1) | ((r >> 4) & 1);
+                        *(p + 1) = (*(p + 1) << 1) | ((r >> 5) & 1);
+                        *(p + 0) = (*(p + 0) << 1) | ((r >> 6) & 1);
+                        *(p + 1) = (*(p + 1) << 1) | ((r >> 7) & 1);
+                     }
+                     p += 2;
                   }
-                  p += 2;
                }
             }
-         }
-         break;
-      case 4:
-         for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
-         {
-            uint32_t j;
-            uint8_t* line = base + (num_chars - char_count) * 4;
-            for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 4)
+            break;
+         case 4:
+            for (i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
             {
-               uint8_t* q = line;
-               int32_t b, l;
-               for (l = 0; l < 8; l++, q += bytes_per_line)
+               uint32_t j;
+               uint8_t* line = base + (num_chars - char_count) * 4;
+               for (j = 0 ; j < char_count && p - buffer < count ; j++, line += 4)
                {
-                  for (b = 0; b < 4; b++)
+                  uint8_t* q = line;
+                  int32_t b, l;
+                  for (l = 0; l < 8; l++, q += bytes_per_line)
                   {
-                     uint8_t r = *(q + b);
-                     *(p +  0) = (*(p +  0) << 1) | ((r >> 0) & 1);
-                     *(p +  1) = (*(p +  1) << 1) | ((r >> 1) & 1);
-                     *(p + 16) = (*(p + 16) << 1) | ((r >> 2) & 1);
-                     *(p + 17) = (*(p + 17) << 1) | ((r >> 3) & 1);
-                     *(p +  0) = (*(p +  0) << 1) | ((r >> 4) & 1);
-                     *(p +  1) = (*(p +  1) << 1) | ((r >> 5) & 1);
-                     *(p + 16) = (*(p + 16) << 1) | ((r >> 6) & 1);
-                     *(p + 17) = (*(p + 17) << 1) | ((r >> 7) & 1);
+                     for (b = 0; b < 4; b++)
+                     {
+                        uint8_t r = *(q + b);
+                        *(p +  0) = (*(p +  0) << 1) | ((r >> 0) & 1);
+                        *(p +  1) = (*(p +  1) << 1) | ((r >> 1) & 1);
+                        *(p + 16) = (*(p + 16) << 1) | ((r >> 2) & 1);
+                        *(p + 17) = (*(p + 17) << 1) | ((r >> 3) & 1);
+                        *(p +  0) = (*(p +  0) << 1) | ((r >> 4) & 1);
+                        *(p +  1) = (*(p +  1) << 1) | ((r >> 5) & 1);
+                        *(p + 16) = (*(p + 16) << 1) | ((r >> 6) & 1);
+                        *(p + 17) = (*(p + 17) << 1) | ((r >> 7) & 1);
+                     }
+                     p += 2;
                   }
-                  p += 2;
+                  p += 32 - 16;
                }
-               p += 32 - 16;
             }
-         }
-         break;
-      case 8:
-         for(i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
-         {
-            uint8_t* line = base + (num_chars - char_count) * 8;
-            uint32_t j;
-            for(j = 0 ; j < char_count && p - buffer < count ; j++, line += 8)
+            break;
+         case 8:
+            for(i = 0 ; i < count ; i += inc, base += char_line_bytes, inc = char_line_bytes, char_count = num_chars)
             {
-               uint8_t* q = line;
-               int32_t b, l;
-               for (l = 0; l < 8; l++, q += bytes_per_line)
+               uint8_t* line = base + (num_chars - char_count) * 8;
+               uint32_t j;
+               for(j = 0 ; j < char_count && p - buffer < count ; j++, line += 8)
                {
-                  for (b = 0; b < 8; b++)
+                  uint8_t* q = line;
+                  int32_t b, l;
+                  for (l = 0; l < 8; l++, q += bytes_per_line)
                   {
-                     uint8_t r = *(q + b);
-                     *(p +  0) = (*(p +  0) << 1) | ((r >> 0) & 1);
-                     *(p +  1) = (*(p +  1) << 1) | ((r >> 1) & 1);
-                     *(p + 16) = (*(p + 16) << 1) | ((r >> 2) & 1);
-                     *(p + 17) = (*(p + 17) << 1) | ((r >> 3) & 1);
-                     *(p + 32) = (*(p + 32) << 1) | ((r >> 4) & 1);
-                     *(p + 33) = (*(p + 33) << 1) | ((r >> 5) & 1);
-                     *(p + 48) = (*(p + 48) << 1) | ((r >> 6) & 1);
-                     *(p + 49) = (*(p + 49) << 1) | ((r >> 7) & 1);
+                     for (b = 0; b < 8; b++)
+                     {
+                        uint8_t r = *(q + b);
+                        *(p +  0) = (*(p +  0) << 1) | ((r >> 0) & 1);
+                        *(p +  1) = (*(p +  1) << 1) | ((r >> 1) & 1);
+                        *(p + 16) = (*(p + 16) << 1) | ((r >> 2) & 1);
+                        *(p + 17) = (*(p + 17) << 1) | ((r >> 3) & 1);
+                        *(p + 32) = (*(p + 32) << 1) | ((r >> 4) & 1);
+                        *(p + 33) = (*(p + 33) << 1) | ((r >> 5) & 1);
+                        *(p + 48) = (*(p + 48) << 1) | ((r >> 6) & 1);
+                        *(p + 49) = (*(p + 49) << 1) | ((r >> 7) & 1);
+                     }
+                     p += 2;
                   }
-                  p += 2;
+                  p += 64 - 16;
                }
-               p += 64 - 16;
             }
-         }
-         break;
+            break;
       }
    }
 
@@ -252,80 +254,80 @@ void S9xDoDMA(uint8_t Channel)
       {
          switch (d->BAddress)
          {
-         case 0x04:
-            do
-            {
-               Work = *(base + p);
-               REGISTER_2104(Work);
-               p += inc;
-            } while (--count > 0);
-            break;
-         case 0x18:
-            IPPU.FirstVRAMRead = true;
-            if (!PPU.VMA.FullGraphicCount)
-            {
+            case 0x04:
                do
                {
                   Work = *(base + p);
-                  REGISTER_2118_linear(Work);
+                  REGISTER_2104(Work);
                   p += inc;
                } while (--count > 0);
-            }
-            else
-            {
+               break;
+            case 0x18:
+               IPPU.FirstVRAMRead = true;
+               if (!PPU.VMA.FullGraphicCount)
+               {
+                  do
+                  {
+                     Work = *(base + p);
+                     REGISTER_2118_linear(Work);
+                     p += inc;
+                  } while (--count > 0);
+               }
+               else
+               {
+                  do
+                  {
+                     Work = *(base + p);
+                     REGISTER_2118_tile(Work);
+                     p += inc;
+                  } while (--count > 0);
+               }
+               break;
+            case 0x19:
+               IPPU.FirstVRAMRead = true;
+               if (!PPU.VMA.FullGraphicCount)
+               {
+                  do
+                  {
+                     Work = *(base + p);
+                     REGISTER_2119_linear(Work);
+                     p += inc;
+                  } while (--count > 0);
+               }
+               else
+               {
+                  do
+                  {
+                     Work = *(base + p);
+                     REGISTER_2119_tile(Work);
+                     p += inc;
+                  } while (--count > 0);
+               }
+               break;
+            case 0x22:
                do
                {
                   Work = *(base + p);
-                  REGISTER_2118_tile(Work);
+                  REGISTER_2122(Work);
                   p += inc;
                } while (--count > 0);
-            }
-            break;
-         case 0x19:
-            IPPU.FirstVRAMRead = true;
-            if (!PPU.VMA.FullGraphicCount)
-            {
+               break;
+            case 0x80:
                do
                {
                   Work = *(base + p);
-                  REGISTER_2119_linear(Work);
+                  REGISTER_2180(Work);
                   p += inc;
                } while (--count > 0);
-            }
-            else
-            {
+               break;
+            default:
                do
                {
                   Work = *(base + p);
-                  REGISTER_2119_tile(Work);
+                  S9xSetPPU(Work, 0x2100 + d->BAddress);
                   p += inc;
                } while (--count > 0);
-            }
-            break;
-         case 0x22:
-            do
-            {
-               Work = *(base + p);
-               REGISTER_2122(Work);
-               p += inc;
-            } while (--count > 0);
-            break;
-         case 0x80:
-            do
-            {
-               Work = *(base + p);
-               REGISTER_2180(Work);
-               p += inc;
-            } while (--count > 0);
-            break;
-         default:
-            do
-            {
-               Work = *(base + p);
-               S9xSetPPU(Work, 0x2100 + d->BAddress);
-               p += inc;
-            } while (--count > 0);
-            break;
+               break;
          }
       }
       else if (d->TransferMode == 1 || d->TransferMode == 5)
@@ -462,79 +464,79 @@ void S9xDoDMA(uint8_t Channel)
       {
          switch (d->TransferMode)
          {
-         case 0:
-         case 2:
-         case 6:
-            Work = S9xGetPPU(0x2100 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            --count;
-            break;
-         case 1:
-         case 5:
-            Work = S9xGetPPU(0x2100 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
+            case 0:
+            case 2:
+            case 6:
+               Work = S9xGetPPU(0x2100 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               --count;
                break;
+            case 1:
+            case 5:
+               Work = S9xGetPPU(0x2100 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
 
-            Work = S9xGetPPU(0x2101 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            count--;
-            break;
-         case 3:
-         case 7:
-            Work = S9xGetPPU(0x2100 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
+               Work = S9xGetPPU(0x2101 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               count--;
                break;
+            case 3:
+            case 7:
+               Work = S9xGetPPU(0x2100 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
 
-            Work = S9xGetPPU(0x2100 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
+               Work = S9xGetPPU(0x2100 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
+
+               Work = S9xGetPPU(0x2101 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
+
+               Work = S9xGetPPU(0x2101 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               count--;
                break;
+            case 4:
+               Work = S9xGetPPU(0x2100 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
 
-            Work = S9xGetPPU(0x2101 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
+               Work = S9xGetPPU(0x2101 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
+
+               Work = S9xGetPPU(0x2102 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               if (!--count)
+                  break;
+
+               Work = S9xGetPPU(0x2103 + d->BAddress);
+               S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
+               d->AAddress += inc;
+               count--;
                break;
-
-            Work = S9xGetPPU(0x2101 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            count--;
-            break;
-         case 4:
-            Work = S9xGetPPU(0x2100 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
+            default:
+               count = 0;
                break;
-
-            Work = S9xGetPPU(0x2101 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
-               break;
-
-            Work = S9xGetPPU(0x2102 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            if (!--count)
-               break;
-
-            Work = S9xGetPPU(0x2103 + d->BAddress);
-            S9xSetByte(Work, (d->ABank << 16) + d->AAddress);
-            d->AAddress += inc;
-            count--;
-            break;
-         default:
-            count = 0;
-            break;
          }
       } while (count);
    }
@@ -681,46 +683,46 @@ uint8_t S9xDoHDMA(uint8_t byte)
 
          switch (p->TransferMode)
          {
-         case 0:
-            CPU.Cycles += SLOW_ONE_CYCLE;
-            S9xSetPPU(*HDMAMemPointers [d]++, 0x2100 + p->BAddress);
-            break;
-         case 5:
-            CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-            S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
-            HDMAMemPointers [d] += 2;
-         /* fall through */
-         case 1:
-            CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-            S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
-            HDMAMemPointers [d] += 2;
-            break;
-         case 2:
-         case 6:
-            CPU.Cycles += 2 * SLOW_ONE_CYCLE;
-            S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
-            HDMAMemPointers [d] += 2;
-            break;
-         case 3:
-         case 7:
-            CPU.Cycles += 4 * SLOW_ONE_CYCLE;
-            S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2101 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2101 + p->BAddress);
-            HDMAMemPointers [d] += 4;
-            break;
-         case 4:
-            CPU.Cycles += 4 * SLOW_ONE_CYCLE;
-            S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2102 + p->BAddress);
-            S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2103 + p->BAddress);
-            HDMAMemPointers [d] += 4;
-            break;
+            case 0:
+               CPU.Cycles += SLOW_ONE_CYCLE;
+               S9xSetPPU(*HDMAMemPointers [d]++, 0x2100 + p->BAddress);
+               break;
+            case 5:
+               CPU.Cycles += 2 * SLOW_ONE_CYCLE;
+               S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
+               HDMAMemPointers [d] += 2;
+               /* fall through */
+            case 1:
+               CPU.Cycles += 2 * SLOW_ONE_CYCLE;
+               S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
+               HDMAMemPointers [d] += 2;
+               break;
+            case 2:
+            case 6:
+               CPU.Cycles += 2 * SLOW_ONE_CYCLE;
+               S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
+               HDMAMemPointers [d] += 2;
+               break;
+            case 3:
+            case 7:
+               CPU.Cycles += 4 * SLOW_ONE_CYCLE;
+               S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2101 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2101 + p->BAddress);
+               HDMAMemPointers [d] += 4;
+               break;
+            case 4:
+               CPU.Cycles += 4 * SLOW_ONE_CYCLE;
+               S9xSetPPU(*(HDMAMemPointers [d] + 0), 0x2100 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 1), 0x2101 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 2), 0x2102 + p->BAddress);
+               S9xSetPPU(*(HDMAMemPointers [d] + 3), 0x2103 + p->BAddress);
+               HDMAMemPointers [d] += 4;
+               break;
          }
          if (!p->HDMAIndirectAddressing)
             p->Address += HDMA_ModeByteCounts [p->TransferMode];

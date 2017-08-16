@@ -43,15 +43,19 @@ extern char* rom_filename;
 void S9xDeinterleaveType1(int32_t TotalFileSize, uint8_t* base)
 {
    int32_t i;
-   int32_t nblocks = TotalFileSize >> 16;
    uint8_t blocks [256];
+   uint8_t *tmp    = NULL;
+   int32_t nblocks = TotalFileSize >> 16;
+
    for (i = 0; i < nblocks; i++)
    {
       blocks [i * 2] = i + nblocks;
       blocks [i * 2 + 1] = i;
    }
+
    /* DS2 DMA notes: base may or may not be 32-byte aligned */
-   uint8_t* tmp = (uint8_t*) malloc(0x8000);
+   tmp = (uint8_t*) malloc(0x8000);
+
    if (tmp)
    {
       for (i = 0; i < nblocks * 2; i++)
@@ -61,6 +65,8 @@ void S9xDeinterleaveType1(int32_t TotalFileSize, uint8_t* base)
          {
             if (blocks [j] == i)
             {
+               uint8_t b;
+
                /* memmove converted: Different mallocs [Neb] */
                memcpy(tmp, &base [blocks [j] * 0x8000], 0x8000);
                /* memmove converted: Different addresses, or identical for blocks[i] == blocks[j] [Neb] */
@@ -69,7 +75,7 @@ void S9xDeinterleaveType1(int32_t TotalFileSize, uint8_t* base)
                       &base [blocks [i] * 0x8000], 0x8000);
                /* memmove converted: Different mallocs [Neb] */
                memcpy(&base [blocks [i] * 0x8000], tmp, 0x8000);
-               uint8_t b = blocks [j];
+               b          = blocks [j];
                blocks [j] = blocks [i];
                blocks [i] = b;
                break;
@@ -82,11 +88,13 @@ void S9xDeinterleaveType1(int32_t TotalFileSize, uint8_t* base)
 
 void S9xDeinterleaveGD24(int32_t TotalFileSize, uint8_t* base)
 {
+   uint8_t *tmp = NULL;
    if (TotalFileSize != 0x300000)
       return;
 
    /* DS2 DMA notes: base may or may not be 32-byte aligned */
-   uint8_t* tmp = (uint8_t*) malloc(0x80000);
+   tmp = (uint8_t*) malloc(0x80000);
+
    if (tmp)
    {
       /* memmove converted: Different mallocs [Neb] */
@@ -201,6 +209,8 @@ static char* Safe(const char* s)
 {
    static char* safe;
    static int32_t safe_len = 0;
+   int32_t i;
+   int32_t len;
 
    if (s == NULL)
    {
@@ -211,7 +221,9 @@ static char* Safe(const char* s)
       }
       return NULL;
    }
-   int32_t len = strlen(s);
+
+   len = strlen(s);
+
    if (!safe || len + 1 > safe_len)
    {
       if (safe)
@@ -219,7 +231,6 @@ static char* Safe(const char* s)
       safe = (char*) malloc(safe_len = len + 1);
    }
 
-   int32_t i;
    for (i = 0; i < len; i++)
    {
       if (s [i] >= 32 && s [i] < 127)
@@ -284,6 +295,7 @@ bool S9xInitMemory(void)
 
 void S9xDeinitMemory(void)
 {
+   int t;
    if (Memory.RAM)
    {
       free(Memory.RAM);
@@ -316,7 +328,6 @@ void S9xDeinitMemory(void)
       Memory.BSRAM = NULL;
    }
 
-   int t;
    for (t = 0; t < 2; t++)
    {
       if (IPPU.TileCache[t])
@@ -999,6 +1010,10 @@ void S9xDeinterleaveType2(bool reset)
 
 void InitROM(bool Interleaved)
 {
+   uint8_t* RomHeader;
+   uint32_t sum1 = 0;
+   uint32_t sum2 = 0;
+
    SuperFX.nRomBanks = Memory.CalculatedSize >> 15;
    Settings.MultiPlayer5Master = Settings.MultiPlayer5;
    Settings.MouseMaster = Settings.Mouse;
@@ -1017,7 +1032,6 @@ void InitROM(bool Interleaved)
    Settings.SETA = false;
    s7r.DataRomSize = 0;
    Memory.CalculatedChecksum = 0;
-   uint8_t* RomHeader;
 
    RomHeader = Memory.ROM + 0x7FB0;
 
@@ -1236,20 +1250,19 @@ void InitROM(bool Interleaved)
    if (Settings.BS)
       Memory.ROMRegion = 0;
 
-   uint32_t sum1 = 0;
-   uint32_t sum2 = 0;
    if (!Memory.CalculatedChecksum)
    {
+      int32_t i;
+      uint32_t remainder;
       int32_t power2 = 0;
+      int32_t sub = 0;
       int32_t size = Memory.CalculatedSize;
 
       while (size >>= 1)
          power2++;
 
-      size = 1 << power2;
-      uint32_t remainder = Memory.CalculatedSize - size;
-
-      int32_t i;
+      size      = 1 << power2;
+      remainder = Memory.CalculatedSize - size;
 
       for (i = 0; i < size; i++)
          sum1 += Memory.ROM [i];
@@ -1257,7 +1270,6 @@ void InitROM(bool Interleaved)
       for (i = 0; i < (int32_t) remainder; i++)
          sum2 += Memory.ROM [size + i];
 
-      int32_t sub = 0;
       if (Settings.BS && Memory.ROMType != 0xE5)
       {
          if (Memory.HiROM)
@@ -1399,9 +1411,10 @@ void map_index(uint32_t bank_s, uint32_t bank_e, uint32_t addr_s, uint32_t addr_
 
 void WriteProtectROM(void)
 {
+   int32_t c;
+
    /* memmove converted: Different mallocs [Neb] */
    memcpy(Memory.WriteMap, Memory.Map, sizeof(Memory.Map));
-   int32_t c;
    for (c = 0; c < 0x1000; c++)
       if (Memory.BlockIsROM [c])
          Memory.WriteMap [c] = (uint8_t*) MAP_NONE;
@@ -1722,6 +1735,7 @@ void TalesROMMap(bool Interleaved)
 {
    int32_t c;
    int32_t i;
+   int32_t sum = 0;
 
    uint32_t OFFSET0 = 0x400000;
    uint32_t OFFSET1 = 0x400000;
@@ -1788,7 +1802,6 @@ void TalesROMMap(bool Interleaved)
    Memory.ROMChecksum = *(Memory.Map[8] + 0xFFDE) + (*(Memory.Map[8] + 0xFFDF) << 8);
    Memory.ROMComplementChecksum = *(Memory.Map[8] + 0xFFDC) + (*(Memory.Map[8] + 0xFFDD) << 8);
 
-   int32_t sum = 0;
    for (i = 0x40; i < 0x80; i++)
    {
       uint8_t* bank_low = (uint8_t*)Memory.Map[i << 4];
@@ -2264,6 +2277,7 @@ void JumboLoROMMap(bool Interleaved)
 {
    int32_t c;
    int32_t i;
+   int32_t sum = 0, k, l;
 
    uint32_t OFFSET0 = 0x400000;
    uint32_t OFFSET2 = 0x000000;
@@ -2343,7 +2357,6 @@ void JumboLoROMMap(bool Interleaved)
    }
 
    /* ROM type has to be 64 Mbit header! */
-   int32_t sum = 0, k, l;
    for (k = 0; k < 256; k++)
    {
       uint8_t* bank = 0x8000 + Memory.Map[8 + (k << 4)]; /* use upper half of the banks, and adjust for LoROM. */
@@ -2359,6 +2372,7 @@ void SPC7110HiROMMap(void)
 {
    int32_t c;
    int32_t i;
+   int32_t sum = 0;
 
    /* Banks 00->3f and 80->bf */
    for (c = 0; c < 0x400; c += 16)
@@ -2421,7 +2435,6 @@ void SPC7110HiROMMap(void)
    }
    S9xSpc7110Init();
 
-   int32_t sum = 0;
    for (i = 0; i < (int32_t)Memory.CalculatedSize; i++)
       sum += Memory.ROM[i];
 
@@ -3000,6 +3013,8 @@ void ParseSNESHeader(uint8_t* RomHeader)
 {
    if(Settings.BS)
    {
+      uint32_t size_count;
+
       Memory.SRAMSize = 0x05;
       strncpy(Memory.ROMName, (char *) &RomHeader[0x10], 17);
       memset(&Memory.ROMName[0x11], 0, ROM_NAME_LEN - 1 - 17);
@@ -3007,7 +3022,6 @@ void ParseSNESHeader(uint8_t* RomHeader)
       Memory.ROMType = 0xe5;
       Memory.ROMSize = 1;
 
-      uint32_t size_count;
       for(size_count = 0x800; size_count < Memory.CalculatedSize; size_count <<= 1, ++Memory.ROMSize);
    }
    else

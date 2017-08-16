@@ -59,6 +59,7 @@ extern uint8_t  Mode7Depths [2];
 (GFX.r2131 & 0x3f)
 
 #define FIX_INTERLACE(SCREEN, DO_DEPTH, DEPTH) \
+    { \
     uint32_t y; \
     if (IPPU.DoubleHeightPixels && ((PPU.BGMode != 5 && PPU.BGMode != 6) || !IPPU.Interlace)) \
     { \
@@ -75,6 +76,7 @@ extern uint8_t  Mode7Depths [2];
                          GFX.PPLx2>>1); \
             } \
         } \
+    } \
     }
 
 #define BLACK BUILD_PIXEL(0,0,0)
@@ -506,44 +508,44 @@ static INLINE void SelectTileRenderer(bool normal)
    {
       switch (GFX.r2131 & 0xC0)
       {
-      case 0x00:
-         DrawTilePtr = DrawTile16Add;
-         DrawClippedTilePtr = DrawClippedTile16Add;
-         DrawLargePixelPtr = DrawLargePixel16Add;
-         break;
-      case 0x40:
-         if (GFX.r2130 & 2)
-         {
-            DrawTilePtr = DrawTile16Add1_2;
-            DrawClippedTilePtr = DrawClippedTile16Add1_2;
-         }
-         else
-         {
-            /* Fixed colour addition */
-            DrawTilePtr = DrawTile16FixedAdd1_2;
-            DrawClippedTilePtr = DrawClippedTile16FixedAdd1_2;
-         }
-         DrawLargePixelPtr = DrawLargePixel16Add1_2;
-         break;
-      case 0x80:
-         DrawTilePtr = DrawTile16Sub;
-         DrawClippedTilePtr = DrawClippedTile16Sub;
-         DrawLargePixelPtr = DrawLargePixel16Sub;
-         break;
-      case 0xC0:
-         if (GFX.r2130 & 2)
-         {
-            DrawTilePtr = DrawTile16Sub1_2;
-            DrawClippedTilePtr = DrawClippedTile16Sub1_2;
-         }
-         else
-         {
-            /* Fixed colour substraction */
-            DrawTilePtr = DrawTile16FixedSub1_2;
-            DrawClippedTilePtr = DrawClippedTile16FixedSub1_2;
-         }
-         DrawLargePixelPtr = DrawLargePixel16Sub1_2;
-         break;
+         case 0x00:
+            DrawTilePtr = DrawTile16Add;
+            DrawClippedTilePtr = DrawClippedTile16Add;
+            DrawLargePixelPtr = DrawLargePixel16Add;
+            break;
+         case 0x40:
+            if (GFX.r2130 & 2)
+            {
+               DrawTilePtr = DrawTile16Add1_2;
+               DrawClippedTilePtr = DrawClippedTile16Add1_2;
+            }
+            else
+            {
+               /* Fixed colour addition */
+               DrawTilePtr = DrawTile16FixedAdd1_2;
+               DrawClippedTilePtr = DrawClippedTile16FixedAdd1_2;
+            }
+            DrawLargePixelPtr = DrawLargePixel16Add1_2;
+            break;
+         case 0x80:
+            DrawTilePtr = DrawTile16Sub;
+            DrawClippedTilePtr = DrawClippedTile16Sub;
+            DrawLargePixelPtr = DrawLargePixel16Sub;
+            break;
+         case 0xC0:
+            if (GFX.r2130 & 2)
+            {
+               DrawTilePtr = DrawTile16Sub1_2;
+               DrawClippedTilePtr = DrawClippedTile16Sub1_2;
+            }
+            else
+            {
+               /* Fixed colour substraction */
+               DrawTilePtr = DrawTile16FixedSub1_2;
+               DrawClippedTilePtr = DrawClippedTile16FixedSub1_2;
+            }
+            DrawLargePixelPtr = DrawLargePixel16Sub1_2;
+            break;
       }
    }
 }
@@ -557,42 +559,42 @@ void S9xSetupOBJ(void)
 
    switch (PPU.OBJSizeSelect)
    {
-   case 0:
-      SmallWidth = SmallHeight = 8;
-      LargeWidth = LargeHeight = 16;
-      break;
-   case 1:
-      SmallWidth = SmallHeight = 8;
-      LargeWidth = LargeHeight = 32;
-      break;
-   case 2:
-      SmallWidth = SmallHeight = 8;
-      LargeWidth = LargeHeight = 64;
-      break;
-   case 3:
-      SmallWidth = SmallHeight = 16;
-      LargeWidth = LargeHeight = 32;
-      break;
-   case 4:
-      SmallWidth = SmallHeight = 16;
-      LargeWidth = LargeHeight = 64;
-      break;
-   default:
-   case 5:
-      SmallWidth = SmallHeight = 32;
-      LargeWidth = LargeHeight = 64;
-      break;
-   case 6:
-      SmallWidth = 16;
-      SmallHeight = 32;
-      LargeWidth = 32;
-      LargeHeight = 64;
-      break;
-   case 7:
-      SmallWidth = 16;
-      SmallHeight = 32;
-      LargeWidth = LargeHeight = 32;
-      break;
+      case 0:
+         SmallWidth = SmallHeight = 8;
+         LargeWidth = LargeHeight = 16;
+         break;
+      case 1:
+         SmallWidth = SmallHeight = 8;
+         LargeWidth = LargeHeight = 32;
+         break;
+      case 2:
+         SmallWidth = SmallHeight = 8;
+         LargeWidth = LargeHeight = 64;
+         break;
+      case 3:
+         SmallWidth = SmallHeight = 16;
+         LargeWidth = LargeHeight = 32;
+         break;
+      case 4:
+         SmallWidth = SmallHeight = 16;
+         LargeWidth = LargeHeight = 64;
+         break;
+      default:
+      case 5:
+         SmallWidth = SmallHeight = 32;
+         LargeWidth = LargeHeight = 64;
+         break;
+      case 6:
+         SmallWidth = 16;
+         SmallHeight = 32;
+         LargeWidth = 32;
+         LargeHeight = 64;
+         break;
+      case 7:
+         SmallWidth = 16;
+         SmallHeight = 32;
+         LargeWidth = LargeHeight = 32;
+         break;
    }
    /* OK, we have three cases here. Either there's no priority, priority is
     * normal FirstSprite, or priority is FirstSprite+Y. The first two are
@@ -1718,15 +1720,15 @@ static void DrawBackground(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8_t Z2)
    }
    switch (BGMode)
    {
-   case 2:
-   case 4: /* Used by Puzzle Bobble */
-      DrawBackgroundOffset(BGMode, bg, Z1, Z2);
-      return;
+      case 2:
+      case 4: /* Used by Puzzle Bobble */
+         DrawBackgroundOffset(BGMode, bg, Z1, Z2);
+         return;
 
-   case 5:
-   case 6: /* XXX: is also offset per tile. */
-      DrawBackgroundMode5(bg, Z1, Z2);
-      return;
+      case 5:
+      case 6: /* XXX: is also offset per tile. */
+         DrawBackgroundMode5(bg, Z1, Z2);
+         return;
    }
 
    depths [0] = Z1;
@@ -2360,6 +2362,7 @@ static void DrawBGMode7Background16Sub1_2(uint8_t * Screen, int32_t bg)
          GFX.Z1 = Mode7Depths [(b & GFX.Mode7PriorityMask) >> 7]; \
                         if (GFX.Z1 > *d && (b & GFX.Mode7Mask) ) \
                         { \
+                           TYPE theColor; \
                            uint32_t p1, p2, p3, p4; \
                            uint32_t Xdel, Ydel, XY, area1, area2, area3, area4, tempColor; \
                             /* X10 and Y01 are the X and Y coordinates of the next source point over. */ \
@@ -2399,8 +2402,8 @@ static void DrawBGMode7Background16Sub1_2(uint8_t * Screen, int32_t bg)
                                                 (area2 * p2) + \
                                                 (area3 * p3) + \
                                                 (area4 * p4)) >> 5; \
-                            TYPE theColor = (tempColor & FIRST_THIRD_COLOR_MASK) | ((tempColor >> 16) & SECOND_COLOR_MASK); \
-                            *p = (FUNC) | ALPHA_BITS_MASK; \
+                            theColor  = (tempColor & FIRST_THIRD_COLOR_MASK) | ((tempColor >> 16) & SECOND_COLOR_MASK); \
+                            *p        = (FUNC) | ALPHA_BITS_MASK; \
                             *d = GFX.Z1; \
                         } \
                     } \
@@ -2609,98 +2612,98 @@ static void RenderScreen(uint8_t* Screen, bool sub, bool force_no_add, uint8_t D
 
    switch (PPU.BGMode)
    {
-   case 0:
-   case 1:
-      if (OB)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(4));
-         DrawOBJS(!sub, D);
-      }
-      if (BG0)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(0));
-         DrawBackground(PPU.BGMode, 0, D + 10, D + 14);
-      }
-      if (BG1)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(1));
-         DrawBackground(PPU.BGMode, 1, D + 9, D + 13);
-      }
-      if (BG2)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(2));
-         DrawBackground(PPU.BGMode, 2, D + 3, PPU.BG3Priority ? D + 17 : D + 6);
-      }
-      if (BG3 && PPU.BGMode == 0)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(3));
-         DrawBackground(PPU.BGMode, 3, D + 2, D + 5);
-      }
-      break;
-   case 2:
-   case 3:
-   case 4:
-   case 5:
-   case 6:
-      if (OB)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(4));
-         DrawOBJS(!sub, D);
-      }
-      if (BG0)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(0));
-         DrawBackground(PPU.BGMode, 0, D + 5, D + 13);
-      }
-      if (BG1 && PPU.BGMode != 6)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(1));
-         DrawBackground(PPU.BGMode, 1, D + 2, D + 9);
-      }
-      break;
-   case 7:
-      if (OB)
-      {
-         SelectTileRenderer(sub || !SUB_OR_ADD(4));
-         DrawOBJS(!sub, D);
-      }
-      if (BG0 || ((Memory.FillRAM [0x2133] & 0x40) && BG1))
-      {
-         int32_t bg;
+      case 0:
+      case 1:
+         if (OB)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(4));
+            DrawOBJS(!sub, D);
+         }
+         if (BG0)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(0));
+            DrawBackground(PPU.BGMode, 0, D + 10, D + 14);
+         }
+         if (BG1)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(1));
+            DrawBackground(PPU.BGMode, 1, D + 9, D + 13);
+         }
+         if (BG2)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(2));
+            DrawBackground(PPU.BGMode, 2, D + 3, PPU.BG3Priority ? D + 17 : D + 6);
+         }
+         if (BG3 && PPU.BGMode == 0)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(3));
+            DrawBackground(PPU.BGMode, 3, D + 2, D + 5);
+         }
+         break;
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+         if (OB)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(4));
+            DrawOBJS(!sub, D);
+         }
+         if (BG0)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(0));
+            DrawBackground(PPU.BGMode, 0, D + 5, D + 13);
+         }
+         if (BG1 && PPU.BGMode != 6)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(1));
+            DrawBackground(PPU.BGMode, 1, D + 2, D + 9);
+         }
+         break;
+      case 7:
+         if (OB)
+         {
+            SelectTileRenderer(sub || !SUB_OR_ADD(4));
+            DrawOBJS(!sub, D);
+         }
+         if (BG0 || ((Memory.FillRAM [0x2133] & 0x40) && BG1))
+         {
+            int32_t bg;
 
-         if ((Memory.FillRAM [0x2133] & 0x40) && BG1)
-         {
-            GFX.Mode7Mask = 0x7f;
-            GFX.Mode7PriorityMask = 0x80;
-            Mode7Depths [0] = (BG0 ? 5 : 1) + D;
-            Mode7Depths [1] = 9 + D;
-            bg = 1;
-         }
-         else
-         {
-            GFX.Mode7Mask = 0xff;
-            GFX.Mode7PriorityMask = 0;
-            Mode7Depths [0] = 5 + D;
-            Mode7Depths [1] = 5 + D;
-            bg = 0;
-         }
-         if (sub || !SUB_OR_ADD(0))
-            DrawBGMode7Background16(Screen, bg);
-         else
-         {
-            if (GFX.r2131 & 0x80)
+            if ((Memory.FillRAM [0x2133] & 0x40) && BG1)
             {
-               if (GFX.r2131 & 0x40)
-                  DrawBGMode7Background16Sub1_2(Screen, bg);
-               else
-                  DrawBGMode7Background16Sub(Screen, bg);
+               GFX.Mode7Mask = 0x7f;
+               GFX.Mode7PriorityMask = 0x80;
+               Mode7Depths [0] = (BG0 ? 5 : 1) + D;
+               Mode7Depths [1] = 9 + D;
+               bg = 1;
             }
             else
             {
-               if (GFX.r2131 & 0x40)
-                  DrawBGMode7Background16Add1_2(Screen, bg);
+               GFX.Mode7Mask = 0xff;
+               GFX.Mode7PriorityMask = 0;
+               Mode7Depths [0] = 5 + D;
+               Mode7Depths [1] = 5 + D;
+               bg = 0;
+            }
+            if (sub || !SUB_OR_ADD(0))
+               DrawBGMode7Background16(Screen, bg);
+            else
+            {
+               if (GFX.r2131 & 0x80)
+               {
+                  if (GFX.r2131 & 0x40)
+                     DrawBGMode7Background16Sub1_2(Screen, bg);
+                  else
+                     DrawBGMode7Background16Sub(Screen, bg);
+               }
                else
-                  DrawBGMode7Background16Add(Screen, bg);
+               {
+                  if (GFX.r2131 & 0x40)
+                     DrawBGMode7Background16Add1_2(Screen, bg);
+                  else
+                     DrawBGMode7Background16Add(Screen, bg);
                }
             }
          }
@@ -2713,6 +2716,8 @@ static void RenderScreen(uint8_t* Screen, bool sub, bool force_no_add, uint8_t D
 void S9xUpdateScreen(void)
 {
    int32_t x2 = 1;
+   uint32_t starty, endy, black;
+
    GFX.S = GFX.Screen;
    GFX.r2131 = Memory.FillRAM [0x2131];
    GFX.r212c = Memory.FillRAM [0x212c];
@@ -2736,8 +2741,8 @@ void S9xUpdateScreen(void)
    /* XXX: Check ForceBlank? Or anything else? */
    PPU.RangeTimeOver |= GFX.OBJLines[GFX.EndY].RTOFlags;
 
-   uint32_t starty = GFX.StartY;
-   uint32_t endy = GFX.EndY;
+   starty = GFX.StartY;
+   endy   = GFX.EndY;
 
    if (PPU.BGMode == 5 || PPU.BGMode == 6 || IPPU.Interlace || IPPU.DoubleHeightPixels)
    {
@@ -2773,18 +2778,19 @@ void S9xUpdateScreen(void)
        *     too. */
       if (IPPU.Interlace && !IPPU.DoubleHeightPixels)
       {
-         starty = GFX.StartY * 2;
-         endy = GFX.EndY * 2 + 1;
-         IPPU.RenderedScreenHeight = PPU.ScreenHeight << 1;
-         IPPU.DoubleHeightPixels = true;
-         GFX.Pitch2 = GFX.RealPitch;
-         GFX.Pitch = GFX.RealPitch * 2;
-         GFX.PPL = GFX.PPLx2 = GFX.RealPitch;
+         int32_t y;
 
+         starty                    = GFX.StartY * 2;
+         endy                      = GFX.EndY * 2 + 1;
+         IPPU.RenderedScreenHeight = PPU.ScreenHeight << 1;
+         IPPU.DoubleHeightPixels   = true;
+         GFX.Pitch2                = GFX.RealPitch;
+         GFX.Pitch                 = GFX.RealPitch * 2;
+         GFX.PPL                   = GFX.RealPitch;
+         GFX.PPLx2                 = GFX.RealPitch;
 
          /* The game has switched from non-interlaced to interlaced mode
           * part way down the screen. Scale everything. */
-         int32_t y;
          for (y = (int32_t) GFX.StartY - 1; y >= 0; y--)
          {
             /* memmove converted: Same malloc, different addresses, and identical addresses at line 0 [Neb]
@@ -2796,7 +2802,7 @@ void S9xUpdateScreen(void)
       }
    }
 
-   uint32_t black = BLACK | (BLACK << 16);
+   black = BLACK | (BLACK << 16);
 
    if (GFX.Pseudo)
    {
@@ -2823,6 +2829,8 @@ void S9xUpdateScreen(void)
          uint32_t y;
          for (y = starty; y <= endy; y++)
          {
+            uint32_t c;
+
             memset(GFX.SubZBuffer + y * GFX.ZPitch, 0, IPPU.RenderedScreenWidth);
             memset(GFX.ZBuffer + y * GFX.ZPitch, 0, IPPU.RenderedScreenWidth);
 
@@ -2834,7 +2842,6 @@ void S9xUpdateScreen(void)
                   *p++ = black;
             }
 
-            uint32_t c;
             for (c = 0; c < pClip->Count [5]; c++)
             {
                if (pClip->Right [c][5] > pClip->Left [c][5])
@@ -2915,15 +2922,16 @@ void S9xUpdateScreen(void)
 
       if (SUB_OR_ADD(5))
       {
+         uint32_t y;
          uint32_t back = IPPU.ScreenColors [0];
          uint32_t Left = 0;
          uint32_t Right = 256;
          uint32_t Count;
 
          pClip = &IPPU.Clip [0];
-         uint32_t y;
          for (y = starty; y <= endy; y++)
          {
+            uint32_t b;
             if (!(Count = pClip->Count [5]))
             {
                Left = 0;
@@ -2931,7 +2939,6 @@ void S9xUpdateScreen(void)
                Count = 1;
             }
 
-            uint32_t b;
             for (b = 0; b < Count; b++)
             {
                if (pClip->Count [5])
@@ -3158,13 +3165,13 @@ void S9xUpdateScreen(void)
          uint32_t y;
          for (y = starty; y <= endy; y++)
          {
+            uint32_t c;
             uint32_t* p = (uint32_t*)(GFX.Screen + y * GFX.Pitch2);
             uint32_t* q = (uint32_t*)((uint16_t*) p + IPPU.RenderedScreenWidth);
 
             while (p < q)
                *p++ = black;
 
-            uint32_t c;
             for (c = 0; c < IPPU.Clip [0].Count [5]; c++)
             {
                if (IPPU.Clip [0].Right [c][5] > IPPU.Clip [0].Left [c][5])
