@@ -11,9 +11,11 @@
 #include "obc1.h"
 #include "seta.h"
 
+#include <retro_inline.h>
+
 extern uint8_t OpenBus;
 
-inline uint8_t S9xGetByte(uint32_t Address)
+INLINE uint8_t S9xGetByte(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
@@ -65,15 +67,17 @@ inline uint8_t S9xGetByte(uint32_t Address)
    }
 }
 
-inline uint16_t S9xGetWord(uint32_t Address)
+INLINE uint16_t S9xGetWord(uint32_t Address)
 {
+   int32_t block;
+   uint8_t* GetAddress;
    if ((Address & 0x0fff) == 0x0fff)
    {
       OpenBus = S9xGetByte(Address);
       return OpenBus | (S9xGetByte(Address + 1) << 8);
    }
-   int32_t block;
-   uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
+
+   GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
 
    if ((intptr_t) GetAddress != MAP_CPU || !CPU.InDMA)
       CPU.Cycles += (Memory.MemorySpeed [block] << 1);
@@ -134,11 +138,11 @@ inline uint16_t S9xGetWord(uint32_t Address)
    }
 }
 
-inline void S9xSetByte(uint8_t Byte, uint32_t Address)
+INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
 {
-   CPU.WaitAddress = NULL;
    int32_t block;
    uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
+   CPU.WaitAddress = NULL;
 
    if ((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA)
       CPU.Cycles += Memory.MemorySpeed [block];
@@ -205,8 +209,11 @@ inline void S9xSetByte(uint8_t Byte, uint32_t Address)
    }
 }
 
-inline void S9xSetWord(uint16_t Word, uint32_t Address)
+INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
 {
+   int32_t block;
+   uint8_t* SetAddress;
+
    if ((Address & 0x0FFF) == 0x0FFF)
    {
       S9xSetByte(Word & 0x00FF, Address);
@@ -215,8 +222,7 @@ inline void S9xSetWord(uint16_t Word, uint32_t Address)
    }
 
    CPU.WaitAddress = NULL;
-   int32_t block;
-   uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
+   SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
 
    if ((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA)
       CPU.Cycles += Memory.MemorySpeed [block] << 1;
@@ -307,7 +313,7 @@ inline void S9xSetWord(uint16_t Word, uint32_t Address)
    }
 }
 
-inline uint8_t* GetBasePointer(uint32_t Address)
+INLINE uint8_t* GetBasePointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -341,7 +347,7 @@ inline uint8_t* GetBasePointer(uint32_t Address)
    }
 }
 
-inline uint8_t* S9xGetMemPointer(uint32_t Address)
+INLINE uint8_t* S9xGetMemPointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -378,7 +384,7 @@ inline uint8_t* S9xGetMemPointer(uint32_t Address)
    }
 }
 
-inline void S9xSetPCBase(uint32_t Address)
+INLINE void S9xSetPCBase(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];

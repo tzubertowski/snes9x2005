@@ -86,6 +86,7 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 
 void retro_set_audio_sample(retro_audio_sample_t cb)
 {
+   (void) cb;
 }
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
@@ -105,6 +106,8 @@ void retro_set_input_state(retro_input_state_t cb)
 
 void retro_set_controller_port_device(unsigned in_port, unsigned device)
 {
+   (void) in_port;
+   (void) device;
 }
 
 unsigned retro_api_version()
@@ -170,6 +173,8 @@ void S9xInitDisplay(void)
 #ifndef __WIN32__
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext)
 {
+   (void) drive;
+
    if (dir && *dir)
    {
       strcpy(path, dir);
@@ -191,10 +196,11 @@ void _makepath(char* path, const char* drive, const char* dir, const char* fname
 void _splitpath (const char* path, char* drive, char* dir, char* fname, char* ext)
 {
    const char* slash = strrchr(path, '/');
+   const char* dot   = strrchr(path, '.');
+   (void) drive;
+
    if (!slash)
       slash = strrchr((char*)path, '\\');
-
-   const char* dot   = strrchr(path, '.');
 
    if (dot && slash && dot < slash)
       dot = NULL;
@@ -245,6 +251,7 @@ void GetBaseName(const char* ex)
    char dir [_MAX_DIR + 1];
    char fname [_MAX_FNAME + 1];
    char ext [_MAX_EXT + 1];
+   (void) ex;
    _splitpath(Memory.ROMFilename, drive, dir, fname, ext);
    snprintf(retro_base_name,sizeof(retro_base_name),"%s",fname);
 }
@@ -392,6 +399,9 @@ static int32_t samples_to_play = 0;
 void retro_run(void)
 {
    bool updated = false;
+#ifndef USE_BLARGG_APU
+   static int16_t audio_buf[2048];
+#endif
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables();
@@ -409,7 +419,6 @@ void retro_run(void)
    RETRO_PERFORMANCE_STOP(S9xMainLoop_func);
 
 #ifndef USE_BLARGG_APU
-   static int16_t audio_buf[2048];
    samples_to_play += samples_per_frame;
 
    if (samples_to_play > 512)
@@ -459,24 +468,32 @@ void retro_run(void)
 
 bool S9xReadMousePosition(int32_t which1, int32_t* x, int32_t* y, uint32_t* buttons)
 {
+   (void) which1;
+   (void) x;
+   (void) y;
+   (void) buttons;
    return false;
 }
 
 bool S9xReadSuperScopePosition(int32_t* x, int32_t* y, uint32_t* buttons)
 {
+   (void) x;
+   (void) y;
+   (void) buttons;
    return true;
 }
 
-bool JustifierOffscreen()
+bool JustifierOffscreen(void)
 {
    return false;
 }
 
 void JustifierButtons(uint32_t* justifiers)
 {
+   (void) justifiers;
 }
 
-unsigned retro_get_region()
+unsigned retro_get_region(void)
 {
    return Settings.PAL ? RETRO_REGION_PAL : RETRO_REGION_NTSC;
 }
@@ -538,6 +555,8 @@ size_t retro_serialize_size(void)
 bool retro_serialize(void* data, size_t size)
 {
    int32_t i;
+   uint8_t* buffer = data;
+   (void) size;
 #ifdef LAGFIX
    S9xPackStatus();
 #ifndef USE_BLARGG_APU
@@ -546,7 +565,6 @@ bool retro_serialize(void* data, size_t size)
 #endif
    S9xUpdateRTC();
    S9xSRTCPreSaveState();
-   uint8_t* buffer = data;
    memcpy(buffer, &CPU, sizeof(CPU));
    buffer += sizeof(CPU);
    memcpy(buffer, &ICPU, sizeof(ICPU));
@@ -590,15 +608,15 @@ bool retro_serialize(void* data, size_t size)
 bool retro_unserialize(const void* data, size_t size)
 {
    const uint8_t* buffer = data;
+#ifndef USE_BLARGG_APU
+   uint8_t* IAPU_RAM_current = IAPU.RAM;
+   uintptr_t IAPU_RAM_offset;
+#endif
 
    if (size != retro_serialize_size())
       return false;
 
    S9xReset();
-#ifndef USE_BLARGG_APU
-   uint8_t* IAPU_RAM_current = IAPU.RAM;
-   uintptr_t IAPU_RAM_offset;
-#endif
    memcpy(&CPU, buffer, sizeof(CPU));
    buffer += sizeof(CPU);
    memcpy(&ICPU, buffer, sizeof(ICPU));
@@ -798,6 +816,9 @@ bool retro_load_game(const struct retro_game_info* game)
 
 bool retro_load_game_special(unsigned game_type, const struct retro_game_info* info, size_t num_info)
 {
+   (void) game_type;
+   (void) info;
+   (void) num_info;
    return false;
 }
 

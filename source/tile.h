@@ -3,15 +3,18 @@
 #ifndef _TILE_H_
 #define _TILE_H_
 
-#define TILE_PREAMBLE() \
+#define TILE_PREAMBLE_VARS() \
     uint32_t l; \
     uint16_t *ScreenColors; \
     uint8_t *pCache; \
-    uint32_t TileAddr = BG.TileAddress + ((Tile & 0x3ff) << BG.TileShift); \
+    uint32_t TileNumber; \
+    uint32_t TileAddr
+
+#define TILE_PREAMBLE_CODE() \
+    TileAddr = BG.TileAddress + ((Tile & 0x3ff) << BG.TileShift); \
     if ((Tile & 0x1ff) >= 256) \
        TileAddr += BG.NameSelect; \
     TileAddr &= 0xffff; \
-    uint32_t TileNumber; \
     pCache = &BG.Buffer[(TileNumber = (TileAddr >> BG.TileShift)) << 6]; \
     if (!BG.Buffered [TileNumber]) \
        BG.Buffered[TileNumber] = ConvertTile (pCache, TileAddr); \
@@ -73,12 +76,14 @@
        break; \
     }
 
-#define TILE_CLIP_PREAMBLE() \
+#define TILE_CLIP_PREAMBLE_VARS() \
     uint32_t d1; \
-    uint32_t d2; \
+    uint32_t d2
+
+#define TILE_CLIP_PREAMBLE_CODE() \
     if (StartPixel < 4) \
     { \
-    d1 = HeadMask [StartPixel]; \
+       d1 = HeadMask [StartPixel]; \
        if (StartPixel + Width < 4) \
           d1 &= TailMask [StartPixel + Width]; \
     } \
@@ -95,8 +100,10 @@
     else \
        d2 = 0
 
-#define RENDER_CLIPPED_TILE(NORMAL, FLIPPED, N) \
-    uint32_t dd; \
+#define RENDER_CLIPPED_TILE_VARS() \
+    uint32_t dd
+
+#define RENDER_CLIPPED_TILE_CODE(NORMAL, FLIPPED, N) \
     switch (Tile & (V_FLIP | H_FLIP)) \
     { \
     case 0: \

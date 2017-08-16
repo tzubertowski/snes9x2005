@@ -455,7 +455,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
    case 0x2237:
       Memory.FillRAM [address] = byte;
       if ((Memory.FillRAM [0x2230] & 0xa4) == 0x84)
-         S9xSA1DMA(); // Normal DMA to BW-RAM
+         S9xSA1DMA(); /* Normal DMA to BW-RAM */
       break;
    case 0x223f:
       SA1.VirtualBitmapFormat = (byte & 0x80) ? 2 : 4;
@@ -508,8 +508,8 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
          break;
       default: /* cumulative sum */
          SA1.sum += (int16_t) SA1.op1 * (int16_t) SA1.op2;
-         SA1.overflow = (SA1.sum >= (1ULL << 40));
-         SA1.sum &= (1ULL << 40) - 1;
+         SA1.overflow = (SA1.sum >= (((uint64_t) 1) << 40));
+         SA1.sum &= (((uint64_t) 1) << 40) - 1;
          SA1.op2 = 0;
          break;
       }
