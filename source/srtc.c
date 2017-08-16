@@ -251,6 +251,7 @@ void S9xUpdateSrtcTime(void)
 /**********************************************************************************************/
 void S9xSetSRTC(uint8_t data, uint16_t Address)
 {
+   (void) Address;
    data &= 0x0F; /* Data is only 4-bits, mask out unused bits. */
 
    if (data >= 0xD) /* It's an RTC command */
@@ -319,6 +320,7 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
 /**********************************************************************************************/
 uint8_t S9xGetSRTC(uint16_t Address)
 {
+   (void) Address;
    if (rtc.mode == MODE_READ)
    {
       if (rtc.index < 0)

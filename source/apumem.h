@@ -3,10 +3,12 @@
 #ifndef _apumemory_h_
 #define _apumemory_h_
 
+#include <retro_inline.h>
+
 extern uint8_t W4;
 extern uint8_t APUROM[64];
 
-static inline uint8_t S9xAPUGetByteZ(uint8_t Address)
+static INLINE uint8_t S9xAPUGetByteZ(uint8_t Address)
 {
    if (Address >= 0xf0 && IAPU.DirectPage == IAPU.RAM)
    {
@@ -14,25 +16,25 @@ static inline uint8_t S9xAPUGetByteZ(uint8_t Address)
       {
          IAPU.WaitAddress2 = IAPU.WaitAddress1;
          IAPU.WaitAddress1 = IAPU.PC;
-         return (IAPU.RAM [Address]);
+         return IAPU.RAM [Address];
       }
       if (Address >= 0xfd)
       {
+         uint8_t t = IAPU.RAM [Address];
          IAPU.WaitAddress2 = IAPU.WaitAddress1;
          IAPU.WaitAddress1 = IAPU.PC;
-         uint8_t t = IAPU.RAM [Address];
          IAPU.RAM [Address] = 0;
-         return (t);
+         return t;
       }
       else if (Address == 0xf3)
-         return (S9xGetAPUDSP());
+         return S9xGetAPUDSP();
 
-      return (IAPU.RAM [Address]);
+      return IAPU.RAM [Address];
    }
-   return (IAPU.DirectPage [Address]);
+   return IAPU.DirectPage [Address];
 }
 
-static inline void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
+static INLINE void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
 {
    if (Address >= 0xf0 && IAPU.DirectPage == IAPU.RAM)
    {
@@ -58,7 +60,7 @@ static inline void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
       IAPU.DirectPage [Address] = byte;
 }
 
-static inline uint8_t S9xAPUGetByte(uint32_t Address)
+static INLINE uint8_t S9xAPUGetByte(uint32_t Address)
 {
    Address &= 0xffff;
 
@@ -80,7 +82,7 @@ static inline uint8_t S9xAPUGetByte(uint32_t Address)
    return t;
 }
 
-static inline void S9xAPUSetByte(uint8_t byte, uint32_t Address)
+static INLINE void S9xAPUSetByte(uint8_t byte, uint32_t Address)
 {
    Address &= 0xffff;
 

@@ -1158,8 +1158,10 @@ static void DrawBackgroundOffset(uint32_t BGMode, uint32_t bg, uint8_t Z1, uint8
    int32_t OffsetMask;
    int32_t OffsetShift;
    int32_t VOffsetOffset = BGMode == 4 ? 0 : 32;
-   uint8_t depths [2] = {Z1, Z2};
+   uint8_t depths [2];
 
+   depths[0] = Z1;
+   depths[1] = Z2;
    BG.StartPalette = 0;
    BPS0 = (uint16_t*) &Memory.VRAM[PPU.BG[2].SCBase << 1];
 

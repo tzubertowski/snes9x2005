@@ -82,17 +82,17 @@ typedef void (*dsp_copy_func_t)( uint8_t ** io, void* state, size_t );
 
 typedef struct
 {
-   int32_t  buf [BRR_BUF_SIZE_X2]; // decoded samples (twice the size to simplify wrap handling)
-   int32_t  buf_pos;               // place in buffer where next samples will be decoded
-   int32_t  interp_pos;            // relative fractional position in sample (0x1000 = 1.0)
-   int32_t  brr_addr;              // address of current BRR block
-   int32_t  brr_offset;            // current decoding offset in BRR block
-   uint8_t* regs;                  // pointer to voice's DSP registers
-   int32_t  vbit;                  // bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc.
-   int32_t  kon_delay;             // KON delay/current setup phase
+   int32_t  buf [BRR_BUF_SIZE_X2]; /* decoded samples (twice the size to simplify wrap handling) */
+   int32_t  buf_pos;               /* place in buffer where next samples will be decoded */
+   int32_t  interp_pos;            /* relative fractional position in sample (0x1000 = 1.0) */
+   int32_t  brr_addr;              /* address of current BRR block */
+   int32_t  brr_offset;            /* current decoding offset in BRR block */
+   uint8_t* regs;                  /* pointer to voice's DSP registers */
+   int32_t  vbit;                  /* bitmask for voice: 0x01 for voice 0, 0x02 for voice 1, etc. */
+   int32_t  kon_delay;             /* KON delay/current setup phase */
    int32_t  env_mode;
-   int32_t  env;                   // current envelope level
-   int32_t  hidden_env;            // used by GAIN mode 7, very obscure quirk
+   int32_t  env;                   /* current envelope level */
+   int32_t  hidden_env;            /* used by GAIN mode 7, very obscure quirk */
    uint8_t  t_envx_out;
 } dsp_voice_t;
 
@@ -292,5 +292,5 @@ void    S9xClearSamples();
 bool    S9xMixSamples(int16_t * buffer, uint32_t sample_count);
 void    S9xSetSamplesAvailableCallback(apu_callback);
 
-#endif // APU_BLARGG_H
+#endif /* APU_BLARGG_H */
 #endif

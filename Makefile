@@ -246,6 +246,10 @@ else ifeq ($(NO_GCC), 1)
 else
 	WARNINGS := \
 		-Wall \
+		-Wextra \
+		-pedantic \
+		-Wno-implicit-function-declaration \
+		-Wno-implicit-fallthrough \
 		-Wno-sign-compare \
 		-Wno-unused-variable \
 		-Wno-unused-function \
@@ -256,9 +260,9 @@ else
 endif
 
 ifeq ($(DEBUG),1)
-	FLAGS += -O0 -g
+	FLAGS += -O0 -g -std=c89
 else
-	FLAGS += -O2 -DNDEBUG
+	FLAGS += -O2 -DNDEBUG -std=c89
 endif
 
 ifeq ($(PERF_TEST),1)

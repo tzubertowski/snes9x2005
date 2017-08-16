@@ -3,7 +3,6 @@ LIBRETRO_COMM_DIR := $(LIBRETRO_DIR)/libretro-common
 INCFLAGS := -I$(CORE_DIR) -I$(LIBRETRO_DIR) -I$(LIBRETRO_COMM_DIR)/include
 
 SOURCES_C := \
-	$(CORE_DIR)/apu.c \
 	$(CORE_DIR)/c4.c \
 	$(CORE_DIR)/c4emu.c \
 	$(CORE_DIR)/cheats2.c \
@@ -30,17 +29,20 @@ SOURCES_C := \
 	$(CORE_DIR)/seta011.c \
 	$(CORE_DIR)/seta018.c \
 	$(CORE_DIR)/seta.c \
-	$(CORE_DIR)/soundux.c \
-	$(CORE_DIR)/spc700.c \
 	$(CORE_DIR)/spc7110.c \
 	$(CORE_DIR)/spc7110dec.c \
 	$(CORE_DIR)/srtc.c \
 	$(CORE_DIR)/tile.c \
-	$(CORE_DIR)/apu_blargg.c \
 	$(LIBRETRO_DIR)/libretro.c
 
 ifeq ($(USE_BLARGG_APU),1)
+	SOURCES_C += $(CORE_DIR)/apu_blargg.c
 	FLAGS += -DUSE_BLARGG_APU
+else
+	SOURCES_C += \
+		$(CORE_DIR)/apu.c \
+		$(CORE_DIR)/soundux.c \
+		$(CORE_DIR)/spc700.c
 endif
 
 ifeq ($(LOAD_FROM_MEMORY_TEST),1)
