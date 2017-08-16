@@ -64,7 +64,7 @@ void S9xHardResetSRTC(void)
    rtc.mode = MODE_READ;
    rtc.count_enable = false;
    rtc.needs_init = true;
-   rtc.system_timestamp = time(NULL); // Get system timestamp
+   rtc.system_timestamp = time(NULL); /* Get system timestamp */
 }
 
 /**********************************************************************************************/
@@ -79,7 +79,7 @@ uint32_t S9xSRTCComputeDayOfWeek(void)
    uint32_t day_of_week;
    year += (rtc.data[11] - 9) * 100;
 
-   // Range check the month for valid array indices
+   /* Range check the month for valid array indices */
    if (month > 12)
       month = 1;
 
@@ -130,9 +130,9 @@ void S9xUpdateSrtcTime(void)
    time_t  cur_systime;
    int32_t time_diff;
 
-   // Keep track of game time by computing the number of seconds that pass on the system
-   // clock and adding the same number of seconds to the S-RTC clock structure.
-   // Note: Dai Kaijyu Monogatari II only allows dates in the range 1996-21xx.
+   /* Keep track of game time by computing the number of seconds that pass on the system */
+   /* clock and adding the same number of seconds to the S-RTC clock structure. */
+   /* Note: Dai Kaijyu Monogatari II only allows dates in the range 1996-21xx. */
 
    if (rtc.count_enable && !rtc.needs_init)
    {
@@ -251,9 +251,9 @@ void S9xUpdateSrtcTime(void)
 /**********************************************************************************************/
 void S9xSetSRTC(uint8_t data, uint16_t Address)
 {
-   data &= 0x0F; // Data is only 4-bits, mask out unused bits.
+   data &= 0x0F; /* Data is only 4-bits, mask out unused bits. */
 
-   if (data >= 0xD) // It's an RTC command
+   if (data >= 0xD) /* It's an RTC command */
    {
       switch (data)
       {
@@ -277,12 +277,12 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
       {
          rtc.data[rtc.index++] = data;
 
-         if (rtc.index == MAX_RTC_INDEX) // We have all the data for the RTC load
+         if (rtc.index == MAX_RTC_INDEX) /* We have all the data for the RTC load */
          {
-            rtc.system_timestamp = time(NULL); // Get local system time
-            rtc.data[rtc.index++] = S9xSRTCComputeDayOfWeek(); // Get the day of the week
+            rtc.system_timestamp = time(NULL); /* Get local system time */
+            rtc.data[rtc.index++] = S9xSRTCComputeDayOfWeek(); /* Get the day of the week */
 
-            // Start RTC counting again
+            /* Start RTC counting again */
             rtc.count_enable = true;
             rtc.needs_init = false;
          }
@@ -295,18 +295,18 @@ void S9xSetSRTC(uint8_t data, uint16_t Address)
       switch (data)
       {
       case COMMAND_CLEAR_RTC:
-         rtc.count_enable = false; // Disable RTC counter
+         rtc.count_enable = false; /* Disable RTC counter */
          memset(rtc.data, 0, MAX_RTC_INDEX + 1);
          rtc.index = -1;
          rtc.mode = MODE_COMMAND_DONE;
          break;
       case COMMAND_LOAD_RTC:
-         rtc.count_enable = false; // Disable RTC counter
-         rtc.index = 0;  // Setup for writing
+         rtc.count_enable = false; /* Disable RTC counter */
+         rtc.index = 0;  /* Setup for writing */
          rtc.mode = MODE_LOAD_RTC;
          break;
       default:
-         rtc.mode = MODE_COMMAND_DONE; // unrecognized command - need to implement.
+         rtc.mode = MODE_COMMAND_DONE; /* unrecognized command - need to implement. */
       }
 
       return;
@@ -323,17 +323,17 @@ uint8_t S9xGetSRTC(uint16_t Address)
    {
       if (rtc.index < 0)
       {
-         S9xUpdateSrtcTime(); // Only update it if the game reads it
+         S9xUpdateSrtcTime(); /* Only update it if the game reads it */
          rtc.index++;
-         return 0x0f; // Send start marker.
+         return 0x0f; /* Send start marker. */
       }
       else if (rtc.index > MAX_RTC_INDEX)
       {
-         rtc.index = -1; // Setup for next set of reads
-         return 0x0f; // Data done marker.
+         rtc.index = -1; /* Setup for next set of reads */
+         return 0x0f; /* Data done marker. */
       }
       else
-         return rtc.data[rtc.index++]; // Feed out the data
+         return rtc.data[rtc.index++]; /* Feed out the data */
    }
    else
       return 0x0;
@@ -351,7 +351,7 @@ void S9xSRTCPreSaveState()
 
       Memory.SRAM [s + 0] = rtc.needs_init;
       Memory.SRAM [s + 1] = rtc.count_enable;
-      // memmove converted: Different mallocs [Neb]
+      /* memmove converted: Different mallocs [Neb] */
       memcpy(&Memory.SRAM [s + 2], rtc.data, MAX_RTC_INDEX + 1);
       Memory.SRAM [s + 3 + MAX_RTC_INDEX] = rtc.index;
       Memory.SRAM [s + 4 + MAX_RTC_INDEX] = rtc.mode;
@@ -366,7 +366,7 @@ void S9xSRTCPreSaveState()
       Memory.SRAM [s + 11 + MAX_RTC_INDEX] = (uint8_t)(rtc.system_timestamp >> 48);
       Memory.SRAM [s + 12 + MAX_RTC_INDEX] = (uint8_t)(rtc.system_timestamp >> 56);
 #else
-      // memmove converted: Different mallocs [Neb]
+      /* memmove converted: Different mallocs [Neb] */
       memcpy(&Memory.SRAM [s + 5 + MAX_RTC_INDEX], &rtc.system_timestamp, 8);
 #endif
    }
@@ -382,7 +382,7 @@ void S9xSRTCPostLoadState()
 
       rtc.needs_init = Memory.SRAM [s + 0];
       rtc.count_enable = Memory.SRAM [s + 1];
-      // memmove converted: Different mallocs [Neb]
+      /* memmove converted: Different mallocs [Neb] */
       memcpy(rtc.data, &Memory.SRAM [s + 2], MAX_RTC_INDEX + 1);
       rtc.index = Memory.SRAM [s + 3 + MAX_RTC_INDEX];
       rtc.mode = Memory.SRAM [s + 4 + MAX_RTC_INDEX];
@@ -397,7 +397,7 @@ void S9xSRTCPostLoadState()
       rtc.system_timestamp |= (Memory.SRAM [s + 11 + MAX_RTC_INDEX] << 48);
       rtc.system_timestamp |= (Memory.SRAM [s + 12 + MAX_RTC_INDEX] << 56);
 #else
-      // memmove converted: Different mallocs [Neb]
+      /* memmove converted: Different mallocs [Neb] */
       memcpy(&rtc.system_timestamp, &Memory.SRAM [s + 5 + MAX_RTC_INDEX], 8);
 #endif
       S9xUpdateSrtcTime();

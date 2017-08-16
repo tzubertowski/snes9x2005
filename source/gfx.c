@@ -474,6 +474,9 @@ void S9xEndScreenRefresh(void)
 
       GFX.Pitch = GFX.Pitch2 = GFX.RealPitch;
       GFX.PPL = GFX.PPLx2 >> 1;
+#ifdef LAGFIX
+      finishedFrame = true;
+#endif
    }
 
    S9xApplyCheats();

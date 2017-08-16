@@ -4,16 +4,16 @@
 #include "memmap.h"
 
 ST011_Regs ST011;
-uint8_t board[9][9]; // shougi playboard
+uint8_t board[9][9]; /* shougi playboard */
 
 uint8_t S9xGetST011(uint32_t Address)
 {
    uint8_t t;
    uint16_t address = (uint16_t) Address & 0xFFFF;
 
-   if (address == 0x01) // status check
+   if (address == 0x01) /* status check */
       t = 0xFF;
-   else // read directly from s-ram
+   else /* read directly from s-ram */
       t = Memory.SRAM[address];
 
    return t;
@@ -24,7 +24,7 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
    uint16_t address = (uint16_t) Address & 0xFFFF;
    static bool reset = false;
 
-   if (!reset) // bootup values
+   if (!reset) /* bootup values */
    {
       ST011.waiting4command = true;
       reset = true;
@@ -32,9 +32,9 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
 
    Memory.SRAM[address] = Byte;
 
-   if (address == 0x00) // op commands/data goes through this address
+   if (address == 0x00) /* op commands/data goes through this address */
    {
-      if (ST011.waiting4command) // check for new commands
+      if (ST011.waiting4command) /* check for new commands */
       {
          ST011.waiting4command = false;
          ST011.command = Byte;
@@ -67,32 +67,32 @@ void S9xSetST011(uint32_t Address, uint8_t Byte)
       }
    }
 
-   if (ST011.in_count == ST011.in_index) // Actually execute the command
+   if (ST011.in_count == ST011.in_index) /* Actually execute the command */
    {
       ST011.waiting4command = true;
       ST011.out_index = 0;
       switch (ST011.command)
       {
-      case 0x01: // unknown: download playboard
+      case 0x01: /* unknown: download playboard */
       {
-         // 9x9 board data: top to bottom, left to right
-         // Values represent piece types and ownership
+         /* 9x9 board data: top to bottom, left to right */
+         /* Values represent piece types and ownership */
          int32_t lcv;
          for (lcv = 0; lcv < 9; lcv++)
             memcpy(board[lcv], ST011.parameters + lcv * 10, 9 * 1);
          break;
       }
-      case 0x04: // unknown
+      case 0x04: /* unknown */
       case 0x05:
       {
-         // outputs
+         /* outputs */
          Memory.SRAM[0x12C] = 0x00;
          Memory.SRAM[0x12E] = 0x00;
          break;
       }
-      case 0x0E: // unknown
+      case 0x0E: /* unknown */
       {
-         // outputs
+         /* outputs */
          Memory.SRAM[0x12C] = 0x00;
          Memory.SRAM[0x12D] = 0x00;
          break;

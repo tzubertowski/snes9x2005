@@ -2,6 +2,7 @@ DEBUG                 = 0
 PERF_TEST             = 0
 LOAD_FROM_MEMORY_TEST = 1
 USE_BLARGG_APU        = 0
+LAGFIX                = 1
 
 ifeq ($(platform),)
 	platform = unix
@@ -264,6 +265,10 @@ ifeq ($(PERF_TEST),1)
 	FLAGS += -DPERF_TEST
 endif
 
+ifeq ($(LAGFIX),1)
+	FLAGS += -DLAGFIX
+endif
+
 ifeq ($(platform), psp1)
 	INCFLAGS += -I$(shell psp-config --pspsdk-path)/include
 endif
@@ -283,7 +288,7 @@ ifneq (,$(findstring msvc,$(platform)))
 	LD = link.exe
 else
 	OBJOUT   = -o
-	LINKOUT  = -o 
+	LINKOUT  = -o
 	LD = $(CC)
 endif
 

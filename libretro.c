@@ -305,7 +305,7 @@ void retro_init(void)
    else
       log_cb = NULL;
 
-   // State that the core supports achievements.
+   /* State that the core supports achievements. */
    bool achievements = true;
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &achievements);
 
@@ -319,7 +319,7 @@ void retro_init(void)
    S9xInitDisplay();
    S9xInitGFX();
 #ifdef USE_BLARGG_APU
-   S9xInitSound(1000, 0); //just give it a 1 second buffer
+   S9xInitSound(1000, 0); /* just give it a 1 second buffer */
    S9xSetSamplesAvailableCallback(S9xAudioCallback);
 #else
    S9xInitSound();
@@ -431,7 +431,7 @@ void retro_run(void)
 
 #ifdef PSP
       static unsigned int __attribute__((aligned(16))) d_list[32];
-      void* const texture_vram_p = (void*)(0x44200000 - (512 * 512)); // max VRAM address - frame size
+      void* const texture_vram_p = (void*)(0x44200000 - (512 * 512)); /* max VRAM address - frame size */
       sceKernelDcacheWritebackRange(GFX.Screen, GFX.Pitch * IPPU.RenderedScreenHeight);
       sceGuStart(GU_DIRECT, d_list);
       sceGuCopyImage(GU_PSM_4444, 0, 0, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch >> 1, GFX.Screen, 0, 0, 512, texture_vram_p);
@@ -538,6 +538,12 @@ size_t retro_serialize_size(void)
 bool retro_serialize(void* data, size_t size)
 {
    int32_t i;
+#ifdef LAGFIX
+   S9xPackStatus();
+#ifndef USE_BLARGG_APU
+   S9xAPUPackStatus();
+#endif
+#endif
    S9xUpdateRTC();
    S9xSRTCPreSaveState();
    uint8_t* buffer = data;
@@ -667,19 +673,19 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code)
    uint8_t val;
 
    bool sram;
-   uint8_t bytes[3];//used only by GoldFinger, ignored for now
+   uint8_t bytes[3];/* used only by GoldFinger, ignored for now */
 
    if (S9xGameGenieToRaw(code, &address, &val) && S9xProActionReplayToRaw(code, &address, &val) && S9xGoldFingerToRaw(code, &address, &sram, &val, bytes))
-      return; // bad code, ignore
+      return; /* bad code, ignore */
    if (index > Cheat.num_cheats)
-      return; // cheat added in weird order, ignore
+      return; /* cheat added in weird order, ignore */
    if (index == Cheat.num_cheats)
       Cheat.num_cheats++;
 
    Cheat.c[index].address = address;
    Cheat.c[index].byte = val;
    Cheat.c[index].enabled = enabled;
-   Cheat.c[index].saved = false; // it'll be saved next time cheats run anyways
+   Cheat.c[index].saved = false; /* it'll be saved next time cheats run anyways */
 
    Settings.ApplyCheats = true;
    S9xApplyCheats();

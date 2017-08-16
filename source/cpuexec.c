@@ -46,248 +46,348 @@ void S9xMainLoop()
 
 void S9xMainLoop_SA1_SFX()
 {
-   for (;;)
+#ifdef LAGFIX
+   do
    {
-      APU_EXECUTE();
-      if (CPU.Flags)
-      {
-         if (CPU.Flags & NMI_FLAG)
-         {
-            if (--CPU.NMICycleCount == 0)
-            {
-               CPU.Flags &= ~NMI_FLAG;
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               S9xOpcode_NMI();
-            }
-         }
-
-         if (CPU.Flags & IRQ_PENDING_FLAG)
-         {
-            if (CPU.IRQCycleCount == 0)
-            {
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               if (CPU.IRQActive && !Settings.DisableIRQ)
-               {
-                  if (!CheckFlag(IRQ))
-                     S9xOpcode_IRQ();
-               }
-               else
-                  CPU.Flags &= ~IRQ_PENDING_FLAG;
-            }
-            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-               CPU.IRQCycleCount = 1;
-         }
-         if (CPU.Flags & SCAN_KEYS_FLAG)
-            break;
-      }
-
-      CPU.PCAtOpcodeStart = CPU.PC;
-      CPU.Cycles += CPU.MemSpeed;
-      (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-
-      if (SA1.Executing)
-         S9xSA1MainLoop();
-      DO_HBLANK_CHECK_SFX();
-   }
-
-   ICPU.Registers.PC = CPU.PC - CPU.PCBase;
-   S9xPackStatus();
-#ifndef USE_BLARGG_APU
-   IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
-   S9xAPUPackStatus();
 #endif
-   CPU.Flags &= ~SCAN_KEYS_FLAG;
+      do
+      {
+         APU_EXECUTE();
+         if (CPU.Flags)
+         {
+            if (CPU.Flags & NMI_FLAG)
+            {
+               if (--CPU.NMICycleCount == 0)
+               {
+                  CPU.Flags &= ~NMI_FLAG;
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  S9xOpcode_NMI();
+               }
+            }
+
+            if (CPU.Flags & IRQ_PENDING_FLAG)
+            {
+               if (CPU.IRQCycleCount == 0)
+               {
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  if (CPU.IRQActive && !Settings.DisableIRQ)
+                  {
+                     if (!CheckFlag(IRQ))
+                        S9xOpcode_IRQ();
+                  }
+                  else
+                     CPU.Flags &= ~IRQ_PENDING_FLAG;
+               }
+               else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+                  CPU.IRQCycleCount = 1;
+            }
+            if (CPU.Flags & SCAN_KEYS_FLAG)
+               break;
+         }
+
+         CPU.PCAtOpcodeStart = CPU.PC;
+         CPU.Cycles += CPU.MemSpeed;
+         (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
+
+         if (SA1.Executing)
+            S9xSA1MainLoop();
+         DO_HBLANK_CHECK_SFX();
+
+#ifdef LAGFIX
+         if(finishedFrame)
+            break;
+#endif
+      } while(true);
+
+      ICPU.Registers.PC = CPU.PC - CPU.PCBase;
+#ifndef USE_BLARGG_APU
+      IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
+#endif
+
+#ifdef LAGFIX
+      if(!finishedFrame)
+      {
+#endif
+         S9xPackStatus();
+#ifndef USE_BLARGG_APU
+         S9xAPUPackStatus();
+#endif
+         CPU.Flags &= ~SCAN_KEYS_FLAG;
+#ifdef LAGFIX
+      }
+      else
+      {
+         finishedFrame = false;
+         break;
+      }
+   } while(!finishedFrame);
+#endif
 }
 
 void S9xMainLoop_SA1_NoSFX()
 {
-   for (;;)
+#ifdef LAGFIX
+   do
    {
-      APU_EXECUTE();
-      if (CPU.Flags)
-      {
-         if (CPU.Flags & NMI_FLAG)
-         {
-            if (--CPU.NMICycleCount == 0)
-            {
-               CPU.Flags &= ~NMI_FLAG;
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               S9xOpcode_NMI();
-            }
-         }
-
-         if (CPU.Flags & IRQ_PENDING_FLAG)
-         {
-            if (CPU.IRQCycleCount == 0)
-            {
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               if (CPU.IRQActive && !Settings.DisableIRQ)
-               {
-                  if (!CheckFlag(IRQ))
-                     S9xOpcode_IRQ();
-               }
-               else
-                  CPU.Flags &= ~IRQ_PENDING_FLAG;
-            }
-            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-               CPU.IRQCycleCount = 1;
-         }
-         if (CPU.Flags & SCAN_KEYS_FLAG)
-            break;
-      }
-
-      CPU.PCAtOpcodeStart = CPU.PC;
-      CPU.Cycles += CPU.MemSpeed;
-      (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-
-      if (SA1.Executing)
-         S9xSA1MainLoop();
-      DO_HBLANK_CHECK_NoSFX();
-   }
-
-   ICPU.Registers.PC = CPU.PC - CPU.PCBase;
-   S9xPackStatus();
-#ifndef USE_BLARGG_APU
-   IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
-   S9xAPUPackStatus();
 #endif
-   CPU.Flags &= ~SCAN_KEYS_FLAG;
+      do
+      {
+         APU_EXECUTE();
+         if (CPU.Flags)
+         {
+            if (CPU.Flags & NMI_FLAG)
+            {
+               if (--CPU.NMICycleCount == 0)
+               {
+                  CPU.Flags &= ~NMI_FLAG;
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  S9xOpcode_NMI();
+               }
+            }
+
+            if (CPU.Flags & IRQ_PENDING_FLAG)
+            {
+               if (CPU.IRQCycleCount == 0)
+               {
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  if (CPU.IRQActive && !Settings.DisableIRQ)
+                  {
+                     if (!CheckFlag(IRQ))
+                        S9xOpcode_IRQ();
+                  }
+                  else
+                     CPU.Flags &= ~IRQ_PENDING_FLAG;
+               }
+               else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+                  CPU.IRQCycleCount = 1;
+            }
+            if (CPU.Flags & SCAN_KEYS_FLAG)
+               break;
+         }
+
+         CPU.PCAtOpcodeStart = CPU.PC;
+         CPU.Cycles += CPU.MemSpeed;
+         (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
+
+         if (SA1.Executing)
+            S9xSA1MainLoop();
+         DO_HBLANK_CHECK_NoSFX();
+
+#ifdef LAGFIX
+         if(finishedFrame)
+            break;
+#endif
+      } while(true);
+
+      ICPU.Registers.PC = CPU.PC - CPU.PCBase;
+#ifndef USE_BLARGG_APU
+      IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
+#endif
+
+#ifdef LAGFIX
+      if(!finishedFrame)
+      {
+#endif
+         S9xPackStatus();
+#ifndef USE_BLARGG_APU
+         S9xAPUPackStatus();
+#endif
+         CPU.Flags &= ~SCAN_KEYS_FLAG;
+#ifdef LAGFIX
+      }
+      else
+      {
+         finishedFrame = false;
+         break;
+      }
+   } while(!finishedFrame);
+#endif
 }
 
 void S9xMainLoop_NoSA1_SFX()
 {
-   for (;;)
+#ifdef LAGFIX
+   do
    {
-      APU_EXECUTE();
-      if (CPU.Flags)
-      {
-         if (CPU.Flags & NMI_FLAG)
-         {
-            if (--CPU.NMICycleCount == 0)
-            {
-               CPU.Flags &= ~NMI_FLAG;
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               S9xOpcode_NMI();
-            }
-         }
-
-         if (CPU.Flags & IRQ_PENDING_FLAG)
-         {
-            if (CPU.IRQCycleCount == 0)
-            {
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               if (CPU.IRQActive && !Settings.DisableIRQ)
-               {
-                  if (!CheckFlag(IRQ))
-                     S9xOpcode_IRQ();
-               }
-               else
-                  CPU.Flags &= ~IRQ_PENDING_FLAG;
-            }
-            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-               CPU.IRQCycleCount = 1;
-         }
-         if (CPU.Flags & SCAN_KEYS_FLAG)
-            break;
-      }
-
-      CPU.PCAtOpcodeStart = CPU.PC;
-      CPU.Cycles += CPU.MemSpeed;
-      (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-      DO_HBLANK_CHECK_SFX();
-   }
-
-   ICPU.Registers.PC = CPU.PC - CPU.PCBase;
-   S9xPackStatus();
-#ifndef USE_BLARGG_APU
-   IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
-   S9xAPUPackStatus();
 #endif
-   CPU.Flags &= ~SCAN_KEYS_FLAG;
+      do
+      {
+         APU_EXECUTE();
+         if (CPU.Flags)
+         {
+            if (CPU.Flags & NMI_FLAG)
+            {
+               if (--CPU.NMICycleCount == 0)
+               {
+                  CPU.Flags &= ~NMI_FLAG;
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  S9xOpcode_NMI();
+               }
+            }
+
+            if (CPU.Flags & IRQ_PENDING_FLAG)
+            {
+               if (CPU.IRQCycleCount == 0)
+               {
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  if (CPU.IRQActive && !Settings.DisableIRQ)
+                  {
+                     if (!CheckFlag(IRQ))
+                        S9xOpcode_IRQ();
+                  }
+                  else
+                     CPU.Flags &= ~IRQ_PENDING_FLAG;
+               }
+               else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+                  CPU.IRQCycleCount = 1;
+            }
+            if (CPU.Flags & SCAN_KEYS_FLAG)
+               break;
+         }
+
+         CPU.PCAtOpcodeStart = CPU.PC;
+         CPU.Cycles += CPU.MemSpeed;
+         (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
+         DO_HBLANK_CHECK_SFX();
+
+#ifdef LAGFIX
+         if(finishedFrame)
+            break;
+#endif
+      } while(true);
+
+      ICPU.Registers.PC = CPU.PC - CPU.PCBase;
+#ifndef USE_BLARGG_APU
+      IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
+#endif
+
+#ifdef LAGFIX
+      if(!finishedFrame)
+      {
+#endif
+         S9xPackStatus();
+#ifndef USE_BLARGG_APU
+         S9xAPUPackStatus();
+#endif
+         CPU.Flags &= ~SCAN_KEYS_FLAG;
+#ifdef LAGFIX
+      }
+      else
+      {
+         finishedFrame = false;
+         break;
+      }
+   } while(!finishedFrame);
+#endif
 }
 
 void S9xMainLoop_NoSA1_NoSFX()
 {
-   for (;;)
+#ifdef LAGFIX
+   do
    {
-      APU_EXECUTE();
-      if (CPU.Flags)
-      {
-         if (CPU.Flags & NMI_FLAG)
-         {
-            if (--CPU.NMICycleCount == 0)
-            {
-               CPU.Flags &= ~NMI_FLAG;
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               S9xOpcode_NMI();
-            }
-         }
-
-         if (CPU.Flags & IRQ_PENDING_FLAG)
-         {
-            if (CPU.IRQCycleCount == 0)
-            {
-               if (CPU.WaitingForInterrupt)
-               {
-                  CPU.WaitingForInterrupt = false;
-                  CPU.PC++;
-               }
-               if (CPU.IRQActive && !Settings.DisableIRQ)
-               {
-                  if (!CheckFlag(IRQ))
-                     S9xOpcode_IRQ();
-               }
-               else
-                  CPU.Flags &= ~IRQ_PENDING_FLAG;
-            }
-            else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
-               CPU.IRQCycleCount = 1;
-         }
-         if (CPU.Flags & SCAN_KEYS_FLAG)
-            break;
-      }
-
-      CPU.PCAtOpcodeStart = CPU.PC;
-      CPU.Cycles += CPU.MemSpeed;
-      (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
-      DO_HBLANK_CHECK_NoSFX();
-   }
-
-   ICPU.Registers.PC = CPU.PC - CPU.PCBase;
-   S9xPackStatus();
-#ifndef USE_BLARGG_APU
-   IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
-   S9xAPUPackStatus();
 #endif
-   CPU.Flags &= ~SCAN_KEYS_FLAG;
+      do
+      {
+         APU_EXECUTE();
+         if (CPU.Flags)
+         {
+            if (CPU.Flags & NMI_FLAG)
+            {
+               if (--CPU.NMICycleCount == 0)
+               {
+                  CPU.Flags &= ~NMI_FLAG;
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  S9xOpcode_NMI();
+               }
+            }
+
+            if (CPU.Flags & IRQ_PENDING_FLAG)
+            {
+               if (CPU.IRQCycleCount == 0)
+               {
+                  if (CPU.WaitingForInterrupt)
+                  {
+                     CPU.WaitingForInterrupt = false;
+                     CPU.PC++;
+                  }
+                  if (CPU.IRQActive && !Settings.DisableIRQ)
+                  {
+                     if (!CheckFlag(IRQ))
+                        S9xOpcode_IRQ();
+                  }
+                  else
+                     CPU.Flags &= ~IRQ_PENDING_FLAG;
+               }
+               else if (--CPU.IRQCycleCount == 0 && CheckFlag(IRQ))
+                  CPU.IRQCycleCount = 1;
+            }
+            if (CPU.Flags & SCAN_KEYS_FLAG)
+               break;
+         }
+
+         CPU.PCAtOpcodeStart = CPU.PC;
+         CPU.Cycles += CPU.MemSpeed;
+         (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
+         DO_HBLANK_CHECK_NoSFX();
+
+#ifdef LAGFIX
+         if(finishedFrame)
+            break;
+#endif
+      } while(true);
+
+      ICPU.Registers.PC = CPU.PC - CPU.PCBase;
+#ifndef USE_BLARGG_APU
+      IAPU.Registers.PC = IAPU.PC - IAPU.RAM;
+#endif
+
+#ifdef LAGFIX
+      if(!finishedFrame)
+      {
+#endif
+         S9xPackStatus();
+#ifndef USE_BLARGG_APU
+         S9xAPUPackStatus();
+#endif
+         CPU.Flags &= ~SCAN_KEYS_FLAG;
+#ifdef LAGFIX
+      }
+      else
+      {
+         finishedFrame = false;
+         break;
+      }
+   } while(!finishedFrame);
+#endif
 }
 
 void S9xSetIRQ(uint32_t source)
