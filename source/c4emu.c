@@ -6,7 +6,7 @@
 #include "ppu.h"
 #include "c4.h"
 
-void S9xInitC4()
+void S9xInitC4(void)
 {
    Memory.C4RAM = &Memory.FillRAM [0x6000];
 }
@@ -34,7 +34,7 @@ static uint8_t C4TestPattern [12 * 4] =
    0x00, 0xff, 0xfe, 0x00
 };
 
-static void C4ConvOAM()
+static void C4ConvOAM(void)
 {
    uint16_t globalX, globalY;
    uint8_t* OAMptr2;
@@ -306,7 +306,7 @@ static void C4DrawLine(int32_t X1, int32_t Y1, int16_t Z1, int32_t X2, int32_t Y
    }
 }
 
-static void C4DrawWireFrame()
+static void C4DrawWireFrame(void)
 {
    uint8_t* line = S9xGetMemPointer(READ_3WORD(Memory.C4RAM + 0x1f80));
    uint8_t* point1, *point2;
@@ -338,7 +338,7 @@ static void C4DrawWireFrame()
    }
 }
 
-static void C4TransformLines()
+static void C4TransformLines(void)
 {
    int32_t i;
    uint8_t *ptr;
@@ -384,7 +384,7 @@ static void C4TransformLines()
       WRITE_WORD(ptr2 + 0x605, C4WFYVal);
    }
 }
-static void C4BitPlaneWave()
+static void C4BitPlaneWave(void)
 {
    static uint16_t bmpdata[] =
    {
@@ -449,7 +449,7 @@ static void C4BitPlaneWave()
    }
 }
 
-static void C4SprDisintegrate()
+static void C4SprDisintegrate(void)
 {
    uint32_t x, y, i, j;
    uint8_t width = Memory.C4RAM[0x1f89];
@@ -487,33 +487,33 @@ static void C4SprDisintegrate()
    }
 }
 
-static void S9xC4ProcessSprites()
+static void S9xC4ProcessSprites(void)
 {
    switch (Memory.C4RAM[0x1f4d])
    {
-   case 0x00: /* Build OAM */
-      C4ConvOAM();
-      break;
-   case 0x03: /* Scale/Rotate */
-      C4DoScaleRotate(0);
-      break;
-   case 0x05: /* Transform Lines */
-      C4TransformLines();
-      break;
-   case 0x07: /* Scale/Rotate */
-      C4DoScaleRotate(64);
-      break;
-   case 0x08: /* Draw wireframe */
-      C4DrawWireFrame();
-      break;
-   case 0x0b: /* Disintegrate */
-      C4SprDisintegrate();
-      break;
-   case 0x0c: /* Wave */
-      C4BitPlaneWave();
-      break;
-   default:
-      break;
+      case 0x00: /* Build OAM */
+         C4ConvOAM();
+         break;
+      case 0x03: /* Scale/Rotate */
+         C4DoScaleRotate(0);
+         break;
+      case 0x05: /* Transform Lines */
+         C4TransformLines();
+         break;
+      case 0x07: /* Scale/Rotate */
+         C4DoScaleRotate(64);
+         break;
+      case 0x08: /* Draw wireframe */
+         C4DrawWireFrame();
+         break;
+      case 0x0b: /* Disintegrate */
+         C4SprDisintegrate();
+         break;
+      case 0x0c: /* Wave */
+         C4BitPlaneWave();
+         break;
+      default:
+         break;
    }
 }
 
