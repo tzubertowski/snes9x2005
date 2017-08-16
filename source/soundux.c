@@ -127,22 +127,22 @@ void S9xSetEnvRate(Channel* ch, uint32_t rate, int32_t direction, int32_t target
    {
       switch (mode >> 28)
       {
-      case 0: // Attack
+      case 0: /* Attack */
          ch->erate = AttackERate[ch->env_ind_attack][ch->state];
          break;
-      case 1: // Decay
+      case 1: /* Decay */
          ch->erate = DecayERate[ch->env_ind_decay][ch->state];
          break;
-      case 2: // Sustain
+      case 2: /* Sustain */
          ch->erate = SustainERate[ch->env_ind_sustain][ch->state];
          break;
-      case 3: // Increase
+      case 3: /* Increase */
          ch->erate = IncreaseERate[mode & 0x1f][ch->state];
          break;
-      case 4: // DecreaseExp
+      case 4: /* DecreaseExp */
          ch->erate = DecreaseERateExp[mode & 0x1f][ch->state];
          break;
-      case 5: // KeyOff
+      case 5: /* KeyOff */
          ch->erate = KeyOffERate[ch->state];
          break;
       }
@@ -279,8 +279,8 @@ void S9xSetSoundADSR(int32_t channel, int32_t attack_ind, int32_t decay_ind, int
    int32_t decay_rate   = DecayRate [decay_ind];
    int32_t sustain_rate = SustainRate [sustain_ind];
 
-   // Hack for ROMs that use a very short attack rate, key on a
-   // channel, then switch to decay mode. e.g. Final Fantasy II.
+   /* Hack for ROMs that use a very short attack rate, key on a
+      channel, then switch to decay mode. e.g. Final Fantasy II. */
    if(attack_rate == 1)
       attack_rate = 0;
 
@@ -322,7 +322,7 @@ void S9xSetEnvelopeHeight(int32_t channel, int32_t level)
       S9xAPUSetEndOfSample(channel, ch);
 }
 
-void S9xSetSoundFrequency(int32_t channel, int32_t hertz) // hertz [0~64K<<1]
+void S9xSetSoundFrequency(int32_t channel, int32_t hertz) /* hertz [0~64K<<1] */
 {
    if (SoundData.channels[channel].type == SOUND_NOISE)
       hertz = NoiseFreq [APU.DSP [APU_FLG] & 0x1f];
@@ -686,7 +686,7 @@ static inline void MixStereo(int32_t sample_count)
             }
             else
             {
-               // Snes9x 1.53's SPC_DSP.cpp, by blargg
+               /* Snes9x 1.53's SPC_DSP.cpp, by blargg */
                int32_t feedback = (so.noise_gen << 13) ^ (so.noise_gen << 14);
                so.noise_gen = (feedback & 0x4000) ^ (so.noise_gen >> 1);
                ch->sample = (so.noise_gen << 17) >> 17;
@@ -738,10 +738,10 @@ void S9xMixSamples(int16_t* buffer, int32_t sample_count)
    /* Mix and convert waveforms */
    if (SoundData.echo_enable && SoundData.echo_buffer_size)
    {
-      // 16-bit stereo sound with echo enabled ...
+      /* 16-bit stereo sound with echo enabled ... */
       if (FilterTapDefinitionBitfield == 0)
       {
-         // ... but no filter defined.
+         /* ... but no filter defined. */
          for (J = 0; J < sample_count; J++)
          {
             int32_t E = Echo [SoundData.echo_ptr];
@@ -757,7 +757,7 @@ void S9xMixSamples(int16_t* buffer, int32_t sample_count)
       }
       else
       {
-         // ... with filter defined.
+         /* ... with filter defined. */
          for (J = 0; J < sample_count; J++)
          {
             Loop [(Z - 0) & 15] = Echo [SoundData.echo_ptr];
@@ -785,7 +785,7 @@ void S9xMixSamples(int16_t* buffer, int32_t sample_count)
    }
    else
    {
-      // 16-bit mono or stereo sound, no echo
+      /* 16-bit mono or stereo sound, no echo */
       for (J = 0; J < sample_count; J++)
       {
          I = (MixBuffer[J] * SoundData.master_volume [J & 1]) / VOL_DIV16;
@@ -821,7 +821,7 @@ void S9xResetSound(bool full)
       SoundData.channels[i].sustain_rate = 0;
       SoundData.channels[i].release_rate = 0;
       SoundData.channels[i].sustain_level = 0;
-      // notaz
+      /* notaz */
       SoundData.channels[i].env_ind_attack = 0;
       SoundData.channels[i].env_ind_decay = 0;
       SoundData.channels[i].env_ind_sustain = 0;
@@ -862,9 +862,9 @@ void S9xSetPlaybackRate(uint32_t playback_rate)
 
    if (playback_rate)
    {
-      // notaz: calculate a value (let's call it freqbase) to simplify channel freq calculations later.
+      /* notaz: calculate a value (let's call it freqbase) to simplify channel freq calculations later. */
       so.freqbase = (FIXED_POINT << 11) / (playback_rate * 33 / 32);
-      // now precalculate env rates for S9xSetEnvRate
+      /* now precalculate env rates for S9xSetEnvRate */
       static int32_t steps [] =
       {
          0, 64, 619, 619, 128, 1, 64, 55, 64, 619

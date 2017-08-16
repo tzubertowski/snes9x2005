@@ -3,7 +3,7 @@
 #include "seta.h"
 #include "memmap.h"
 
-// Mode 7 scaling constants for all raster lines
+/* Mode 7 scaling constants for all raster lines */
 const int16_t ST010_M7Scale[176] =
 {
    0x0380,  0x0325,  0x02da,  0x029c,  0x0268,  0x023b,  0x0215,  0x01f3,
@@ -331,16 +331,14 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
    {
       switch (ST010.op_reg)
       {
-      // Sorts Driver Placements
-      //
-      // Input
-      //   0x0024-0x0025 : Positions
-      //   0x0040-0x007f : Places
-      //   0x0080-0x00ff : Drivers
-      // Output
-      //   0x0040-0x007f : Places
-      //   0x0080-0x00ff : Drivers
-      //
+      /* Sorts Driver Placements
+         Input
+           0x0024-0x0025 : Positions
+           0x0040-0x007f : Places
+           0x0080-0x00ff : Drivers
+         Output
+           0x0040-0x007f : Places
+           0x0080-0x00ff : Drivers */
       case 0x02:
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
@@ -374,16 +372,14 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 
       }
 
-      // Two Dimensional Coordinate Scale
-      //
-      // Input
-      //   0x0000-0x0001 : X0 (signed)
-      //   0x0002-0x0003 : Y0 (signed)
-      //   0x0004-0x0005 : Multiplier (signed)
-      // Output
-      //   0x0010-0x0013 : X1 (signed)
-      //   0x0014-0x0017 : Y1 (signed)
-      //
+      /* Two Dimensional Coordinate Scale
+         Input
+           0x0000-0x0001 : X0 (signed)
+           0x0002-0x0003 : Y0 (signed)
+           0x0004-0x0005 : Multiplier (signed)
+         Output
+           0x0010-0x0013 : X1 (signed)
+           0x0014-0x0017 : Y1 (signed) */
       case 0x03:
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
@@ -407,14 +403,12 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          break;
       }
 
-      // 16-bit Multiplication
-      //
-      // Input
-      //   0x0000-0x0001 : Multiplcand (signed)
-      //   0x0002-0x0003 : Multiplier (signed)
-      // Output
-      //   0x0010-0x0013 : Product (signed)
-      //
+      /* 16-bit Multiplication
+         Input
+           0x0000-0x0001 : Multiplcand (signed)
+           0x0002-0x0003 : Multiplier (signed)
+         Output
+           0x0010-0x0013 : Product (signed) */
       case 0x06:
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
@@ -433,16 +427,14 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          break;
       }
 
-      // Mode 7 Raster Data Calculation
-      //
-      // Input
-      //   0x0000-0x0001 : Angle (signed)
-      // Output
-      //   0x00f0-0x024f : Mode 7 Matrix A
-      //   0x0250-0x03af : Mode 7 Matrix B
-      //   0x03b0-0x050f : Mode 7 Matrix C
-      //   0x0510-0x066f : Mode 7 Matrix D
-      //
+      /* Mode 7 Raster Data Calculation
+         Input
+           0x0000-0x0001 : Angle (signed)
+         Output
+           0x00f0-0x024f : Mode 7 Matrix A
+           0x0250-0x03af : Mode 7 Matrix B
+           0x03b0-0x050f : Mode 7 Matrix C
+           0x0510-0x066f : Mode 7 Matrix D */
       case 0x07:
       {
          int16_t data;
@@ -452,7 +444,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          int32_t line;
          for (line = 0; line < 176; line++)
          {
-            // Calculate Mode 7 Matrix A/D data
+            /* Calculate Mode 7 Matrix A/D data */
             data = ST010_M7Scale[line] * ST010_Cos(Theta) >> 15;
 
             Memory.SRAM[0x00f0 + offset] = (uint8_t)(data);
@@ -460,7 +452,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
             Memory.SRAM[0x0510 + offset] = (uint8_t)(data);
             Memory.SRAM[0x0511 + offset] = (uint8_t)(data >> 8);
 
-            // Calculate Mode 7 Matrix B/C data
+            /* Calculate Mode 7 Matrix B/C data */
             data = ST010_M7Scale[line] * ST010_Sin(Theta) >> 15;
 
             Memory.SRAM[0x0250 + offset] = (uint8_t)(data);
@@ -475,23 +467,21 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
             offset += 2;
          }
 
-         // Shift Angle for use with Lookup table
+         /* Shift Angle for use with Lookup table */
          Memory.SRAM[0x00] = Memory.SRAM[0x01];
          Memory.SRAM[0x01] = 0x00;
 
          break;
       }
 
-      // Two dimensional Coordinate Rotation
-      //
-      // Input
-      //   0x0000-0x0001 : X0 (signed)
-      //   0x0002-0x0003 : Y0 (signed)
-      //   0x0004-0x0005 : Angle (signed)
-      // Output
-      //   0x0010-0x0011 : X1 (signed)
-      //   0x0012-0x0013 : Y1 (signed)
-      //
+      /* Two dimensional Coordinate Rotation
+         Input
+           0x0000-0x0001 : X0 (signed)
+           0x0002-0x0003 : Y0 (signed)
+           0x0004-0x0005 : Angle (signed)
+         Output
+           0x0010-0x0011 : X1 (signed)
+           0x0012-0x0013 : Y1 (signed) */
       case 0x08:
       {
 #if defined(FAST_LSB_WORD_ACCESS) && !defined(ANDROID)
@@ -511,12 +501,11 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          break;
       }
 
-      // Input
-      //   0x0000-0x0001 : DX (signed)
-      //   0x0002-0x0003 : DY (signed)
-      // Output
-      //   0x0010-0x0011 : Angle (signed)
-      //
+      /* Input
+           0x0000-0x0001 : DX (signed)
+           0x0002-0x0003 : DY (signed)
+         Output
+           0x0010-0x0011 : Angle (signed) */
       case 0x01:
       {
          Memory.SRAM[0x0006] = Memory.SRAM[0x0002];
@@ -544,7 +533,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          break;
       }
 
-      // calculate the vector length of (x,y)
+      /* calculate the vector length of (x,y) */
       case 0x04:
       {
          int16_t square, x, y;
@@ -568,7 +557,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          break;
       }
 
-      // calculate AI orientation based on specific guidelines
+      /* calculate AI orientation based on specific guidelines */
       case 0x05:
       {
          int32_t dx, dy;
@@ -577,45 +566,45 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 
          bool wrap = false;
 
-         // target (x,y) coordinates
+         /* target (x,y) coordinates */
          int16_t ypos_max = ST010_WORD(0x00C0);
          int16_t xpos_max = ST010_WORD(0x00C2);
 
-         // current coordinates and direction
+         /* current coordinates and direction */
          int32_t ypos = Memory.SRAM[0xC4] | (Memory.SRAM[0xC5] << 8) | (Memory.SRAM[0xC6] << 16) | (Memory.SRAM[0xC7] << 24);
          int32_t xpos = Memory.SRAM[0xC8] | (Memory.SRAM[0xC9] << 8) | (Memory.SRAM[0xCA] << 16) | (Memory.SRAM[0xCB] << 24);
          uint16_t rot = Memory.SRAM[0xCC] | (Memory.SRAM[0xCD] << 8);
 
-         // physics
+         /* physics */
          uint16_t speed = ST010_WORD(0x00D4);
          uint16_t accel = ST010_WORD(0x00D6);
          uint16_t speed_max = ST010_WORD(0x00D8);
 
-         // special condition acknowledgment
+         /* special condition acknowledgment */
          int16_t system = ST010_WORD(0x00DA);
          int16_t flags = ST010_WORD(0x00DC);
 
-         // new target coordinates
+         /* new target coordinates */
          int16_t ypos_new = ST010_WORD(0x00DE);
          int16_t xpos_new = ST010_WORD(0x00E0);
 
-         // mask upper bit
+         /* mask upper bit */
          xpos_new &= 0x7FFF;
 
-         // get the current distance
+         /* get the current distance */
          dx = xpos_max - (xpos >> 16);
          dy = ypos_max - (ypos >> 16);
 
-         // quirk: clear and move in9
+         /* quirk: clear and move in9 */
          Memory.SRAM[0xD2] = 0xFF;
          Memory.SRAM[0xD3] = 0xFF;
          Memory.SRAM[0xDA] = 0;
          Memory.SRAM[0xDB] = 0;
 
-         // grab the target angle
+         /* grab the target angle */
          ST010_OP01(dy, dx, &a1, &b1, &c1, (int16_t*)&o1);
 
-         // check for wrapping
+         /* check for wrapping */
          if (ABS(o1 - rot) > 0x8000)
          {
             o1 += 0x8000;
@@ -625,22 +614,22 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
 
          uint16_t old_speed = speed;
 
-         if (ABS(o1 - rot) == 0x8000) // special case
+         if (ABS(o1 - rot) == 0x8000) /* special case */
             speed = 0x100;
-         else if (ABS(o1 - rot) >= 0x1000) // slow down for sharp curves
+         else if (ABS(o1 - rot) >= 0x1000) /* slow down for sharp curves */
          {
             uint32_t slow = ABS(o1 - rot);
-            slow >>= 4; // scaling
+            slow >>= 4; /* scaling */
             speed -= slow;
          }
-         else // otherwise accelerate
+         else /* otherwise accelerate */
          {
             speed += accel;
             if (speed > speed_max)
-               speed = speed_max; // clip speed
+               speed = speed_max; /* clip speed */
          }
 
-         // prevent negative/positive overflow
+         /* prevent negative/positive overflow */
          if (ABS(old_speed - speed) > 0x8000)
          {
             if(old_speed < speed)
@@ -649,8 +638,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
                speed = 0xff00;
          }
 
-         // adjust direction by so many degrees
-         // be careful of negative adjustments
+         /* adjust direction by so many degrees; be careful of negative adjustments */
          if((o1 > rot && (o1 - rot) > 0x80) || (o1 < rot && (rot - o1) >= 0x80))
          {
             if(o1 < rot)
@@ -663,26 +651,26 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          if(wrap)
             rot -= 0x8000;
 
-         // now check the distances (store for later)
+         /* now check the distances (store for later) */
          dx = (xpos_max << 16) - xpos;
          dy = (ypos_max << 16) - ypos;
          dx >>= 16;
          dy >>= 16;
 
-         // if we're in so many units of the target, signal it
+         /* if we're in so many units of the target, signal it */
          if ((system && (dy <= 6 && dy >= -8) && (dx <= 126 && dx >= -128)) || (!system && (dx <= 6 && dx >= -8) && (dy <= 126 && dy >= -128)))
          {
-            // announce our new destination and flag it
+            /* announce our new destination and flag it */
             xpos_max = xpos_new & 0x7FFF;
             ypos_max = ypos_new;
             flags |= 0x08;
          }
 
-         // update position
+         /* update position */
          xpos -= (ST010_Cos(rot) * 0x400 >> 15) * (speed >> 8) << 1;
          ypos -= (ST010_Sin(rot) * 0x400 >> 15) * (speed >> 8) << 1;
 
-         // quirk: mask upper byte
+         /* quirk: mask upper byte */
          xpos &= 0x1FFFFFFF;
          ypos &= 0x1FFFFFFF;
 
@@ -708,7 +696,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
       }
       }
 
-      // lower signal: op processed
+      /* lower signal: op processed */
       ST010.op_reg = 0;
       ST010.execute = 0;
    }

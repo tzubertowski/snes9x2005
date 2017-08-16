@@ -119,7 +119,7 @@ void spc7110dec_clear(uint32_t mode, uint32_t offset, uint32_t index)
    decomp.buffer_length = 0;
    uint32_t i;
 
-   for(i = 0; i < 32; i++) // reset decomp.context states
+   for(i = 0; i < 32; i++) /* reset decomp.context states */
    {
       decomp.context[i].index = 0;
       decomp.context[i].invert = 0;
@@ -138,7 +138,7 @@ void spc7110dec_clear(uint32_t mode, uint32_t offset, uint32_t index)
          break;
    }
 
-   while(index--) // decompress up to requested output data index
+   while(index--) /* decompress up to requested output data index */
       spc7110dec_read();
 
    decomp.read_counter = 0;
@@ -178,13 +178,13 @@ void spc7110dec_mode0(bool init)
          /* Get bit */
          uint32_t flag_lps;
 
-         if(val <= span - prob) // mps
+         if(val <= span - prob) /* mps */
          {
             span = span - prob;
             out = (out << 1) + mps;
             flag_lps = 0;
          }
-         else // lps
+         else /* lps */
          {
             val = val - (span - (prob - 1));
             span = prob - 1;
@@ -316,12 +316,12 @@ void spc7110dec_mode1(bool init)
             /* Get symbol */
             uint32_t flag_lps;
 
-            if(val <= span - prob) // mps
+            if(val <= span - prob) /* mps */
             {
                span = span - prob;
                flag_lps = 0;
             }
-            else // lps
+            else /* lps */
             {
                val = val - (span - (prob - 1));
                span = prob - 1;
@@ -466,12 +466,12 @@ void spc7110dec_mode2(bool init)
             /* Get symbol */
             uint32_t flag_lps;
 
-            if(val <= span - prob) // mps
+            if(val <= span - prob) /* mps */
             {
                span = span - prob;
                flag_lps = 0;
             }
-            else // lps
+            else /* lps */
             {
                val = val - (span - (prob - 1));
                span = prob - 1;

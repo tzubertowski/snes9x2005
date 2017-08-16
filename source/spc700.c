@@ -197,7 +197,7 @@ uint32_t Work32 = 0;
        IAPU.Registers.YA.B.Y;
 #endif
 
-void Apu00(void) // NOP
+void Apu00(void) /* NOP */
 {
    IAPU.PC++;
 }
@@ -282,15 +282,15 @@ void ApuF1(void)
    TCALL(15);
 }
 
-void Apu3F(void) // CALL absolute
+void Apu3F(void) /* CALL absolute */
 {
    Absolute();
-   // 0xB6f for Star Fox 2
+   /* 0xB6f for Star Fox 2 */
    PushW(IAPU.PC + 3 - IAPU.RAM);
    IAPU.PC = IAPU.RAM + IAPU.Address;
 }
 
-void Apu4F(void) // PCALL $XX
+void Apu4F(void) /* PCALL $XX */
 {
    Work8 = OP1;
    PushW(IAPU.PC + 2 - IAPU.RAM);
@@ -489,7 +489,7 @@ void ApuF3(void)
 
 void Apu04(void)
 {
-   // OR A,dp
+   /* OR A,dp */
    IAPU.Registers.YA.B.A |= S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -497,7 +497,7 @@ void Apu04(void)
 
 void Apu05(void)
 {
-   // OR A,abs
+   /* OR A,abs */
    Absolute();
    IAPU.Registers.YA.B.A |= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -506,7 +506,7 @@ void Apu05(void)
 
 void Apu06(void)
 {
-   // OR A,(X)
+   /* OR A,(X) */
    IAPU.Registers.YA.B.A |= S9xAPUGetByteZ(IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -514,7 +514,7 @@ void Apu06(void)
 
 void Apu07(void)
 {
-   // OR A,(dp+X)
+   /* OR A,(dp+X) */
    IndexedXIndirect();
    IAPU.Registers.YA.B.A |= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -523,7 +523,7 @@ void Apu07(void)
 
 void Apu08(void)
 {
-   // OR A,#00
+   /* OR A,#00 */
    IAPU.Registers.YA.B.A |= OP1;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -531,7 +531,7 @@ void Apu08(void)
 
 void Apu09(void)
 {
-   // OR dp(dest),dp(src)
+   /* OR dp(dest),dp(src) */
    Work8 = S9xAPUGetByteZ(OP1);
    Work8 |= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -541,7 +541,7 @@ void Apu09(void)
 
 void Apu14(void)
 {
-   // OR A,dp+X
+   /* OR A,dp+X */
    IAPU.Registers.YA.B.A |= S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -549,7 +549,7 @@ void Apu14(void)
 
 void Apu15(void)
 {
-   // OR A,abs+X
+   /* OR A,abs+X */
    AbsoluteX();
    IAPU.Registers.YA.B.A |= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -558,7 +558,7 @@ void Apu15(void)
 
 void Apu16(void)
 {
-   // OR A,abs+Y
+   /* OR A,abs+Y */
    AbsoluteY();
    IAPU.Registers.YA.B.A |= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -567,7 +567,7 @@ void Apu16(void)
 
 void Apu17(void)
 {
-   // OR A,(dp)+Y
+   /* OR A,(dp)+Y */
    IndirectIndexedY();
    IAPU.Registers.YA.B.A |= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -576,7 +576,7 @@ void Apu17(void)
 
 void Apu18(void)
 {
-   // OR dp,#00
+   /* OR dp,#00 */
    Work8 = OP1;
    Work8 |= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -586,7 +586,7 @@ void Apu18(void)
 
 void Apu19(void)
 {
-   // OR (X),(Y)
+   /* OR (X),(Y) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X) | S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    APUSetZN8(Work8);
    S9xAPUSetByteZ(Work8, IAPU.Registers.X);
@@ -595,7 +595,7 @@ void Apu19(void)
 
 void Apu0A(void)
 {
-   // OR1 C,membit
+   /* OR1 C,membit */
    MemBit();
    if (!APUCheckCarry())
       if (S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit))
@@ -605,7 +605,7 @@ void Apu0A(void)
 
 void Apu2A(void)
 {
-   // OR1 C,not membit
+   /* OR1 C,not membit */
    MemBit();
    if (!APUCheckCarry())
       if (!(S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit)))
@@ -615,7 +615,7 @@ void Apu2A(void)
 
 void Apu4A(void)
 {
-   // AND1 C,membit
+   /* AND1 C,membit */
    MemBit();
    if (APUCheckCarry())
       if (!(S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit)))
@@ -625,7 +625,7 @@ void Apu4A(void)
 
 void Apu6A(void)
 {
-   // AND1 C, not membit
+   /* AND1 C, not membit */
    MemBit();
    if (APUCheckCarry())
       if ((S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit)))
@@ -635,7 +635,7 @@ void Apu6A(void)
 
 void Apu8A(void)
 {
-   // EOR1 C, membit
+   /* EOR1 C, membit */
    MemBit();
    if (S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit))
    {
@@ -649,7 +649,7 @@ void Apu8A(void)
 
 void ApuAA(void)
 {
-   // MOV1 C,membit
+   /* MOV1 C,membit */
    MemBit();
    if (S9xAPUGetByte(IAPU.Address) & (1 << IAPU.Bit))
       APUSetCarry();
@@ -660,7 +660,7 @@ void ApuAA(void)
 
 void ApuCA(void)
 {
-   // MOV1 membit,C
+   /* MOV1 membit,C */
    MemBit();
    if (APUCheckCarry())
       S9xAPUSetByte(S9xAPUGetByte(IAPU.Address) | (1 << IAPU.Bit), IAPU.Address);
@@ -671,7 +671,7 @@ void ApuCA(void)
 
 void ApuEA(void)
 {
-   // NOT1 membit
+   /* NOT1 membit */
    MemBit();
    S9xAPUSetByte(S9xAPUGetByte(IAPU.Address) ^ (1 << IAPU.Bit), IAPU.Address);
    IAPU.PC += 3;
@@ -679,7 +679,7 @@ void ApuEA(void)
 
 void Apu0B(void)
 {
-   // ASL dp
+   /* ASL dp */
    Work8 = S9xAPUGetByteZ(OP1);
    ASL(Work8);
    S9xAPUSetByteZ(Work8, OP1);
@@ -688,7 +688,7 @@ void Apu0B(void)
 
 void Apu0C(void)
 {
-   // ASL abs
+   /* ASL abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ASL(Work8);
@@ -698,7 +698,7 @@ void Apu0C(void)
 
 void Apu1B(void)
 {
-   // ASL dp+X
+   /* ASL dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    ASL(Work8);
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
@@ -707,14 +707,14 @@ void Apu1B(void)
 
 void Apu1C(void)
 {
-   // ASL A
+   /* ASL A */
    ASL(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void Apu0D(void)
 {
-   // PUSH PSW
+   /* PUSH PSW */
    S9xAPUPackStatus();
    Push(IAPU.Registers.P);
    IAPU.PC++;
@@ -722,28 +722,28 @@ void Apu0D(void)
 
 void Apu2D(void)
 {
-   // PUSH A
+   /* PUSH A */
    Push(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void Apu4D(void)
 {
-   // PUSH X
+   /* PUSH X */
    Push(IAPU.Registers.X);
    IAPU.PC++;
 }
 
 void Apu6D(void)
 {
-   // PUSH Y
+   /* PUSH Y */
    Push(IAPU.Registers.YA.B.Y);
    IAPU.PC++;
 }
 
 void Apu8E(void)
 {
-   // POP PSW
+   /* POP PSW */
    Pop(IAPU.Registers.P);
    S9xAPUUnpackStatus();
    if (APUCheckDirectPage())
@@ -755,28 +755,28 @@ void Apu8E(void)
 
 void ApuAE(void)
 {
-   // POP A
+   /* POP A */
    Pop(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void ApuCE(void)
 {
-   // POP X
+   /* POP X */
    Pop(IAPU.Registers.X);
    IAPU.PC++;
 }
 
 void ApuEE(void)
 {
-   // POP Y
+   /* POP Y */
    Pop(IAPU.Registers.YA.B.Y);
    IAPU.PC++;
 }
 
 void Apu0E(void)
 {
-   // TSET1 abs
+   /* TSET1 abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    S9xAPUSetByte(Work8 | IAPU.Registers.YA.B.A, IAPU.Address);
@@ -787,7 +787,7 @@ void Apu0E(void)
 
 void Apu4E(void)
 {
-   // TCLR1 abs
+   /* TCLR1 abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    S9xAPUSetByte(Work8 & ~IAPU.Registers.YA.B.A, IAPU.Address);
@@ -798,7 +798,7 @@ void Apu4E(void)
 
 void Apu0F(void)
 {
-   // BRK
+   /* BRK */
    PushW(IAPU.PC + 1 - IAPU.RAM);
    S9xAPUPackStatus();
    Push(IAPU.Registers.P);
@@ -809,22 +809,22 @@ void Apu0F(void)
 
 void ApuEF(void)
 {
-   // SLEEP
+   /* SLEEP */
    APU.TimerEnabled[0] = APU.TimerEnabled[1] = APU.TimerEnabled[2] = false;
    IAPU.APUExecuting = false;
 }
 
 void ApuFF(void)
 {
-   // STOP
+   /* STOP */
    APU.TimerEnabled[0] = APU.TimerEnabled[1] = APU.TimerEnabled[2] = false;
    IAPU.APUExecuting = false;
-   Settings.APUEnabled = false; // re-enabled on next APU reset
+   Settings.APUEnabled = false; /* re-enabled on next APU reset */
 }
 
 void Apu10(void)
 {
-   // BPL
+   /* BPL */
    Relative();
    if (!APUCheckNegative())
    {
@@ -838,7 +838,7 @@ void Apu10(void)
 
 void Apu30(void)
 {
-   // BMI
+   /* BMI */
    Relative();
    if (APUCheckNegative())
    {
@@ -852,7 +852,7 @@ void Apu30(void)
 
 void Apu90(void)
 {
-   // BCC
+   /* BCC */
    Relative();
    if (!APUCheckCarry())
    {
@@ -866,7 +866,7 @@ void Apu90(void)
 
 void ApuB0(void)
 {
-   // BCS
+   /* BCS */
    Relative();
    if (APUCheckCarry())
    {
@@ -880,7 +880,7 @@ void ApuB0(void)
 
 void ApuD0(void)
 {
-   // BNE
+   /* BNE */
    Relative();
    if (!APUCheckZero())
    {
@@ -894,7 +894,7 @@ void ApuD0(void)
 
 void ApuF0(void)
 {
-   // BEQ
+   /* BEQ */
    Relative();
    if (APUCheckZero())
    {
@@ -908,7 +908,7 @@ void ApuF0(void)
 
 void Apu50(void)
 {
-   // BVC
+   /* BVC */
    Relative();
    if (!APUCheckOverflow())
    {
@@ -921,7 +921,7 @@ void Apu50(void)
 
 void Apu70(void)
 {
-   // BVS
+   /* BVS */
    Relative();
    if (APUCheckOverflow())
    {
@@ -934,28 +934,28 @@ void Apu70(void)
 
 void Apu2F(void)
 {
-   // BRA
+   /* BRA */
    Relative();
    IAPU.PC = IAPU.RAM + (uint16_t) Int16;
 }
 
 void Apu80(void)
 {
-   // SETC
+   /* SETC */
    APUSetCarry();
    IAPU.PC++;
 }
 
 void ApuED(void)
 {
-   // NOTC
+   /* NOTC */
    IAPU._Carry ^= 1;
    IAPU.PC++;
 }
 
 void Apu40(void)
 {
-   // SETP
+   /* SETP */
    APUSetDirectPage();
    IAPU.DirectPage = IAPU.RAM + 0x100;
    IAPU.PC++;
@@ -963,7 +963,7 @@ void Apu40(void)
 
 void Apu1A(void)
 {
-   // DECW dp
+   /* DECW dp */
    Work16 = S9xAPUGetByteZ(OP1) + (S9xAPUGetByteZ(OP1 + 1) << 8) - 1;
    S9xAPUSetByteZ((uint8_t) Work16, OP1);
    S9xAPUSetByteZ(Work16 >> 8, OP1 + 1);
@@ -973,7 +973,7 @@ void Apu1A(void)
 
 void Apu5A(void)
 {
-   // CMPW YA,dp
+   /* CMPW YA,dp */
    Work16 = S9xAPUGetByteZ(OP1) + (S9xAPUGetByteZ(OP1 + 1) << 8);
    Int32 = (int32_t) IAPU.Registers.YA.W - (int32_t) Work16;
    IAPU._Carry = Int32 >= 0;
@@ -983,7 +983,7 @@ void Apu5A(void)
 
 void Apu3A(void)
 {
-   // INCW dp
+   /* INCW dp */
    Work16 = S9xAPUGetByteZ(OP1) + (S9xAPUGetByteZ(OP1 + 1) << 8) + 1;
    S9xAPUSetByteZ((uint8_t) Work16, OP1);
    S9xAPUSetByteZ(Work16 >> 8, OP1 + 1);
@@ -993,7 +993,7 @@ void Apu3A(void)
 
 void Apu7A(void)
 {
-   // ADDW YA,dp
+   /* ADDW YA,dp */
    Work16 = S9xAPUGetByteZ(OP1) + (S9xAPUGetByteZ(OP1 + 1) << 8);
    Work32 = (uint32_t) IAPU.Registers.YA.W + Work16;
    IAPU._Carry = Work32 >= 0x10000;
@@ -1011,7 +1011,7 @@ void Apu7A(void)
 
 void Apu9A(void)
 {
-   // SUBW YA,dp
+   /* SUBW YA,dp */
    Work16 = S9xAPUGetByteZ(OP1) + (S9xAPUGetByteZ(OP1 + 1) << 8);
    Int32 = (int32_t) IAPU.Registers.YA.W - (int32_t) Work16;
    APUClearHalfCarry();
@@ -1030,7 +1030,7 @@ void Apu9A(void)
 
 void ApuBA(void)
 {
-   // MOVW YA,dp
+   /* MOVW YA,dp */
    IAPU.Registers.YA.B.A = S9xAPUGetByteZ(OP1);
    IAPU.Registers.YA.B.Y = S9xAPUGetByteZ(OP1 + 1);
    APUSetZN16(IAPU.Registers.YA.W);
@@ -1039,7 +1039,7 @@ void ApuBA(void)
 
 void ApuDA(void)
 {
-   // MOVW dp,YA
+   /* MOVW dp,YA */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.A, OP1);
    S9xAPUSetByteZ(IAPU.Registers.YA.B.Y, OP1 + 1);
    IAPU.PC += 2;
@@ -1047,7 +1047,7 @@ void ApuDA(void)
 
 void Apu64(void)
 {
-   // CMP A,dp
+   /* CMP A,dp */
    Work8 = S9xAPUGetByteZ(OP1);
    CMP(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1055,7 +1055,7 @@ void Apu64(void)
 
 void Apu65(void)
 {
-   // CMP A,abs
+   /* CMP A,abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.A, Work8);
@@ -1064,7 +1064,7 @@ void Apu65(void)
 
 void Apu66(void)
 {
-   // CMP A,(X)
+   /* CMP A,(X) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X);
    CMP(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC++;
@@ -1072,7 +1072,7 @@ void Apu66(void)
 
 void Apu67(void)
 {
-   // CMP A,(dp+X)
+   /* CMP A,(dp+X) */
    IndexedXIndirect();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.A, Work8);
@@ -1081,7 +1081,7 @@ void Apu67(void)
 
 void Apu68(void)
 {
-   // CMP A,#00
+   /* CMP A,#00 */
    Work8 = OP1;
    CMP(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1089,7 +1089,7 @@ void Apu68(void)
 
 void Apu69(void)
 {
-   // CMP dp(dest), dp(src)
+   /* CMP dp(dest), dp(src) */
    W1 = S9xAPUGetByteZ(OP1);
    Work8 = S9xAPUGetByteZ(OP2);
    CMP(Work8, W1);
@@ -1098,7 +1098,7 @@ void Apu69(void)
 
 void Apu74(void)
 {
-   // CMP A, dp+X
+   /* CMP A, dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    CMP(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1106,7 +1106,7 @@ void Apu74(void)
 
 void Apu75(void)
 {
-   // CMP A,abs+X
+   /* CMP A,abs+X */
    AbsoluteX();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.A, Work8);
@@ -1115,7 +1115,7 @@ void Apu75(void)
 
 void Apu76(void)
 {
-   // CMP A, abs+Y
+   /* CMP A, abs+Y */
    AbsoluteY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.A, Work8);
@@ -1124,7 +1124,7 @@ void Apu76(void)
 
 void Apu77(void)
 {
-   // CMP A,(dp)+Y
+   /* CMP A,(dp)+Y */
    IndirectIndexedY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.A, Work8);
@@ -1133,7 +1133,7 @@ void Apu77(void)
 
 void Apu78(void)
 {
-   // CMP dp,#00
+   /* CMP dp,#00 */
    Work8 = OP1;
    W1 = S9xAPUGetByteZ(OP2);
    CMP(W1, Work8);
@@ -1142,7 +1142,7 @@ void Apu78(void)
 
 void Apu79(void)
 {
-   // CMP (X),(Y)
+   /* CMP (X),(Y) */
    W1 = S9xAPUGetByteZ(IAPU.Registers.X);
    Work8 = S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    CMP(W1, Work8);
@@ -1151,7 +1151,7 @@ void Apu79(void)
 
 void Apu1E(void)
 {
-   // CMP X,abs
+   /* CMP X,abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.X, Work8);
@@ -1160,7 +1160,7 @@ void Apu1E(void)
 
 void Apu3E(void)
 {
-   // CMP X,dp
+   /* CMP X,dp */
    Work8 = S9xAPUGetByteZ(OP1);
    CMP(IAPU.Registers.X, Work8);
    IAPU.PC += 2;
@@ -1168,14 +1168,14 @@ void Apu3E(void)
 
 void ApuC8(void)
 {
-   // CMP X,#00
+   /* CMP X,#00 */
    CMP(IAPU.Registers.X, OP1);
    IAPU.PC += 2;
 }
 
 void Apu5E(void)
 {
-   // CMP Y,abs
+   /* CMP Y,abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    CMP(IAPU.Registers.YA.B.Y, Work8);
@@ -1184,7 +1184,7 @@ void Apu5E(void)
 
 void Apu7E(void)
 {
-   // CMP Y,dp
+   /* CMP Y,dp */
    Work8 = S9xAPUGetByteZ(OP1);
    CMP(IAPU.Registers.YA.B.Y, Work8);
    IAPU.PC += 2;
@@ -1192,7 +1192,7 @@ void Apu7E(void)
 
 void ApuAD(void)
 {
-   // CMP Y,#00
+   /* CMP Y,#00 */
    Work8 = OP1;
    CMP(IAPU.Registers.YA.B.Y, Work8);
    IAPU.PC += 2;
@@ -1200,21 +1200,21 @@ void ApuAD(void)
 
 void Apu1F(void)
 {
-   // JMP (abs+X)
+   /* JMP (abs+X) */
    Absolute();
    IAPU.PC = IAPU.RAM + S9xAPUGetByte(IAPU.Address + IAPU.Registers.X) + (S9xAPUGetByte(IAPU.Address + IAPU.Registers.X + 1) << 8);
 }
 
 void Apu5F(void)
 {
-   // JMP abs
+   /* JMP abs */
    Absolute();
    IAPU.PC = IAPU.RAM + IAPU.Address;
 }
 
 void Apu20(void)
 {
-   // CLRP
+   /* CLRP */
    APUClearDirectPage();
    IAPU.DirectPage = IAPU.RAM;
    IAPU.PC++;
@@ -1222,14 +1222,14 @@ void Apu20(void)
 
 void Apu60(void)
 {
-   // CLRC
+   /* CLRC */
    APUClearCarry();
    IAPU.PC++;
 }
 
 void ApuE0(void)
 {
-   // CLRV
+   /* CLRV */
    APUClearHalfCarry();
    APUClearOverflow();
    IAPU.PC++;
@@ -1237,7 +1237,7 @@ void ApuE0(void)
 
 void Apu24(void)
 {
-   // AND A,dp
+   /* AND A,dp */
    IAPU.Registers.YA.B.A &= S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1245,7 +1245,7 @@ void Apu24(void)
 
 void Apu25(void)
 {
-   // AND A,abs
+   /* AND A,abs */
    Absolute();
    IAPU.Registers.YA.B.A &= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1254,7 +1254,7 @@ void Apu25(void)
 
 void Apu26(void)
 {
-   // AND A,(X)
+   /* AND A,(X) */
    IAPU.Registers.YA.B.A &= S9xAPUGetByteZ(IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -1262,7 +1262,7 @@ void Apu26(void)
 
 void Apu27(void)
 {
-   // AND A,(dp+X)
+   /* AND A,(dp+X) */
    IndexedXIndirect();
    IAPU.Registers.YA.B.A &= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1271,7 +1271,7 @@ void Apu27(void)
 
 void Apu28(void)
 {
-   // AND A,#00
+   /* AND A,#00 */
    IAPU.Registers.YA.B.A &= OP1;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1279,7 +1279,7 @@ void Apu28(void)
 
 void Apu29(void)
 {
-   // AND dp(dest),dp(src)
+   /* AND dp(dest),dp(src) */
    Work8 = S9xAPUGetByteZ(OP1);
    Work8 &= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -1289,7 +1289,7 @@ void Apu29(void)
 
 void Apu34(void)
 {
-   // AND A,dp+X
+   /* AND A,dp+X */
    IAPU.Registers.YA.B.A &= S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1297,7 +1297,7 @@ void Apu34(void)
 
 void Apu35(void)
 {
-   // AND A,abs+X
+   /* AND A,abs+X */
    AbsoluteX();
    IAPU.Registers.YA.B.A &= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1306,7 +1306,7 @@ void Apu35(void)
 
 void Apu36(void)
 {
-   // AND A,abs+Y
+   /* AND A,abs+Y */
    AbsoluteY();
    IAPU.Registers.YA.B.A &= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1315,7 +1315,7 @@ void Apu36(void)
 
 void Apu37(void)
 {
-   // AND A,(dp)+Y
+   /* AND A,(dp)+Y */
    IndirectIndexedY();
    IAPU.Registers.YA.B.A &= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1324,7 +1324,7 @@ void Apu37(void)
 
 void Apu38(void)
 {
-   // AND dp,#00
+   /* AND dp,#00 */
    Work8 = OP1;
    Work8 &= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -1334,7 +1334,7 @@ void Apu38(void)
 
 void Apu39(void)
 {
-   // AND (X),(Y)
+   /* AND (X),(Y) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X) & S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    APUSetZN8(Work8);
    S9xAPUSetByteZ(Work8, IAPU.Registers.X);
@@ -1343,7 +1343,7 @@ void Apu39(void)
 
 void Apu2B(void)
 {
-   // ROL dp
+   /* ROL dp */
    Work8 = S9xAPUGetByteZ(OP1);
    ROL(Work8);
    S9xAPUSetByteZ(Work8, OP1);
@@ -1352,7 +1352,7 @@ void Apu2B(void)
 
 void Apu2C(void)
 {
-   // ROL abs
+   /* ROL abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ROL(Work8);
@@ -1362,7 +1362,7 @@ void Apu2C(void)
 
 void Apu3B(void)
 {
-   // ROL dp+X
+   /* ROL dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    ROL(Work8);
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
@@ -1371,14 +1371,14 @@ void Apu3B(void)
 
 void Apu3C(void)
 {
-   // ROL A
+   /* ROL A */
    ROL(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void Apu2E(void)
 {
-   // CBNE dp,rel
+   /* CBNE dp,rel */
    Work8 = OP1;
    Relative2();
 
@@ -1394,7 +1394,7 @@ void Apu2E(void)
 
 void ApuDE(void)
 {
-   // CBNE dp+X,rel
+   /* CBNE dp+X,rel */
    Work8 = OP1 + IAPU.Registers.X;
    Relative2();
 
@@ -1410,7 +1410,7 @@ void ApuDE(void)
 
 void Apu3D(void)
 {
-   // INC X
+   /* INC X */
    IAPU.Registers.X++;
    APUSetZN8(IAPU.Registers.X);
    IAPU.WaitCounter++;
@@ -1419,7 +1419,7 @@ void Apu3D(void)
 
 void ApuFC(void)
 {
-   // INC Y
+   /* INC Y */
    IAPU.Registers.YA.B.Y++;
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.WaitCounter++;
@@ -1428,7 +1428,7 @@ void ApuFC(void)
 
 void Apu1D(void)
 {
-   // DEC X
+   /* DEC X */
    IAPU.Registers.X--;
    APUSetZN8(IAPU.Registers.X);
    IAPU.WaitCounter++;
@@ -1437,7 +1437,7 @@ void Apu1D(void)
 
 void ApuDC(void)
 {
-   // DEC Y
+   /* DEC Y */
    IAPU.Registers.YA.B.Y--;
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.WaitCounter++;
@@ -1446,7 +1446,7 @@ void ApuDC(void)
 
 void ApuAB(void)
 {
-   // INC dp
+   /* INC dp */
    Work8 = S9xAPUGetByteZ(OP1) + 1;
    S9xAPUSetByteZ(Work8, OP1);
    APUSetZN8(Work8);
@@ -1456,7 +1456,7 @@ void ApuAB(void)
 
 void ApuAC(void)
 {
-   // INC abs
+   /* INC abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address) + 1;
    S9xAPUSetByte(Work8, IAPU.Address);
@@ -1467,7 +1467,7 @@ void ApuAC(void)
 
 void ApuBB(void)
 {
-   // INC dp+X
+   /* INC dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X) + 1;
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
    APUSetZN8(Work8);
@@ -1477,7 +1477,7 @@ void ApuBB(void)
 
 void ApuBC(void)
 {
-   // INC A
+   /* INC A */
    IAPU.Registers.YA.B.A++;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.WaitCounter++;
@@ -1486,7 +1486,7 @@ void ApuBC(void)
 
 void Apu8B(void)
 {
-   // DEC dp
+   /* DEC dp */
    Work8 = S9xAPUGetByteZ(OP1) - 1;
    S9xAPUSetByteZ(Work8, OP1);
    APUSetZN8(Work8);
@@ -1496,7 +1496,7 @@ void Apu8B(void)
 
 void Apu8C(void)
 {
-   // DEC abs
+   /* DEC abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address) - 1;
    S9xAPUSetByte(Work8, IAPU.Address);
@@ -1507,7 +1507,7 @@ void Apu8C(void)
 
 void Apu9B(void)
 {
-   // DEC dp+X
+   /* DEC dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X) - 1;
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
    APUSetZN8(Work8);
@@ -1517,7 +1517,7 @@ void Apu9B(void)
 
 void Apu9C(void)
 {
-   // DEC A
+   /* DEC A */
    IAPU.Registers.YA.B.A--;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.WaitCounter++;
@@ -1526,7 +1526,7 @@ void Apu9C(void)
 
 void Apu44(void)
 {
-   // EOR A,dp
+   /* EOR A,dp */
    IAPU.Registers.YA.B.A ^= S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1534,7 +1534,7 @@ void Apu44(void)
 
 void Apu45(void)
 {
-   // EOR A,abs
+   /* EOR A,abs */
    Absolute();
    IAPU.Registers.YA.B.A ^= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1543,7 +1543,7 @@ void Apu45(void)
 
 void Apu46(void)
 {
-   // EOR A,(X)
+   /* EOR A,(X) */
    IAPU.Registers.YA.B.A ^= S9xAPUGetByteZ(IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -1551,7 +1551,7 @@ void Apu46(void)
 
 void Apu47(void)
 {
-   // EOR A,(dp+X)
+   /* EOR A,(dp+X) */
    IndexedXIndirect();
    IAPU.Registers.YA.B.A ^= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1560,7 +1560,7 @@ void Apu47(void)
 
 void Apu48(void)
 {
-   // EOR A,#00
+   /* EOR A,#00 */
    IAPU.Registers.YA.B.A ^= OP1;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1568,7 +1568,7 @@ void Apu48(void)
 
 void Apu49(void)
 {
-   // EOR dp(dest),dp(src)
+   /* EOR dp(dest),dp(src) */
    Work8 = S9xAPUGetByteZ(OP1);
    Work8 ^= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -1578,7 +1578,7 @@ void Apu49(void)
 
 void Apu54(void)
 {
-   // EOR A,dp+X
+   /* EOR A,dp+X */
    IAPU.Registers.YA.B.A ^= S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -1586,7 +1586,7 @@ void Apu54(void)
 
 void Apu55(void)
 {
-   // EOR A,abs+X
+   /* EOR A,abs+X */
    AbsoluteX();
    IAPU.Registers.YA.B.A ^= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1595,7 +1595,7 @@ void Apu55(void)
 
 void Apu56(void)
 {
-   // EOR A,abs+Y
+   /* EOR A,abs+Y */
    AbsoluteY();
    IAPU.Registers.YA.B.A ^= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1604,7 +1604,7 @@ void Apu56(void)
 
 void Apu57(void)
 {
-   // EOR A,(dp)+Y
+   /* EOR A,(dp)+Y */
    IndirectIndexedY();
    IAPU.Registers.YA.B.A ^= S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -1613,7 +1613,7 @@ void Apu57(void)
 
 void Apu58(void)
 {
-   // EOR dp,#00
+   /* EOR dp,#00 */
    Work8 = OP1;
    Work8 ^= S9xAPUGetByteZ(OP2);
    S9xAPUSetByteZ(Work8, OP2);
@@ -1623,7 +1623,7 @@ void Apu58(void)
 
 void Apu59(void)
 {
-   // EOR (X),(Y)
+   /* EOR (X),(Y) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X) ^ S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    APUSetZN8(Work8);
    S9xAPUSetByteZ(Work8, IAPU.Registers.X);
@@ -1632,7 +1632,7 @@ void Apu59(void)
 
 void Apu4B(void)
 {
-   // LSR dp
+   /* LSR dp */
    Work8 = S9xAPUGetByteZ(OP1);
    LSR(Work8);
    S9xAPUSetByteZ(Work8, OP1);
@@ -1641,7 +1641,7 @@ void Apu4B(void)
 
 void Apu4C(void)
 {
-   // LSR abs
+   /* LSR abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    LSR(Work8);
@@ -1651,7 +1651,7 @@ void Apu4C(void)
 
 void Apu5B(void)
 {
-   // LSR dp+X
+   /* LSR dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    LSR(Work8);
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
@@ -1660,14 +1660,14 @@ void Apu5B(void)
 
 void Apu5C(void)
 {
-   // LSR A
+   /* LSR A */
    LSR(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void Apu7D(void)
 {
-   // MOV A,X
+   /* MOV A,X */
    IAPU.Registers.YA.B.A = IAPU.Registers.X;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -1675,7 +1675,7 @@ void Apu7D(void)
 
 void ApuDD(void)
 {
-   // MOV A,Y
+   /* MOV A,Y */
    IAPU.Registers.YA.B.A = IAPU.Registers.YA.B.Y;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -1683,7 +1683,7 @@ void ApuDD(void)
 
 void Apu5D(void)
 {
-   // MOV X,A
+   /* MOV X,A */
    IAPU.Registers.X = IAPU.Registers.YA.B.A;
    APUSetZN8(IAPU.Registers.X);
    IAPU.PC++;
@@ -1691,7 +1691,7 @@ void Apu5D(void)
 
 void ApuFD(void)
 {
-   // MOV Y,A
+   /* MOV Y,A */
    IAPU.Registers.YA.B.Y = IAPU.Registers.YA.B.A;
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.PC++;
@@ -1699,7 +1699,7 @@ void ApuFD(void)
 
 void Apu9D(void)
 {
-   //MOV X,SP
+   /* MOV X,SP */
    IAPU.Registers.X = IAPU.Registers.S;
    APUSetZN8(IAPU.Registers.X);
    IAPU.PC++;
@@ -1707,14 +1707,14 @@ void Apu9D(void)
 
 void ApuBD(void)
 {
-   // MOV SP,X
+   /* MOV SP,X */
    IAPU.Registers.S = IAPU.Registers.X;
    IAPU.PC++;
 }
 
 void Apu6B(void)
 {
-   // ROR dp
+   /* ROR dp */
    Work8 = S9xAPUGetByteZ(OP1);
    ROR(Work8);
    S9xAPUSetByteZ(Work8, OP1);
@@ -1723,7 +1723,7 @@ void Apu6B(void)
 
 void Apu6C(void)
 {
-   // ROR abs
+   /* ROR abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ROR(Work8);
@@ -1733,7 +1733,7 @@ void Apu6C(void)
 
 void Apu7B(void)
 {
-   // ROR dp+X
+   /* ROR dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    ROR(Work8);
    S9xAPUSetByteZ(Work8, OP1 + IAPU.Registers.X);
@@ -1742,14 +1742,14 @@ void Apu7B(void)
 
 void Apu7C(void)
 {
-   // ROR A
+   /* ROR A */
    ROR(IAPU.Registers.YA.B.A);
    IAPU.PC++;
 }
 
 void Apu6E(void)
 {
-   // DBNZ dp,rel
+   /* DBNZ dp,rel */
    Work8 = OP1;
    Relative2();
    W1 = S9xAPUGetByteZ(Work8) - 1;
@@ -1765,7 +1765,7 @@ void Apu6E(void)
 
 void ApuFE(void)
 {
-   // DBNZ Y,rel
+   /* DBNZ Y,rel */
    Relative();
    IAPU.Registers.YA.B.Y--;
    if (IAPU.Registers.YA.B.Y != 0)
@@ -1779,14 +1779,14 @@ void ApuFE(void)
 
 void Apu6F(void)
 {
-   // RET
+   /* RET */
    PopW(IAPU.Registers.PC);
    IAPU.PC = IAPU.RAM + IAPU.Registers.PC;
 }
 
 void Apu7F(void)
 {
-   // RETI
+   /* RETI */
    Pop(IAPU.Registers.P);
    S9xAPUUnpackStatus();
    PopW(IAPU.Registers.PC);
@@ -1795,7 +1795,7 @@ void Apu7F(void)
 
 void Apu84(void)
 {
-   // ADC A,dp
+   /* ADC A,dp */
    Work8 = S9xAPUGetByteZ(OP1);
    ADC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1803,7 +1803,7 @@ void Apu84(void)
 
 void Apu85(void)
 {
-   // ADC A, abs
+   /* ADC A, abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ADC(IAPU.Registers.YA.B.A, Work8);
@@ -1812,7 +1812,7 @@ void Apu85(void)
 
 void Apu86(void)
 {
-   // ADC A,(X)
+   /* ADC A,(X) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X);
    ADC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC++;
@@ -1820,7 +1820,7 @@ void Apu86(void)
 
 void Apu87(void)
 {
-   // ADC A,(dp+X)
+   /* ADC A,(dp+X) */
    IndexedXIndirect();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ADC(IAPU.Registers.YA.B.A, Work8);
@@ -1829,7 +1829,7 @@ void Apu87(void)
 
 void Apu88(void)
 {
-   // ADC A,#00
+   /* ADC A,#00 */
    Work8 = OP1;
    ADC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1837,7 +1837,7 @@ void Apu88(void)
 
 void Apu89(void)
 {
-   // ADC dp(dest),dp(src)
+   /* ADC dp(dest),dp(src) */
    Work8 = S9xAPUGetByteZ(OP1);
    W1 = S9xAPUGetByteZ(OP2);
    ADC(W1, Work8);
@@ -1847,7 +1847,7 @@ void Apu89(void)
 
 void Apu94(void)
 {
-   // ADC A,dp+X
+   /* ADC A,dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    ADC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1855,7 +1855,7 @@ void Apu94(void)
 
 void Apu95(void)
 {
-   // ADC A, abs+X
+   /* ADC A, abs+X */
    AbsoluteX();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ADC(IAPU.Registers.YA.B.A, Work8);
@@ -1864,7 +1864,7 @@ void Apu95(void)
 
 void Apu96(void)
 {
-   // ADC A, abs+Y
+   /* ADC A, abs+Y */
    AbsoluteY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ADC(IAPU.Registers.YA.B.A, Work8);
@@ -1873,7 +1873,7 @@ void Apu96(void)
 
 void Apu97(void)
 {
-   // ADC A, (dp)+Y
+   /* ADC A, (dp)+Y */
    IndirectIndexedY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    ADC(IAPU.Registers.YA.B.A, Work8);
@@ -1882,7 +1882,7 @@ void Apu97(void)
 
 void Apu98(void)
 {
-   // ADC dp,#00
+   /* ADC dp,#00 */
    Work8 = OP1;
    W1 = S9xAPUGetByteZ(OP2);
    ADC(W1, Work8);
@@ -1892,7 +1892,7 @@ void Apu98(void)
 
 void Apu99(void)
 {
-   // ADC (X),(Y)
+   /* ADC (X),(Y) */
    W1 = S9xAPUGetByteZ(IAPU.Registers.X);
    Work8 = S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    ADC(W1, Work8);
@@ -1902,7 +1902,7 @@ void Apu99(void)
 
 void Apu8D(void)
 {
-   // MOV Y,#00
+   /* MOV Y,#00 */
    IAPU.Registers.YA.B.Y = OP1;
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.PC += 2;
@@ -1910,7 +1910,7 @@ void Apu8D(void)
 
 void Apu8F(void)
 {
-   // MOV dp,#00
+   /* MOV dp,#00 */
    Work8 = OP1;
    S9xAPUSetByteZ(Work8, OP2);
    IAPU.PC += 3;
@@ -1918,7 +1918,7 @@ void Apu8F(void)
 
 void Apu9E(void)
 {
-   // DIV YA,X
+   /* DIV YA,X */
    if ((IAPU.Registers.X & 0x0f) <= (IAPU.Registers.YA.B.Y & 0x0f))
       APUSetHalfCarry();
    else
@@ -1952,7 +1952,7 @@ void Apu9E(void)
 
 void Apu9F(void)
 {
-   // XCN A
+   /* XCN A */
    IAPU.Registers.YA.B.A = (IAPU.Registers.YA.B.A >> 4) | (IAPU.Registers.YA.B.A << 4);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -1960,7 +1960,7 @@ void Apu9F(void)
 
 void ApuA4(void)
 {
-   // SBC A, dp
+   /* SBC A, dp */
    Work8 = S9xAPUGetByteZ(OP1);
    SBC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -1968,7 +1968,7 @@ void ApuA4(void)
 
 void ApuA5(void)
 {
-   // SBC A, abs
+   /* SBC A, abs */
    Absolute();
    Work8 = S9xAPUGetByte(IAPU.Address);
    SBC(IAPU.Registers.YA.B.A, Work8);
@@ -1977,7 +1977,7 @@ void ApuA5(void)
 
 void ApuA6(void)
 {
-   // SBC A, (X)
+   /* SBC A, (X) */
    Work8 = S9xAPUGetByteZ(IAPU.Registers.X);
    SBC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC++;
@@ -1985,7 +1985,7 @@ void ApuA6(void)
 
 void ApuA7(void)
 {
-   // SBC A,(dp+X)
+   /* SBC A,(dp+X) */
    IndexedXIndirect();
    Work8 = S9xAPUGetByte(IAPU.Address);
    SBC(IAPU.Registers.YA.B.A, Work8);
@@ -1994,7 +1994,7 @@ void ApuA7(void)
 
 void ApuA8(void)
 {
-   // SBC A,#00
+   /* SBC A,#00 */
    Work8 = OP1;
    SBC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -2002,7 +2002,7 @@ void ApuA8(void)
 
 void ApuA9(void)
 {
-   // SBC dp(dest), dp(src)
+   /* SBC dp(dest), dp(src) */
    Work8 = S9xAPUGetByteZ(OP1);
    W1 = S9xAPUGetByteZ(OP2);
    SBC(W1, Work8);
@@ -2012,7 +2012,7 @@ void ApuA9(void)
 
 void ApuB4(void)
 {
-   // SBC A, dp+X
+   /* SBC A, dp+X */
    Work8 = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    SBC(IAPU.Registers.YA.B.A, Work8);
    IAPU.PC += 2;
@@ -2020,7 +2020,7 @@ void ApuB4(void)
 
 void ApuB5(void)
 {
-   // SBC A,abs+X
+   /* SBC A,abs+X */
    AbsoluteX();
    Work8 = S9xAPUGetByte(IAPU.Address);
    SBC(IAPU.Registers.YA.B.A, Work8);
@@ -2029,7 +2029,7 @@ void ApuB5(void)
 
 void ApuB6(void)
 {
-   // SBC A,abs+Y
+   /* SBC A,abs+Y */
    AbsoluteY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    SBC(IAPU.Registers.YA.B.A, Work8);
@@ -2038,7 +2038,7 @@ void ApuB6(void)
 
 void ApuB7(void)
 {
-   // SBC A,(dp)+Y
+   /* SBC A,(dp)+Y */
    IndirectIndexedY();
    Work8 = S9xAPUGetByte(IAPU.Address);
    SBC(IAPU.Registers.YA.B.A, Work8);
@@ -2047,7 +2047,7 @@ void ApuB7(void)
 
 void ApuB8(void)
 {
-   // SBC dp,#00
+   /* SBC dp,#00 */
    Work8 = OP1;
    W1 = S9xAPUGetByteZ(OP2);
    SBC(W1, Work8);
@@ -2057,7 +2057,7 @@ void ApuB8(void)
 
 void ApuB9(void)
 {
-   // SBC (X),(Y)
+   /* SBC (X),(Y) */
    W1 = S9xAPUGetByteZ(IAPU.Registers.X);
    Work8 = S9xAPUGetByteZ(IAPU.Registers.YA.B.Y);
    SBC(W1, Work8);
@@ -2067,14 +2067,14 @@ void ApuB9(void)
 
 void ApuAF(void)
 {
-   // MOV (X)+, A
+   /* MOV (X)+, A */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.A, IAPU.Registers.X++);
    IAPU.PC++;
 }
 
 void ApuBE(void)
 {
-   // DAS
+   /* DAS */
    if (IAPU.Registers.YA.B.A > 0x99 || !IAPU._Carry)
    {
       IAPU.Registers.YA.B.A -= 0x60;
@@ -2092,7 +2092,7 @@ void ApuBE(void)
 
 void ApuBF(void)
 {
-   // MOV A,(X)+
+   /* MOV A,(X)+ */
    IAPU.Registers.YA.B.A = S9xAPUGetByteZ(IAPU.Registers.X++);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -2100,28 +2100,28 @@ void ApuBF(void)
 
 void ApuC0(void)
 {
-   // DI
+   /* DI */
    APUClearInterrupt();
    IAPU.PC++;
 }
 
 void ApuA0(void)
 {
-   // EI
+   /* EI */
    APUSetInterrupt();
    IAPU.PC++;
 }
 
 void ApuC4(void)
 {
-   // MOV dp,A
+   /* MOV dp,A */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.A, OP1);
    IAPU.PC += 2;
 }
 
 void ApuC5(void)
 {
-   // MOV abs,A
+   /* MOV abs,A */
    Absolute();
    S9xAPUSetByte(IAPU.Registers.YA.B.A, IAPU.Address);
    IAPU.PC += 3;
@@ -2129,14 +2129,14 @@ void ApuC5(void)
 
 void ApuC6(void)
 {
-   // MOV (X), A
+   /* MOV (X), A */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.A, IAPU.Registers.X);
    IAPU.PC++;
 }
 
 void ApuC7(void)
 {
-   // MOV (dp+X),A
+   /* MOV (dp+X),A */
    IndexedXIndirect();
    S9xAPUSetByte(IAPU.Registers.YA.B.A, IAPU.Address);
    IAPU.PC += 2;
@@ -2144,7 +2144,7 @@ void ApuC7(void)
 
 void ApuC9(void)
 {
-   // MOV abs,X
+   /* MOV abs,X */
    Absolute();
    S9xAPUSetByte(IAPU.Registers.X, IAPU.Address);
    IAPU.PC += 3;
@@ -2152,14 +2152,14 @@ void ApuC9(void)
 
 void ApuCB(void)
 {
-   // MOV dp,Y
+   /* MOV dp,Y */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.Y, OP1);
    IAPU.PC += 2;
 }
 
 void ApuCC(void)
 {
-   // MOV abs,Y
+   /* MOV abs,Y */
    Absolute();
    S9xAPUSetByte(IAPU.Registers.YA.B.Y, IAPU.Address);
    IAPU.PC += 3;
@@ -2167,7 +2167,7 @@ void ApuCC(void)
 
 void ApuCD(void)
 {
-   // MOV X,#00
+   /* MOV X,#00 */
    IAPU.Registers.X = OP1;
    APUSetZN8(IAPU.Registers.X);
    IAPU.PC += 2;
@@ -2175,7 +2175,7 @@ void ApuCD(void)
 
 void ApuCF(void)
 {
-   // MUL YA
+   /* MUL YA */
    IAPU.Registers.YA.W = (uint16_t) IAPU.Registers.YA.B.A * IAPU.Registers.YA.B.Y;
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.PC++;
@@ -2183,14 +2183,14 @@ void ApuCF(void)
 
 void ApuD4(void)
 {
-   // MOV dp+X, A
+   /* MOV dp+X, A */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.A, OP1 + IAPU.Registers.X);
    IAPU.PC += 2;
 }
 
 void ApuD5(void)
 {
-   // MOV abs+X,A
+   /* MOV abs+X,A */
    AbsoluteX();
    S9xAPUSetByte(IAPU.Registers.YA.B.A, IAPU.Address);
    IAPU.PC += 3;
@@ -2198,7 +2198,7 @@ void ApuD5(void)
 
 void ApuD6(void)
 {
-   // MOV abs+Y,A
+   /* MOV abs+Y,A */
    AbsoluteY();
    S9xAPUSetByte(IAPU.Registers.YA.B.A, IAPU.Address);
    IAPU.PC += 3;
@@ -2206,7 +2206,7 @@ void ApuD6(void)
 
 void ApuD7(void)
 {
-   // MOV (dp)+Y,A
+   /* MOV (dp)+Y,A */
    IndirectIndexedY();
    S9xAPUSetByte(IAPU.Registers.YA.B.A, IAPU.Address);
    IAPU.PC += 2;
@@ -2214,28 +2214,28 @@ void ApuD7(void)
 
 void ApuD8(void)
 {
-   // MOV dp,X
+   /* MOV dp,X */
    S9xAPUSetByteZ(IAPU.Registers.X, OP1);
    IAPU.PC += 2;
 }
 
 void ApuD9(void)
 {
-   // MOV dp+Y,X
+   /* MOV dp+Y,X */
    S9xAPUSetByteZ(IAPU.Registers.X, OP1 + IAPU.Registers.YA.B.Y);
    IAPU.PC += 2;
 }
 
 void ApuDB(void)
 {
-   // MOV dp+X,Y
+   /* MOV dp+X,Y */
    S9xAPUSetByteZ(IAPU.Registers.YA.B.Y, OP1 + IAPU.Registers.X);
    IAPU.PC += 2;
 }
 
 void ApuDF(void)
 {
-   // DAA
+   /* DAA */
    if (IAPU.Registers.YA.B.A > 0x99 || IAPU._Carry)
    {
       IAPU.Registers.YA.B.A += 0x60;
@@ -2253,7 +2253,7 @@ void ApuDF(void)
 
 void ApuE4(void)
 {
-   // MOV A, dp
+   /* MOV A, dp */
    IAPU.Registers.YA.B.A = S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -2261,7 +2261,7 @@ void ApuE4(void)
 
 void ApuE5(void)
 {
-   // MOV A,abs
+   /* MOV A,abs */
    Absolute();
    IAPU.Registers.YA.B.A = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -2270,7 +2270,7 @@ void ApuE5(void)
 
 void ApuE6(void)
 {
-   // MOV A,(X)
+   /* MOV A,(X) */
    IAPU.Registers.YA.B.A = S9xAPUGetByteZ(IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC++;
@@ -2278,7 +2278,7 @@ void ApuE6(void)
 
 void ApuE7(void)
 {
-   // MOV A,(dp+X)
+   /* MOV A,(dp+X) */
    IndexedXIndirect();
    IAPU.Registers.YA.B.A = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -2287,7 +2287,7 @@ void ApuE7(void)
 
 void ApuE8(void)
 {
-   // MOV A,#00
+   /* MOV A,#00 */
    IAPU.Registers.YA.B.A = OP1;
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -2295,7 +2295,7 @@ void ApuE8(void)
 
 void ApuE9(void)
 {
-   // MOV X, abs
+   /* MOV X, abs */
    Absolute();
    IAPU.Registers.X = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.X);
@@ -2304,7 +2304,7 @@ void ApuE9(void)
 
 void ApuEB(void)
 {
-   // MOV Y,dp
+   /* MOV Y,dp */
    IAPU.Registers.YA.B.Y = S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.PC += 2;
@@ -2312,7 +2312,7 @@ void ApuEB(void)
 
 void ApuEC(void)
 {
-   // MOV Y,abs
+   /* MOV Y,abs */
    Absolute();
    IAPU.Registers.YA.B.Y = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.Y);
@@ -2321,7 +2321,7 @@ void ApuEC(void)
 
 void ApuF4(void)
 {
-   // MOV A, dp+X
+   /* MOV A, dp+X */
    IAPU.Registers.YA.B.A = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.A);
    IAPU.PC += 2;
@@ -2329,7 +2329,7 @@ void ApuF4(void)
 
 void ApuF5(void)
 {
-   // MOV A, abs+X
+   /* MOV A, abs+X */
    AbsoluteX();
    IAPU.Registers.YA.B.A = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -2338,7 +2338,7 @@ void ApuF5(void)
 
 void ApuF6(void)
 {
-   // MOV A, abs+Y
+   /* MOV A, abs+Y */
    AbsoluteY();
    IAPU.Registers.YA.B.A = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -2347,7 +2347,7 @@ void ApuF6(void)
 
 void ApuF7(void)
 {
-   // MOV A, (dp)+Y
+   /* MOV A, (dp)+Y */
    IndirectIndexedY();
    IAPU.Registers.YA.B.A = S9xAPUGetByte(IAPU.Address);
    APUSetZN8(IAPU.Registers.YA.B.A);
@@ -2356,7 +2356,7 @@ void ApuF7(void)
 
 void ApuF8(void)
 {
-   // MOV X,dp
+   /* MOV X,dp */
    IAPU.Registers.X = S9xAPUGetByteZ(OP1);
    APUSetZN8(IAPU.Registers.X);
    IAPU.PC += 2;
@@ -2364,7 +2364,7 @@ void ApuF8(void)
 
 void ApuF9(void)
 {
-   // MOV X,dp+Y
+   /* MOV X,dp+Y */
    IAPU.Registers.X = S9xAPUGetByteZ(OP1 + IAPU.Registers.YA.B.Y);
    APUSetZN8(IAPU.Registers.X);
    IAPU.PC += 2;
@@ -2372,14 +2372,14 @@ void ApuF9(void)
 
 void ApuFA(void)
 {
-   // MOV dp(dest),dp(src)
+   /* MOV dp(dest),dp(src) */
    S9xAPUSetByteZ(S9xAPUGetByteZ(OP1), OP2);
    IAPU.PC += 3;
 }
 
 void ApuFB(void)
 {
-   // MOV Y,dp+X
+   /* MOV Y,dp+X */
    IAPU.Registers.YA.B.Y = S9xAPUGetByteZ(OP1 + IAPU.Registers.X);
    APUSetZN8(IAPU.Registers.YA.B.Y);
    IAPU.PC += 2;

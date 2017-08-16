@@ -7,14 +7,14 @@
 
 const char* S9xGetFilename(const char*);
 
-SPC7110Regs s7r;         // SPC7110 registers, about 33KB
-S7RTC rtc_f9;            // FEOEZ (and Shounen Jump no SHou) RTC
-void S9xUpdateRTC(void); // S-RTC function hacked to work with the RTC
+SPC7110Regs s7r;         /* SPC7110 registers, about 33KB */
+S7RTC rtc_f9;            /* FEOEZ (and Shounen Jump no SHou) RTC */
+void S9xUpdateRTC(void); /* S-RTC function hacked to work with the RTC */
 
-void S9xSpc7110Init(void) // Emulate power on state
+void S9xSpc7110Init(void) /* Emulate power on state */
 {
    spc7110dec_init();
-   s7r.DataRomOffset = 0x00100000; //handy constant!
+   s7r.DataRomOffset = 0x00100000; /* handy constant! */
    s7r.DataRomSize = Memory.CalculatedSize - s7r.DataRomOffset;
    s7r.reg4800 = 0;
    s7r.reg4801 = 0;
@@ -68,17 +68,17 @@ void S9xSpc7110Init(void) // Emulate power on state
    memset(s7r.bank50, 0x00, DECOMP_BUFFER_SIZE);
 }
 
-//reads SPC7110 and RTC registers.
+/* reads SPC7110 and RTC registers. */
 uint8_t S9xGetSPC7110(uint16_t Address)
 {
    switch (Address)
    {
-   //decompressed data read port. decrements 4809-A (with wrap)
-   //4805-6 is the offset into the bank
-   //AlignBy is set (afaik) at decompression time, and is the offset multiplier
-   //bank50internal is an internal pointer to the actual byte to read.
-   //so you read from offset*multiplier + bank50internal
-   //the offset registers cannot be incremented due to the offset multiplier.
+   /* decompressed data read port. decrements 4809-A (with wrap) */
+   /* 4805-6 is the offset into the bank */
+   /* AlignBy is set (afaik) at decompression time, and is the offset multiplier */
+   /* bank50internal is an internal pointer to the actual byte to read. */
+   /* so you read from offset*multiplier + bank50internal */
+   /* the offset registers cannot be incremented due to the offset multiplier. */
    case 0x4800:
    {
       uint16_t count = s7r.reg4809 | (s7r.reg480A << 8);
@@ -91,44 +91,44 @@ uint8_t S9xGetSPC7110(uint16_t Address)
       s7r.reg4800 = spc7110dec_read();
       return s7r.reg4800;
    }
-   case 0x4801: //table register low
+   case 0x4801: /* table register low */
       return s7r.reg4801;
-   case 0x4802: //table register middle
+   case 0x4802: /* table register middle */
       return s7r.reg4802;
-   case 0x4803: //table register high
+   case 0x4803: /* table register high */
       return s7r.reg4803;
-   case 0x4804: //index of pointer in table (each entry is 4 bytes)
+   case 0x4804: /* index of pointer in table (each entry is 4 bytes) */
       return s7r.reg4804;
-   case 0x4805: //offset register low
+   case 0x4805: /* offset register low */
       return s7r.reg4805;
-   case 0x4806: //offset register high
+   case 0x4806: /* offset register high */
       return s7r.reg4806;
-   //DMA channel (not that I see this usually set,
-   //regardless of what channel DMA is on)
+   /* DMA channel (not that I see this usually set, */
+   /* regardless of what channel DMA is on) */
    case 0x4807:
       return s7r.reg4807;
-   //C r/w option, unknown, defval:00 is what Dark Force says
-   //afaict, Snes9x doesn't use this at all.
+   /* C r/w option, unknown, defval:00 is what Dark Force says */
+   /* afaict, Snes9x doesn't use this at all. */
    case 0x4808:
       return s7r.reg4808;
-   //C-Length low
-   //counts down the number of bytes left to read from the decompression buffer.
-   //this is set by the ROM, and wraps on bounds.
+   /* C-Length low */
+   /* counts down the number of bytes left to read from the decompression buffer. */
+   /* this is set by the ROM, and wraps on bounds. */
    case 0x4809:
       return s7r.reg4809;
-   case 0x480A: //C Length high
+   case 0x480A: /* C Length high */
       return s7r.reg480A;
-   //Offset enable.
-   //if this is zero, 4805-6 are useless. Emulated by setting AlignBy to 0
+   /* Offset enable. */
+   /* if this is zero, 4805-6 are useless. Emulated by setting AlignBy to 0 */
    case 0x480B:
       return s7r.reg480B;
-   case 0x480C:  //decompression finished: just emulated by switching each read.
+   case 0x480C:  /* decompression finished: just emulated by switching each read. */
       s7r.reg480C ^= 0x80;
       return s7r.reg480C ^ 0x80;
-   //Data access port
-   //reads from the data ROM (anywhere over the first 8 mbits
-   //behavior is complex, will document later,
-   //possibly missing cases, because of the number of switches in play
+   /* Data access port */
+   /* reads from the data ROM (anywhere over the first 8 mbits */
+   /* behavior is complex, will document later, */
+   /* possibly missing cases, because of the number of switches in play */
    case 0x4810:
       if (s7r.written == 0)
          return 0;
@@ -196,7 +196,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
 
                   }
                }
-               //is signed
+               /* is signed */
             }
             else
             {
@@ -260,26 +260,26 @@ uint8_t S9xGetSPC7110(uint16_t Address)
       }
       else
          return 0;
-   case 0x4811: //direct read address low
+   case 0x4811: /* direct read address low */
       return s7r.reg4811;
-   case 0x4812: //direct read address middle
+   case 0x4812: /* direct read address middle */
       return s7r.reg4812;
-   case 0x4813: //direct read access high
+   case 0x4813: /* direct read access high */
       return s7r.reg4813;
-   case 0x4814: //read adjust low
+   case 0x4814: /* read adjust low */
       return s7r.reg4814;
-   case 0x4815: //read adjust high
+   case 0x4815: /* read adjust high */
       return s7r.reg4815;
-   case 0x4816: //read increment low
+   case 0x4816: /* read increment low */
       return s7r.reg4816;
-   case 0x4817: //read increment high
+   case 0x4817: /* read increment high */
       return s7r.reg4817;
-   case 0x4818: //Data ROM command mode; essentially, this controls the insane code of $4810 and $481A
+   case 0x4818: /* Data ROM command mode; essentially, this controls the insane code of $4810 and $481A */
       return s7r.reg4818;
-   //read after adjust port
-   //what this does, besides more nasty stuff like 4810,
-   //I don't know. Just assume it is a different implementation of $4810,
-   //if it helps your sanity
+   /* read after adjust port */
+   /* what this does, besides more nasty stuff like 4810, */
+   /* I don't know. Just assume it is a different implementation of $4810, */
+   /* if it helps your sanity */
    case 0x481A:
       if (s7r.written == 0x1F)
       {
@@ -337,58 +337,58 @@ uint8_t S9xGetSPC7110(uint16_t Address)
       }
       else
          return 0;
-   case 0x4820: //multiplicand low or dividend lowest
+   case 0x4820: /* multiplicand low or dividend lowest */
       return s7r.reg4820;
-   case 0x4821: //multiplicand high or divdend lower
+   case 0x4821: /* multiplicand high or divdend lower */
       return s7r.reg4821;
-   case 0x4822: //dividend higher
+   case 0x4822: /* dividend higher */
       return s7r.reg4822;
-   case 0x4823: //dividend highest
+   case 0x4823: /* dividend highest */
       return s7r.reg4823;
-   case 0x4824: //multiplier low
+   case 0x4824: /* multiplier low */
       return s7r.reg4824;
-   case 0x4825: //multiplier high
+   case 0x4825: /* multiplier high */
       return s7r.reg4825;
-   case 0x4826: //divisor low
+   case 0x4826: /* divisor low */
       return s7r.reg4826;
-   case 0x4827: //divisor high
+   case 0x4827: /* divisor high */
       return s7r.reg4827;
-   case 0x4828: //result lowest
+   case 0x4828: /* result lowest */
       return s7r.reg4828;
-   case 0x4829: //result lower
+   case 0x4829: /* result lower */
       return s7r.reg4829;
-   case 0x482A: //result higher
+   case 0x482A: /* result higher */
       return s7r.reg482A;
-   case 0x482B: //result highest
+   case 0x482B: /* result highest */
       return s7r.reg482B;
-   case 0x482C: //remainder (division) low
+   case 0x482C: /* remainder (division) low */
       return s7r.reg482C;
-   case 0x482D: //remainder (division) high
+   case 0x482D: /* remainder (division) high */
       return s7r.reg482D;
-   case 0x482E: //signed/unsigned
+   case 0x482E: /* signed/unsigned */
       return s7r.reg482E;
-   case 0x482F: //finished flag, emulated as an on-read toggle.
+   case 0x482F: /* finished flag, emulated as an on-read toggle. */
       if (s7r.reg482F)
       {
          s7r.reg482F = 0;
          return 0x80;
       }
       return 0;
-   case 0x4830: //SRAM toggle
+   case 0x4830: /* SRAM toggle */
       return s7r.reg4830;
-   case 0x4831: //DX bank mapping
+   case 0x4831: /* DX bank mapping */
       return s7r.reg4831;
-   case 0x4832: //EX bank mapping
+   case 0x4832: /* EX bank mapping */
       return s7r.reg4832;
-   case 0x4833: //FX bank mapping
+   case 0x4833: /* FX bank mapping */
       return s7r.reg4833;
-   case 0x4834: //SRAM mapping? We have no clue!
+   case 0x4834: /* SRAM mapping? We have no clue! */
       return s7r.reg4834;
-   case 0x4840: //RTC enable
+   case 0x4840: /* RTC enable */
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       return s7r.reg4840;
-   case 0x4841: //command/index/value of RTC (essentially, zero unless we're in read mode
+   case 0x4841: /* command/index/value of RTC (essentially, zero unless we're in read mode */
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       if (rtc_f9.init)
@@ -401,7 +401,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
       }
       else
          return 0;
-   case 0x4842: //RTC done flag
+   case 0x4842: /* RTC done flag */
       if (!Settings.SPC7110RTC)
          return Address >> 8;
       s7r.reg4842 ^= 0x80;
@@ -424,8 +424,8 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
 {
    switch (Address)
    {
-   //Writes to $4800 are undefined.
-   case 0x4801: //table low, middle, and high.
+   /* Writes to $4800 are undefined. */
+   case 0x4801: /* table low, middle, and high. */
       s7r.reg4801 = data;
       break;
    case 0x4802:
@@ -434,13 +434,13 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
    case 0x4803:
       s7r.reg4803 = data;
       break;
-   case 0x4804: //table index (4 byte entries, bigendian with a multiplier byte)
+   case 0x4804: /* table index (4 byte entries, bigendian with a multiplier byte) */
       s7r.reg4804 = data;
       break;
-   case 0x4805: //offset low
+   case 0x4805: /* offset low */
       s7r.reg4805 = data;
       break;
-   case 0x4806: //offset high, starts decompression
+   case 0x4806: /* offset high, starts decompression */
    {
       uint32_t table = (s7r.reg4801 + (s7r.reg4802 << 8) + (s7r.reg4803 << 16));
       uint32_t index = (s7r.reg4804 << 2);
@@ -453,21 +453,21 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       s7r.reg480C &= 0x7F;
       break;
    }
-   case 0x4807: //DMA channel register (Is it used??)
+   case 0x4807: /* DMA channel register (Is it used??) */
       s7r.reg4807 = data;
       break;
-   //C r/w? I have no idea. If you get weird values written here before a bug,
-   //The Dumper should probably be contacted about running a test.
+   /* C r/w? I have no idea. If you get weird values written here before a bug, */
+   /* The Dumper should probably be contacted about running a test. */
    case 0x4808:
       s7r.reg4808 = data;
       break;
-   case 0x4809: //C-Length low
+   case 0x4809: /* C-Length low */
       s7r.reg4809 = data;
       break;
-   case 0x480A: //C-Length high
+   case 0x480A: /* C-Length high */
       s7r.reg480A = data;
       break;
-   case 0x480B: //Offset enable
+   case 0x480B: /* Offset enable */
    {
       s7r.reg480B = data;
       int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
@@ -496,19 +496,19 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       break;
    }
-   case 0x4811: //Data port address low
+   case 0x4811: /* Data port address low */
       s7r.reg4811 = data;
       s7r.written |= 0x01;
       break;
-   case 0x4812: //data port address middle
+   case 0x4812: /* data port address middle */
       s7r.reg4812 = data;
       s7r.written |= 0x02;
       break;
-   case 0x4813: //data port address high
+   case 0x4813: /* data port address high */
       s7r.reg4813 = data;
       s7r.written |= 0x04;
       break;
-   case 0x4814: //data port adjust low (has a funky immediate increment mode)
+   case 0x4814: /* data port adjust low (has a funky immediate increment mode) */
       s7r.reg4814 = data;
       if (s7r.reg4818 & 0x02)
       {
@@ -554,7 +554,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
 
       s7r.written |= 0x08;
       break;
-   case 0x4815: //data port adjust high (has a funky immediate increment mode)
+   case 0x4815: /* data port adjust high (has a funky immediate increment mode) */
       s7r.reg4815 = data;
       if (s7r.reg4818 & 0x02)
       {
@@ -600,36 +600,36 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.written |= 0x10;
       break;
-   case 0x4816: //data port increment low
+   case 0x4816: /* data port increment low */
       s7r.reg4816 = data;
       break;
-   case 0x4817: //data port increment high
+   case 0x4817: /* data port increment high */
       s7r.reg4817 = data;
       break;
-   //data port mode switches
-   //note that it starts inactive.
+   /* data port mode switches */
+   /* note that it starts inactive. */
    case 0x4818:
       if ((s7r.written & 0x18) != 0x18)
          break;
       s7r.offset_add = 0;
       s7r.reg4818 = data;
       break;
-   case 0x4820: //multiplicand low or dividend lowest
+   case 0x4820: /* multiplicand low or dividend lowest */
       s7r.reg4820 = data;
       break;
-   case 0x4821: //multiplicand high or dividend lower
+   case 0x4821: /* multiplicand high or dividend lower */
       s7r.reg4821 = data;
       break;
-   case 0x4822: //dividend higher
+   case 0x4822: /* dividend higher */
       s7r.reg4822 = data;
       break;
-   case 0x4823: //dividend highest
+   case 0x4823: /* dividend highest */
       s7r.reg4823 = data;
       break;
-   case 0x4824: //multiplier low
+   case 0x4824: /* multiplier low */
       s7r.reg4824 = data;
       break;
-   case 0x4825: //multiplier high (triggers operation)
+   case 0x4825: /* multiplier high (triggers operation) */
       s7r.reg4825 = data;
       if (s7r.reg482E & 0x01)
       {
@@ -653,10 +653,10 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.reg482F = 0x80;
       break;
-   case 0x4826: //divisor low
+   case 0x4826: /* divisor low */
       s7r.reg4826 = data;
       break;
-   case 0x4827: //divisor high (triggers operation)
+   case 0x4827: /* divisor high (triggers operation) */
       s7r.reg4827 = data;
       if (s7r.reg482E & 0x01)
       {
@@ -706,32 +706,32 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.reg482F = 0x80;
       break;
-   //result registers are possibly read-only
+   /* result registers are possibly read-only */
 
-   //reset: writes here nuke the whole math unit
-   //Zero indicates unsigned math, resets with non-zero values turn on signed math
+   /* reset: writes here nuke the whole math unit */
+   /* Zero indicates unsigned math, resets with non-zero values turn on signed math */
    case 0x482E:
       s7r.reg4820 = s7r.reg4821 = s7r.reg4822 = s7r.reg4823 = s7r.reg4824 = s7r.reg4825 = s7r.reg4826 = s7r.reg4827 = s7r.reg4828 = s7r.reg4829 = s7r.reg482A = s7r.reg482B = s7r.reg482C = s7r.reg482D = 0;
       s7r.reg482E = data;
       break;
-      //math status register possibly read only
-   case 0x4830: //SRAM toggle
+      /* math status register possibly read only */
+   case 0x4830: /* SRAM toggle */
       SPC7110Sram(data);
       s7r.reg4830 = data;
       break;
-   case 0x4831: //Bank DX mapping
+   case 0x4831: /* Bank DX mapping */
       s7r.reg4831 = data;
       break;
-   case 0x4832: //Bank EX mapping
+   case 0x4832: /* Bank EX mapping */
       s7r.reg4832 = data;
       break;
-   case 0x4833: //Bank FX mapping
+   case 0x4833: /* Bank FX mapping */
       s7r.reg4833 = data;
       break;
-   case 0x4834: //S-RAM mapping? who knows?
+   case 0x4834: /* S-RAM mapping? who knows? */
       s7r.reg4834 = data;
       break;
-   case 0x4840: //RTC Toggle
+   case 0x4840: /* RTC Toggle */
       if(!data)
          S9xUpdateRTC();
       else if(data & 0x01)
@@ -742,7 +742,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       }
       s7r.reg4840 = data;
       break;
-   case 0x4841: //RTC init/command/index register
+   case 0x4841: /* RTC init/command/index register */
       if (rtc_f9.init)
       {
          if (rtc_f9.index == -1)
@@ -824,7 +824,7 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
    }
 }
 
-//emulate the SPC7110's ability to remap banks Dx, Ex, and Fx.
+/* emulate the SPC7110's ability to remap banks Dx, Ex, and Fx. */
 uint8_t S9xGetSPC7110Byte(uint32_t Address)
 {
    uint32_t i;
@@ -857,7 +857,7 @@ int32_t S9xRTCDaysInMonth(int32_t month, int32_t year)
    switch(month)
    {
    case 2:
-      if(year % 4 == 0) // DKJM2 only uses 199x - 22xx
+      if(year % 4 == 0) /* DKJM2 only uses 199x - 22xx */
          return 29;
       return 28;
    case 4:
@@ -865,7 +865,7 @@ int32_t S9xRTCDaysInMonth(int32_t month, int32_t year)
    case 9:
    case 11:
       return 30;
-   default: // months 1,3,5,7,8,10,12
+   default: /* months 1,3,5,7,8,10,12 */
       return 31;
    }
 }
@@ -884,18 +884,14 @@ void  S9xUpdateRTC(void)
    time_t cur_systime;
    int32_t time_diff;
 
-   // Keep track of game time by computing the number of seconds that pass on the system
-   // clock and adding the same number of seconds to the RTC clock structure.
+   /* Keep track of game time by computing the number of seconds that pass on the system */
+   /* clock and adding the same number of seconds to the RTC clock structure. */
 
    if (rtc_f9.init && 0 == (rtc_f9.reg[0x0D] & 0x01) && 0 == (rtc_f9.reg[0x0F] & 0x03))
    {
       cur_systime = time(NULL);
 
-      // This method assumes one time_t clock tick is one second
-      //        which should work on PCs and GNU systems.
-      //        If your tick interval is different adjust the
-      //        DAYTICK, HOURTICK, and MINUTETICK defines
-
+      /* This method assumes one time_t clock tick is one second */
       time_diff = (int32_t)(cur_systime - rtc_f9.last_used);
       rtc_f9.last_used = cur_systime;
 
@@ -1003,7 +999,7 @@ void  S9xUpdateRTC(void)
    }
 }
 
-//allows DMA from the ROM (is this even possible on the SPC7110?
+/* allows DMA from the ROM (is this even possible on the SPC7110? */
 uint8_t* Get7110BasePtr(uint32_t Address)
 {
    uint32_t i;
@@ -1025,7 +1021,7 @@ uint8_t* Get7110BasePtr(uint32_t Address)
    return &Memory.ROM[i];
 }
 
-//Cache 1 clean up function
+/* Cache 1 clean up function */
 void Del7110Gfx(void)
 {
    spc7110dec_deinit();
@@ -1033,7 +1029,7 @@ void Del7110Gfx(void)
    Settings.SPC7110RTC = false;
 }
 
-//emulate a reset.
+/* emulate a reset. */
 void S9xSpc7110Reset(void)
 {
    s7r.reg4800 = 0;
