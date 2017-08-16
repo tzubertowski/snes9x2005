@@ -343,8 +343,10 @@ void S9xSRTCPreSaveState()
 {
    if (Settings.SRTC)
    {
+      int32_t s;
+
       S9xUpdateSrtcTime();
-      int32_t s = Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0;
+      s = Memory.SRAMSize ? (1 << (Memory.SRAMSize + 3)) * 128 : 0;
 
       if (s > 0x20000)
          s = 0x20000;

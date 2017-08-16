@@ -256,79 +256,83 @@ static void WRITE_4PIXELS16_FLIPPEDx2x2(int32_t Offset, uint8_t* Pixels, uint16_
 
 void DrawTile16(uint32_t Tile, int32_t Offset, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    RENDER_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4);
 }
 
 void DrawClippedTile16(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Width, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    TILE_CLIP_PREAMBLE();
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16, WRITE_4PIXELS16_FLIPPED, 4);
 }
 
 void DrawTile16HalfWidth(uint32_t Tile, int32_t Offset, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    RENDER_TILE(WRITE_4PIXELS16_HALFWIDTH, WRITE_4PIXELS16_FLIPPED_HALFWIDTH, 2);
 }
 
 void DrawClippedTile16HalfWidth(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Width, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    TILE_CLIP_PREAMBLE();
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16_HALFWIDTH, WRITE_4PIXELS16_FLIPPED_HALFWIDTH, 2);
 }
 
 void DrawTile16x2(uint32_t Tile, int32_t Offset, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    RENDER_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8);
 }
 
 void DrawClippedTile16x2(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Width, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    TILE_CLIP_PREAMBLE();
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2, WRITE_4PIXELS16_FLIPPEDx2, 8);
 }
 
 void DrawTile16x2x2(uint32_t Tile, int32_t Offset, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    RENDER_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8);
 }
 
 void DrawClippedTile16x2x2(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Width, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
    uint8_t* bp;
+   TILE_PREAMBLE();
    TILE_CLIP_PREAMBLE();
    RENDER_CLIPPED_TILE(WRITE_4PIXELS16x2x2, WRITE_4PIXELS16_FLIPPEDx2x2, 8);
 }
 
 void DrawLargePixel16(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Pixels, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
-   uint16_t* sp = (uint16_t*) GFX.S + Offset;
-   uint8_t*  Depth = GFX.DB + Offset;
    uint16_t pixel;
+   uint16_t *sp;
+   uint8_t *Depth;
+   TILE_PREAMBLE();
+   sp = (uint16_t*) GFX.S + Offset;
+   Depth = GFX.DB + Offset;
    RENDER_TILE_LARGE(ScreenColors [pixel], PLOT_PIXEL);
 }
 
 void DrawLargePixel16HalfWidth(uint32_t Tile, int32_t Offset, uint32_t StartPixel, uint32_t Pixels, uint32_t StartLine, uint32_t LineCount)
 {
-   TILE_PREAMBLE();
-   uint16_t* sp = (uint16_t*) GFX.S + Offset;
-   uint8_t*  Depth = GFX.DB + Offset;
    uint16_t pixel;
+   uint16_t *sp;
+   uint8_t *Depth;
+   TILE_PREAMBLE();
+   sp = (uint16_t*) GFX.S + Offset;
+   Depth = GFX.DB + Offset;
    RENDER_TILE_LARGE_HALFWIDTH(ScreenColors [pixel], PLOT_PIXEL);
 }
 

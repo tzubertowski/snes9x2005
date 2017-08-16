@@ -4,6 +4,8 @@
 #define _TILE_H_
 
 #define TILE_PREAMBLE() \
+    uint32_t l; \
+    uint16_t *ScreenColors; \
     uint8_t *pCache; \
     uint32_t TileAddr = BG.TileAddress + ((Tile & 0x3ff) << BG.TileShift); \
     if ((Tile & 0x1ff) >= 256) \
@@ -15,8 +17,6 @@
        BG.Buffered[TileNumber] = ConvertTile (pCache, TileAddr); \
     if (BG.Buffered [TileNumber] == BLANK_TILE) \
        return; \
-    uint32_t l; \
-    uint16_t *ScreenColors; \
     if (BG.DirectColourMode) \
     { \
        if (IPPU.DirectColourMapsNeedRebuild) \

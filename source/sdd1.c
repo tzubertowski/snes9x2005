@@ -7,9 +7,10 @@
 
 void S9xSetSDD1MemoryMap(uint32_t bank, uint32_t value)
 {
+   int32_t c;
+
    bank = 0xc00 + bank * 0x100;
    value = value * 1024 * 1024;
-   int32_t c;
    for (c = 0; c < 0x100; c += 16)
    {
       uint8_t* block = &Memory.ROM [value + (c << 12)];
@@ -22,8 +23,9 @@ void S9xSetSDD1MemoryMap(uint32_t bank, uint32_t value)
 
 void S9xResetSDD1()
 {
-   memset(&Memory.FillRAM [0x4800], 0, 4);
    int32_t i;
+
+   memset(&Memory.FillRAM [0x4800], 0, 4);
    for (i = 0; i < 4; i++)
    {
       Memory.FillRAM [0x4804 + i] = i;

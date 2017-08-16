@@ -1918,15 +1918,18 @@ void Apu8F(void)
 
 void Apu9E(void)
 {
+   uint32_t i;
+   uint32_t yva;
+   uint32_t x;
+
    /* DIV YA,X */
    if ((IAPU.Registers.X & 0x0f) <= (IAPU.Registers.YA.B.Y & 0x0f))
       APUSetHalfCarry();
    else
       APUClearHalfCarry();
 
-   uint32_t yva = IAPU.Registers.YA.W;
-   uint32_t x = IAPU.Registers.X << 9;
-   uint32_t i;
+   yva = IAPU.Registers.YA.W;
+   x   = IAPU.Registers.X << 9;
 
    for (i = 0 ; i < 9 ; ++i)
    {

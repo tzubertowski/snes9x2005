@@ -134,6 +134,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          return 0;
       if ((s7r.written & 0x07) == 0x07)
       {
+         uint8_t tmp;
          uint32_t i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
          i %= s7r.DataRomSize;
          if (s7r.reg4818 & 0x02)
@@ -162,8 +163,8 @@ uint8_t S9xGetSPC7110(uint16_t Address)
             }
          }
          i += s7r.DataRomOffset;
-         uint8_t tmp = Memory.ROM[i];
-         i = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
+         tmp = Memory.ROM[i];
+         i   = (s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811;
 
          if (s7r.reg4818 & 0x02)
          {
@@ -283,6 +284,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
    case 0x481A:
       if (s7r.written == 0x1F)
       {
+         uint8_t tmp;
          uint32_t i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
          if (s7r.reg4818 & 0x08)
             i += ((int16_t)(s7r.reg4815 << 8)) | s7r.reg4814;
@@ -291,7 +293,7 @@ uint8_t S9xGetSPC7110(uint16_t Address)
 
          i %= s7r.DataRomSize;
          i += s7r.DataRomOffset;
-         uint8_t tmp = Memory.ROM[i];
+         tmp = Memory.ROM[i];
          if ((s7r.reg4818 & 0x60) == 0x60)
          {
             i = ((s7r.reg4813 << 16) | (s7r.reg4812 << 8) | s7r.reg4811);
@@ -393,8 +395,10 @@ uint8_t S9xGetSPC7110(uint16_t Address)
          return Address >> 8;
       if (rtc_f9.init)
       {
+         uint8_t tmp;
+
          S9xUpdateRTC();
-         uint8_t tmp = rtc_f9.reg[rtc_f9.index];
+         tmp = rtc_f9.reg[rtc_f9.index];
          rtc_f9.index++;
          rtc_f9.index %= 0x10;
          return tmp;
@@ -469,9 +473,12 @@ void S9xSetSPC7110(uint8_t data, uint16_t Address)
       break;
    case 0x480B: /* Offset enable */
    {
+      int32_t table;
+      int32_t j;
+
       s7r.reg480B = data;
-      int32_t table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
-      int32_t j = 4 * s7r.reg4804 + s7r.DataRomOffset + table;
+      table = (s7r.reg4803 << 16) | (s7r.reg4802 << 8) | s7r.reg4801;
+      j = 4 * s7r.reg4804 + s7r.DataRomOffset + table;
 
       if (s7r.reg480B == 0)
          s7r.AlignBy = 0;

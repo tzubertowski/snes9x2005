@@ -87,8 +87,9 @@ void S9xUpdateHTimer()
 
 void S9xFixColourBrightness()
 {
-   IPPU.XB = mul_brightness [PPU.Brightness];
    int32_t i;
+
+   IPPU.XB = mul_brightness [PPU.Brightness];
    for (i = 0; i < 256; i++)
    {
       IPPU.Red [i] = IPPU.XB [PPU.CGDATA [i] & 0x1f];
@@ -1648,6 +1649,10 @@ uint8_t S9xGetCPU(uint16_t Address)
 
 static void CommonPPUReset()
 {
+   uint8_t B;
+   int32_t c;
+   int32_t Sprite;
+
    PPU.BGMode = 0;
    PPU.BG3Priority = 0;
    PPU.Brightness = 0;
@@ -1657,7 +1662,6 @@ static void CommonPPUReset()
    PPU.VMA.FullGraphicCount = 0;
    PPU.VMA.Shift = 0;
 
-   uint8_t B;
    for (B = 0; B < 4; B++)
    {
       PPU.BG[B].SCBase = 0;
@@ -1681,7 +1685,6 @@ static void CommonPPUReset()
    PPU.ClipWindow2Inside[4] = PPU.ClipWindow2Inside[5] = true;
 
    PPU.CGFLIP = false;
-   int32_t c;
    for (c = 0; c < 256; c++)
    {
       IPPU.Red [c] = (c & 7) << 2;
@@ -1691,7 +1694,6 @@ static void CommonPPUReset()
    }
 
    PPU.FirstSprite = 0;
-   int32_t Sprite;
    for (Sprite = 0; Sprite < 128; Sprite++)
    {
       PPU.OBJ[Sprite].HPos = 0;
@@ -1790,6 +1792,8 @@ static void CommonPPUReset()
 
 void S9xResetPPU()
 {
+   int32_t c;
+
    CommonPPUReset();
    PPU.Joypad1ButtonReadPos = 0;
    PPU.Joypad2ButtonReadPos = 0;
@@ -1802,7 +1806,6 @@ void S9xResetPPU()
    IPPU.PrevMouseX[0] = IPPU.PrevMouseX[1] = 256 / 2;
    IPPU.PrevMouseY[0] = IPPU.PrevMouseY[1] = 224 / 2;
 
-   int32_t c;
    for (c = 0; c < 0x8000; c += 0x100)
    {
       if (!Settings.SuperFX)
@@ -1822,9 +1825,10 @@ void S9xResetPPU()
 
 void S9xSoftResetPPU()
 {
+   int32_t c;
+
    CommonPPUReset();
 
-   int32_t c;
    for (c = 0; c < 0x8000; c += 0x100)
       memset(&Memory.FillRAM [c], c >> 8, 0x100);
 
@@ -1972,19 +1976,20 @@ void S9xNextController()
 void S9xUpdateJustifiers()
 {
    static bool last_p1;
+   bool offscreen;
+   int32_t x, y;
+   uint32_t buttons;
+
    in_bit = 0;
    justifiers = 0xFFFF00AA;
 
-   bool offscreen = JustifierOffscreen();
+   offscreen = JustifierOffscreen();
 
    JustifierButtons(&justifiers);
    last_p1 = !last_p1;
 
    if (!last_p1)
       justifiers |= 0x1000;
-
-   int32_t x, y;
-   uint32_t buttons;
 
    if (Memory.FillRAM[0x4201] & 0x80)
    {
@@ -2122,11 +2127,13 @@ void S9xSuperFXExec()
    {
       if ((Memory.FillRAM [0x3000 + GSU_SFR] & FLG_G) && (Memory.FillRAM [0x3000 + GSU_SCMR] & 0x18) == 0x18)
       {
+         int32_t GSUStatus;
+
          if (!Settings.WinterGold || Settings.StarfoxHack)
             FxEmulate(~0);
          else
             FxEmulate((Memory.FillRAM [0x3000 + GSU_CLSR] & 1) ? 700 : 350);
-         int32_t GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] | (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
+         GSUStatus = Memory.FillRAM [0x3000 + GSU_SFR] | (Memory.FillRAM [0x3000 + GSU_SFR + 1] << 8);
          if ((GSUStatus & (FLG_G | FLG_IRQ)) == FLG_IRQ)
             S9xSetIRQ(GSU_IRQ_SOURCE); /* Trigger a GSU IRQ. */
       }

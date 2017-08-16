@@ -66,6 +66,8 @@ SPC7110Decomp decomp;
 
 uint8_t spc7110dec_read(void)
 {
+   uint8_t data;
+
    decomp.read_counter++;
 
    if(decomp.buffer_length == 0)
@@ -86,7 +88,7 @@ uint8_t spc7110dec_read(void)
       }
    }
 
-   uint8_t data = decomp.buffer[decomp.buffer_rdoffset++];
+   data = decomp.buffer[decomp.buffer_rdoffset++];
    decomp.buffer_rdoffset &= SPC7110_DECOMP_BUFFER_SIZE - 1;
    decomp.buffer_length--;
    return data;
@@ -109,6 +111,8 @@ uint8_t spc7110dec_dataread(void)
 
 void spc7110dec_clear(uint32_t mode, uint32_t offset, uint32_t index)
 {
+   uint32_t i;
+
    decomp.original_mode = mode;
    decomp.original_offset = offset;
    decomp.original_index = index;
@@ -117,7 +121,6 @@ void spc7110dec_clear(uint32_t mode, uint32_t offset, uint32_t index)
    decomp.buffer_rdoffset = 0;
    decomp.buffer_wroffset = 0;
    decomp.buffer_length = 0;
-   uint32_t i;
 
    for(i = 0; i < 32; i++) /* reset decomp.context states */
    {
@@ -164,6 +167,9 @@ void spc7110dec_mode0(bool init)
       uint32_t bit;
       for(bit = 0; bit < 8; bit++)
       {
+         uint32_t shift = 0;
+         uint32_t flag_lps;
+         uint32_t prob, mps;
          /* Get decomp.context */
          uint8_t mask = (1 << (bit & 3)) - 1;
          uint8_t con = mask + ((inverts & mask) ^ (lps & mask));
@@ -172,11 +178,10 @@ void spc7110dec_mode0(bool init)
             con += 15;
 
          /* Get prob and mps */
-         uint32_t prob = spc7110dec_probability(con);
-         uint32_t mps = (((out >> 15) & 1) ^ decomp.context[con].invert);
+         prob = spc7110dec_probability(con);
+         mps = (((out >> 15) & 1) ^ decomp.context[con].invert);
 
          /* Get bit */
-         uint32_t flag_lps;
 
          if(val <= span - prob) /* mps */
          {
@@ -193,7 +198,6 @@ void spc7110dec_mode0(bool init)
          }
 
          /* Renormalize */
-         uint32_t shift = 0;
 
          while(span < 0x7f)
          {
@@ -249,10 +253,12 @@ void spc7110dec_mode1(bool init)
 
    while(decomp.buffer_length < (SPC7110_DECOMP_BUFFER_SIZE >> 1))
    {
+      uint32_t data;
       uint32_t pixel;
 
       for(pixel = 0; pixel < 8; pixel++)
       {
+         uint32_t bit;
          /* Get first symbol decomp.context */
          uint32_t a = ((out >> (1 * 2)) & 3);
          uint32_t b = ((out >> (7 * 2)) & 3);
@@ -306,10 +312,10 @@ void spc7110dec_mode1(bool init)
          realorder[0] = a;
 
          /* Get 2 symbols */
-         uint32_t bit;
 
          for(bit = 0; bit < 2; bit++)
          {
+            uint32_t shift = 0;
             /* Get prob */
             uint32_t prob = spc7110dec_probability(con);
 
@@ -329,7 +335,6 @@ void spc7110dec_mode1(bool init)
             }
 
             /* Renormalize */
-            uint32_t shift = 0;
 
             while(span < 0x7f)
             {
@@ -367,7 +372,7 @@ void spc7110dec_mode1(bool init)
       }
 
       /* Turn pixel data into bitplanes */
-      uint32_t data = spc7110dec_morton_2x8(out);
+      data = spc7110dec_morton_2x8(out);
 
       spc7110dec_write(data >> 8);
       spc7110dec_write(data >> 0);
@@ -398,10 +403,11 @@ void spc7110dec_mode2(bool init)
 
    while(decomp.buffer_length < (SPC7110_DECOMP_BUFFER_SIZE >> 1))
    {
-      uint32_t pixel;
+      uint32_t pixel, data;
 
       for(pixel = 0; pixel < 8; pixel++)
       {
+         uint32_t bit;
          /* Get first symbol context */
          uint32_t a = ((out0 >> (0 * 4)) & 15);
          uint32_t b = ((out0 >> (7 * 4)) & 15);
@@ -456,10 +462,11 @@ void spc7110dec_mode2(bool init)
          realorder[0] = a;
 
          /* Get 4 symbols */
-         uint32_t bit;
 
          for(bit = 0; bit < 4; bit++)
          {
+            uint32_t invertbit;
+            uint32_t shift = 0;
             /* Get prob */
             uint32_t prob = spc7110dec_probability(con);
 
@@ -479,7 +486,6 @@ void spc7110dec_mode2(bool init)
             }
 
             /* Renormalize */
-            uint32_t shift = 0;
 
             while(span < 0x7f)
             {
@@ -494,10 +500,11 @@ void spc7110dec_mode2(bool init)
                }
             }
 
+
             /* Update processing info */
-            lps = (lps << 1) + flag_lps;
-            uint32_t invertbit = decomp.context[con].invert;
-            inverts = (inverts << 1) + invertbit;
+            lps       = (lps << 1) + flag_lps;
+            invertbit = decomp.context[con].invert;
+            inverts   = (inverts << 1) + invertbit;
 
             /* Update decomp.context state */
             if(flag_lps & spc7110dec_toggle_invert(con))
@@ -519,7 +526,7 @@ void spc7110dec_mode2(bool init)
       }
 
       /* Convert pixel data into bitplanes */
-      uint32_t data = spc7110dec_morton_4x8(out0);
+      data = spc7110dec_morton_4x8(out0);
       spc7110dec_write(data >> 24);
       spc7110dec_write(data >> 16);
       bitplanebuffer[buffer_index++] = data >> 8;
@@ -585,11 +592,12 @@ void spc7110dec_reset(void)
 
 void spc7110dec_init(void)
 {
+   uint32_t i;
+
    decomp.buffer = malloc(SPC7110_DECOMP_BUFFER_SIZE);
    spc7110dec_reset();
 
    /* Initialize reverse morton lookup tables */
-   uint32_t i;
    for(i = 0; i < 256; i++)
    {
       #define map(x, y) (((i >> x) & 1) << y)

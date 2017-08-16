@@ -288,8 +288,9 @@ void ST010_SortDrivers(uint16_t Positions, uint16_t Places[32], uint16_t Drivers
    {
       do
       {
-         Sorted = true;
          int32_t i;
+
+         Sorted = true;
          for(i = 0; i < Positions - 1; i++)
          {
             if(Places[i] < Places[i + 1])
@@ -517,6 +518,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
                     (int16_t*) &Memory.SRAM[0x0000], (int16_t*) &Memory.SRAM[0x0002],
                     (int16_t*) &Memory.SRAM[0x0004], (int16_t*) &Memory.SRAM[0x0010]);
 #else
+         {
          int16_t x1, y1, Quadrant, Theta;
 
          ST010_OP01(ST010_WORD(0x0000), ST010_WORD(0x0002), &x1, &y1, &Quadrant, &Theta);
@@ -529,6 +531,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          Memory.SRAM[0x0005] = (uint8_t)(Quadrant >> 8);
          Memory.SRAM[0x0010] = (uint8_t)(Theta);
          Memory.SRAM[0x0011] = (uint8_t)(Theta >> 8);
+         }
 #endif
          break;
       }
@@ -563,6 +566,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
          int32_t dx, dy;
          int16_t a1, b1, c1;
          uint16_t o1;
+         uint16_t old_speed;
 
          bool wrap = false;
 
@@ -612,7 +616,7 @@ void S9xSetST010(uint32_t Address, uint8_t Byte)
             wrap = true;
          }
 
-         uint16_t old_speed = speed;
+         old_speed = speed;
 
          if (ABS(o1 - rot) == 0x8000) /* special case */
             speed = 0x100;
