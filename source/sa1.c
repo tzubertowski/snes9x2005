@@ -277,31 +277,39 @@ uint8_t S9xGetSA1(uint32_t address)
 {
    switch (address)
    {
-      case 0x2300:
-         return (uint8_t)((Memory.FillRAM [0x2209] & 0x5f) | (CPU.IRQActive & (SA1_IRQ_SOURCE | SA1_DMA_IRQ_SOURCE)));
-      case 0x2301:
-         return (Memory.FillRAM [0x2200] & 0xf) | (Memory.FillRAM [0x2301] & 0xf0);
-      case 0x2306:
-         return (uint8_t) SA1.sum;
-      case 0x2307:
-         return (uint8_t) (SA1.sum >>  8);
-      case 0x2308:
-         return (uint8_t) (SA1.sum >> 16);
-      case 0x2309:
-         return (uint8_t) (SA1.sum >> 24);
-      case 0x230a:
-         return (uint8_t) (SA1.sum >> 32);
-      case 0x230d:
-      {
-         uint8_t byte = Memory.FillRAM [0x230d];
+   case 0x2300:
+      return (Memory.FillRAM[0x2209] & 0x5f) | (Memory.FillRAM[0x2300] & 0xa0);
+   case 0x2301:
+      return (Memory.FillRAM[0x2200] & 0x0f) | (Memory.FillRAM[0x2301] & 0xf0);
+   case 0x2306:
+      return (uint8_t) SA1.sum;
+   case 0x2307:
+      return (uint8_t) (SA1.sum >>  8);
+   case 0x2308:
+      return (uint8_t) (SA1.sum >> 16);
+   case 0x2309:
+      return (uint8_t) (SA1.sum >> 24);
+   case 0x230a:
+      return (uint8_t) (SA1.sum >> 32);
+   case 0x230b:
+      return SA1.overflow ? 0x80 : 0;
+   case 0x230c:
+      return Memory.FillRAM[0x230c];
+   case 0x230d:
+   {
+      uint8_t byte = Memory.FillRAM[0x230d];
 
-         if (Memory.FillRAM [0x2258] & 0x80)
-            S9xSA1ReadVariableLengthData(true, false);
-         return byte;
-      }
+      if (Memory.FillRAM[0x2258] & 0x80)
+         S9xSA1ReadVariableLengthData(true, false);
+      return byte;
+   }
+   case 0x230e: /* version code register */
+      return 0x01;
+   default:
+      break;
    }
 
-   return Memory.FillRAM [address];
+   return Memory.FillRAM[address];
 }
 
 void S9xSetSA1(uint8_t byte, uint32_t address)
@@ -314,26 +322,37 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
    case 0x2200:
       SA1.Waiting = (byte & 0x60) != 0;
 
-      if (!(byte & 0x20) && (Memory.FillRAM [0x2200] & 0x20))
+      if (!(byte & 0x80) && (Memory.FillRAM[0x2200] & 0x20))
          S9xSA1Reset();
       if (byte & 0x80)
       {
-         Memory.FillRAM [0x2301] |= 0x80;
-         if (Memory.FillRAM [0x220a] & 0x80)
+         Memory.FillRAM[0x2301] |= 0x80;
+         if (Memory.FillRAM[0x220a] & 0x80)
          {
+            Memory.FillRAM[0x220b] &= ~0x80;
             SA1.Flags |= IRQ_PENDING_FLAG;
             SA1.IRQActive |= SNES_IRQ_SOURCE;
             SA1.Executing = !SA1.Waiting && SA1.S9xOpcodes;
          }
       }
       if (byte & 0x10)
-         Memory.FillRAM [0x2301] |= 0x10;
+      {
+         Memory.FillRAM[0x2301] |= 0x10;
+         if (Memory.FillRAM[0x220a] & 0x10)
+            Memory.FillRAM[0x220b] &= ~0x10;
+      }
       break;
    case 0x2201:
-      if (((byte ^ Memory.FillRAM [0x2201]) & 0x80) && (Memory.FillRAM [0x2300] & byte & 0x80))
+      if (((byte ^ Memory.FillRAM[0x2201]) & 0x80) && (Memory.FillRAM[0x2300] & byte & 0x80))
+      {
+         Memory.FillRAM[0x2202] &= ~0x80;
          S9xSetIRQ(SA1_IRQ_SOURCE);
-      if (((byte ^ Memory.FillRAM [0x2201]) & 0x20) && (Memory.FillRAM [0x2300] & byte & 0x20))
+      }
+      if (((byte ^ Memory.FillRAM[0x2201]) & 0x20) && (Memory.FillRAM[0x2300] & byte & 0x20))
+      {
+         Memory.FillRAM[0x2202] &= ~0x20;
          S9xSetIRQ(SA1_DMA_IRQ_SOURCE);
+      }
       break;
    case 0x2202:
       if (byte & 0x80)
@@ -348,29 +367,37 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       }
       break;
    case 0x2209:
-      Memory.FillRAM [0x2209] = byte;
       if (byte & 0x80)
-         Memory.FillRAM [0x2300] |= 0x80;
-
-      if (byte & Memory.FillRAM [0x2201] & 0x80)
-         S9xSetIRQ(SA1_IRQ_SOURCE);
-      return;
-   case 0x220a:
-      if (((byte ^ Memory.FillRAM [0x220a]) & 0x80) && (Memory.FillRAM [0x2301] & byte & 0x80))
       {
+         Memory.FillRAM[0x2300] |= 0x80;
+         if (Memory.FillRAM[0x2201] & 0x80)
+         {
+            Memory.FillRAM[0x2202] &= ~0x80;
+            S9xSetIRQ(SA1_IRQ_SOURCE);
+         }
+      }
+      break;
+   case 0x220a:
+      if (((byte ^ Memory.FillRAM[0x220a]) & 0x80) && (Memory.FillRAM[0x2301] & byte & 0x80))
+      {
+         Memory.FillRAM[0x220b] &= ~0x80;
          SA1.Flags |= IRQ_PENDING_FLAG;
          SA1.IRQActive |= SNES_IRQ_SOURCE;
       }
-      if (((byte ^ Memory.FillRAM [0x220a]) & 0x40) && (Memory.FillRAM [0x2301] & byte & 0x40))
+      if (((byte ^ Memory.FillRAM[0x220a]) & 0x40) && (Memory.FillRAM[0x2301] & byte & 0x40))
       {
+         Memory.FillRAM[0x220b] &= ~0x40;
          SA1.Flags |= IRQ_PENDING_FLAG;
          SA1.IRQActive |= TIMER_IRQ_SOURCE;
       }
-      if (((byte ^ Memory.FillRAM [0x220a]) & 0x20) && (Memory.FillRAM [0x2301] & byte & 0x20))
+      if (((byte ^ Memory.FillRAM[0x220a]) & 0x20) && (Memory.FillRAM[0x2301] & byte & 0x20))
       {
+         Memory.FillRAM[0x220b] &= ~0x20;
          SA1.Flags |= IRQ_PENDING_FLAG;
          SA1.IRQActive |= DMA_IRQ_SOURCE;
       }
+      if (((byte ^ Memory.FillRAM[0x220a]) & 0x10) && (Memory.FillRAM[0x2301] & byte & 0x10))
+         Memory.FillRAM[0x220b] &= ~0x10;
       break;
    case 0x220b:
       if (byte & 0x80)
@@ -389,7 +416,7 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
          Memory.FillRAM [0x2301] &= ~0x20;
       }
       if (byte & 0x10)
-         Memory.FillRAM [0x2301] &= ~0x10; // Clear NMI
+         Memory.FillRAM [0x2301] &= ~0x10;
       if (!SA1.IRQActive)
          SA1.Flags &= ~IRQ_PENDING_FLAG;
       break;
@@ -410,23 +437,26 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       if (byte & 0x80)
          SA1.in_char_dma = 0;
       break;
-   case 0x2236:
-      Memory.FillRAM [address] = byte;
-      if ((Memory.FillRAM [0x2230] & 0xa4) == 0x80)
-         S9xSA1DMA(); // Normal DMA to I-RAM
-      else if ((Memory.FillRAM [0x2230] & 0xb0) == 0xb0)
+   case 0x2236: /* DMA destination start address (LH) */
+      Memory.FillRAM[address] = byte;
+      if ((Memory.FillRAM[0x2230] & 0xa4) == 0x80) /* Normal DMA to I-RAM */
+         S9xSA1DMA(); /* Normal DMA to I-RAM */
+      else if ((Memory.FillRAM[0x2230] & 0xb0) == 0xb0)
       {
-         Memory.FillRAM [0x2300] |= 0x20;
-         if (Memory.FillRAM [0x2201] & 0x20)
-            S9xSetIRQ(SA1_DMA_IRQ_SOURCE);
          SA1.in_char_dma = 1;
+         Memory.FillRAM[0x2300] |= 0x20;
+         if (Memory.FillRAM[0x2201] & 0x20)
+         {
+            Memory.FillRAM[0x2202] &= ~0x20;
+            S9xSetIRQ(SA1_DMA_IRQ_SOURCE);
+         }
       }
-      return;
+      break;
    case 0x2237:
       Memory.FillRAM [address] = byte;
       if ((Memory.FillRAM [0x2230] & 0xa4) == 0x84)
          S9xSA1DMA(); // Normal DMA to BW-RAM
-      return;
+      break;
    case 0x223f:
       SA1.VirtualBitmapFormat = (byte & 0x80) ? 2 : 4;
       break;
@@ -434,14 +464,14 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       Memory.FillRAM [address] = byte;
       if ((Memory.FillRAM [0x2230] & 0xb0) == 0xa0)
       {
-         // Char conversion 2 DMA enabled
-         // memmove converted: Same malloc but constant non-overlapping addresses [Neb]
+         /* Char conversion 2 DMA enabled */
+         /* memmove converted: Same malloc but constant non-overlapping addresses [Neb] */
          memcpy(&Memory.ROM [MAX_ROM_SIZE - 0x10000] + (SA1.in_char_dma << 4), &Memory.FillRAM [0x2240], 16);
          SA1.in_char_dma = (SA1.in_char_dma + 1) & 7;
          if ((SA1.in_char_dma & 3) == 0)
             S9xSA1CharConv2();
       }
-      return;
+      break;
    case 0x2250:
       if (byte & 2)
          SA1.sum = 0;
@@ -451,48 +481,55 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
       SA1.op1 = (SA1.op1 & 0xff00) | byte;
       break;
    case 0x2252:
-      SA1.op1 = (SA1.op1 & 0xff) | (byte << 8);
+      SA1.op1 = (SA1.op1 & 0x00ff) | (byte << 8);
       break;
    case 0x2253:
       SA1.op2 = (SA1.op2 & 0xff00) | byte;
       break;
    case 0x2254:
-      SA1.op2 = (SA1.op2 & 0xff) | (byte << 8);
+      SA1.op2 = (SA1.op2 & 0x00ff) | (byte << 8);
       switch (SA1.arithmetic_op)
       {
-      case 0: // multiply
-         SA1.sum = SA1.op1 * SA1.op2;
+      case 0: /* multiply */
+         SA1.sum = (int16_t) SA1.op1 * (int16_t) SA1.op2;
+         SA1.op2 = 0;
          break;
-      case 1: // divide
+      case 1: /* divide */
          if (SA1.op2 == 0)
-            SA1.sum = SA1.op1 << 16;
+            SA1.sum = 0;
          else
          {
-            uint32_t x = (SA1.op1 / (uint16_t) SA1.op2);
-            SA1.sum = x | ((SA1.op1 - (x * (uint16_t) SA1.op2)) << 16);
+            int16_t quotient  = (int16_t) SA1.op1 / (uint16_t) SA1.op2;
+            uint16_t remainder = (int16_t) SA1.op1 % (uint16_t) SA1.op2;
+            SA1.sum = (remainder << 16) | quotient;
          }
+         SA1.op1 = 0;
+         SA1.op2 = 0;
          break;
-      default: // cumulative sum
-         SA1.sum += SA1.op1 * SA1.op2;
-         if (SA1.sum & ((int64_t) 0xffffff << 32))
-            SA1.overflow = true;
+      default: /* cumulative sum */
+         SA1.sum += (int16_t) SA1.op1 * (int16_t) SA1.op2;
+         SA1.overflow = (SA1.sum >= (1ULL << 40));
+         SA1.sum &= (1ULL << 40) - 1;
+         SA1.op2 = 0;
          break;
       }
       break;
-   case 0x2258: // Variable bit-field length/auto inc/start.
-      Memory.FillRAM [0x2258] = byte;
+   case 0x2258: /* Variable bit-field length/auto inc/start. */
+      Memory.FillRAM[0x2258] = byte;
       S9xSA1ReadVariableLengthData(true, false);
       return;
    case 0x2259:
    case 0x225a:
-   case 0x225b: // Variable bit-field start address
-      Memory.FillRAM [address] = byte;
+   case 0x225b: /* Variable bit-field start address */
+      Memory.FillRAM[address] = byte;
       SA1.variable_bit_pos = 0;
       S9xSA1ReadVariableLengthData(false, true);
       return;
+   default:
+      break;
    }
 
-   Memory.FillRAM [address] = byte;
+   Memory.FillRAM[address] = byte;
 }
 
 static void S9xSA1CharConv2()
@@ -537,14 +574,14 @@ static void S9xSA1DMA()
 
    switch (Memory.FillRAM [0x2230] & 3)
    {
-   case 0: // ROM
+   case 0: /* ROM */
       s = SA1.Map [(src >> MEMMAP_SHIFT) & MEMMAP_MASK];
       if (s >= (uint8_t*) MAP_LAST)
          s += (src & 0xffff);
       else
          s = Memory.ROM + (src & 0xffff);
       break;
-   case 1: // BW-RAM
+   case 1: /* BW-RAM */
       src &= Memory.SRAMMask;
       len &= Memory.SRAMMask;
       s = Memory.SRAM + src;
@@ -568,7 +605,7 @@ static void S9xSA1DMA()
       len &= 0x3ff;
       d = &Memory.FillRAM [0x3000] + dst;
    }
-   // memmove required: Can overlap arbitrarily [Neb]
+   /* memmove required: Can overlap arbitrarily [Neb] */
    memmove(d, s, len);
    Memory.FillRAM [0x2301] |= 0x20;
 
