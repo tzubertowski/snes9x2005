@@ -62,13 +62,16 @@ static INLINE void S9xAPUSetByteZ(uint8_t byte, uint8_t Address)
 
 static INLINE uint8_t S9xAPUGetByte(uint32_t Address)
 {
+   bool zero;
+   uint8_t t;
+
    Address &= 0xffff;
 
    if (Address == 0xf3)
       return S9xGetAPUDSP();
 
-   bool zero = (Address >= 0xfd && Address <= 0xff);
-   uint8_t t = IAPU.RAM [Address];
+   zero = (Address >= 0xfd && Address <= 0xff);
+   t    = IAPU.RAM [Address];
 
    if (zero || (Address >= 0xf4 && Address <= 0xf7))
    {

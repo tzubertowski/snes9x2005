@@ -300,6 +300,7 @@ void retro_init(void)
 {
    struct retro_log_callback log;
    enum retro_pixel_format rgb565;
+   bool achievements = true;
 
    static const struct retro_variable vars[] =
    {
@@ -313,7 +314,6 @@ void retro_init(void)
       log_cb = NULL;
 
    /* State that the core supports achievements. */
-   bool achievements = true;
    environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &achievements);
 
    rgb565 = RETRO_PIXEL_FORMAT_RGB565;
