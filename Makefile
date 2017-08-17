@@ -287,6 +287,7 @@ CXXFLAGS += $(FLAGS)
 CFLAGS += $(FLAGS)
 
 ifneq (,$(findstring msvc,$(platform)))
+	LIBM =
 	OBJOUT = -Fo
 	LINKOUT = -out:
 	LD = link.exe
@@ -295,6 +296,13 @@ else
 	LINKOUT  = -o
 	LD = $(CC)
 endif
+
+%.o: %.cpp
+	$(CXX) -c $(OBJOUT)$@ $< $(CXXFLAGS)
+
+%.o: %.c
+	$(CC) -c $(OBJOUT)$@ $< $(CFLAGS)
+
 
 ifeq ($(platform), theos_ios)
 	COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
@@ -307,14 +315,8 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(LD) $(LINKOUT)$@ $^ $(LDFLAGS)
 endif
-
-%.o: %.cpp
-	$(CXX) -c $(OBJOUT)$@ $< $(CXXFLAGS)
-
-%.o: %.c
-	$(CC) -c $(OBJOUT)$@ $< $(CFLAGS)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
