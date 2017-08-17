@@ -293,15 +293,15 @@ ifneq (,$(findstring msvc,$(platform)))
 	LD = link.exe
 else
 	OBJOUT   = -o
-	LINKOUT  = -o
+	LINKOUT  = -o 
 	LD = $(CC)
 endif
 
 %.o: %.cpp
-	$(CXX) -c $(OBJOUT)$@ $< $(CXXFLAGS)
+	$(CXX) $(CXXFLAGS) -c $(OBJOUT)$@ $<
 
 %.o: %.c
-	$(CC) -c $(OBJOUT)$@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c $(OBJOUT)$@ $<
 
 
 ifeq ($(platform), theos_ios)
@@ -315,7 +315,7 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(LD) $(LINKOUT)$@ $^ $(LDFLAGS)
+	$(CC) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS)
 endif
 
 clean:
