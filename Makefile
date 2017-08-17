@@ -260,9 +260,9 @@ else
 endif
 
 ifeq ($(DEBUG),1)
-	FLAGS += -O0 -g -std=c89
+	FLAGS += -O0 -g
 else
-	FLAGS += -O2 -DNDEBUG -std=c89
+	FLAGS += -O2 -DNDEBUG
 endif
 
 ifeq ($(PERF_TEST),1)
