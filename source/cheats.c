@@ -64,7 +64,7 @@ const char* S9xGameGenieToRaw(const char* code, uint32_t* address, uint8_t* byte
    uint32_t data = 0;
    int32_t i;
 
-   if (strlen(code) != 9 || *(code + 4) != '-' || !S9xAllHex(code, 4) || !S9xAllHex(code + 5, 4))
+   if (strlen(code) != 9 || code[4] != '-' || !S9xAllHex(code, 4) || !S9xAllHex(code + 5, 4))
       return "Invalid Game Genie(tm) code - should be 'xxxx-xxxx'.";
 
    strcpy(new_code, "0x");

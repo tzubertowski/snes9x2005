@@ -111,14 +111,14 @@ uint32_t Work32 = 0;
 
 #define Pop(b) \
     IAPU.Registers.S++; \
-    (b) = *(IAPU.RAM + 0x100 + IAPU.Registers.S)
+    (b) = IAPU.RAM[0x100 + IAPU.Registers.S]
 
 #ifdef FAST_LSB_WORD_ACCESS
 #define PushW(w) \
     if (IAPU.Registers.S == 0) \
     {\
-       *(IAPU.RAM + 0x1ff) = (w); \
-       *(IAPU.RAM + 0x100) = ((w) >> 8); \
+       IAPU.RAM[0x1ff] = (w); \
+       IAPU.RAM[0x100] = ((w) >> 8); \
     } \
     else \
        *(uint16_t *) (IAPU.RAM + 0xff + IAPU.Registers.S) = w; \
@@ -127,21 +127,21 @@ uint32_t Work32 = 0;
 #define PopW(w) \
     IAPU.Registers.S += 2; \
     if (IAPU.Registers.S == 0) \
-       (w) = *(IAPU.RAM + 0x1ff) | (*(IAPU.RAM + 0x100) << 8); \
+       (w) = IAPU.RAM[0x1ff] | (IAPU.RAM[0x100] << 8); \
     else \
        (w) = *(uint16_t *) (IAPU.RAM + 0xff + IAPU.Registers.S)
 #else
 #define PushW(w) \
-    *(IAPU.RAM + 0xff + IAPU.Registers.S) = w; \
-    *(IAPU.RAM + 0x100 + IAPU.Registers.S) = ((w) >> 8); \
+    IAPU.RAM[0xff + IAPU.Registers.S] = w; \
+    IAPU.RAM[0x100 + IAPU.Registers.S] = ((w) >> 8); \
     IAPU.Registers.S -= 2
 
 #define PopW(w) \
     IAPU.Registers.S += 2; \
     if(IAPU.Registers.S == 0) \
-       (w) = *(IAPU.RAM + 0x1ff) | (*(IAPU.RAM + 0x100) << 8); \
+       (w) = IAPU.RAM[0x1ff] | (IAPU.RAM[0x100] << 8); \
     else \
-       (w) = *(IAPU.RAM + 0xff + IAPU.Registers.S) + (*(IAPU.RAM + 0x100 + IAPU.Registers.S) << 8)
+       (w) = IAPU.RAM[0xff + IAPU.Registers.S] + (IAPU.RAM[0x100 + IAPU.Registers.S] << 8)
 #endif
 
 #define Relative() \
@@ -174,8 +174,8 @@ uint32_t Work32 = 0;
     IAPU.Address = *(uint16_t *) (IAPU.DirectPage + OP1) + IAPU.Registers.YA.B.Y;
 #else
 #define IndexedXIndirect() \
-    IAPU.Address = *(IAPU.DirectPage + ((OP1 + IAPU.Registers.X) & 0xff)) + \
-       (*(IAPU.DirectPage + ((OP1 + IAPU.Registers.X + 1) & 0xff)) << 8);
+    IAPU.Address = IAPU.DirectPage[(OP1 + IAPU.Registers.X) & 0xff] + \
+       (IAPU.DirectPage[(OP1 + IAPU.Registers.X + 1) & 0xff] << 8);
 
 #define Absolute() \
     IAPU.Address = OP1 + (OP2 << 8);
@@ -192,8 +192,8 @@ uint32_t Work32 = 0;
     IAPU.Address &= 0x1fff;
 
 #define IndirectIndexedY() \
-    IAPU.Address = *(IAPU.DirectPage + OP1) + \
-       (*(IAPU.DirectPage + OP1 + 1) << 8) + \
+    IAPU.Address = IAPU.DirectPage[OP1] + \
+       (IAPU.DirectPage[OP1 + 1] << 8) + \
        IAPU.Registers.YA.B.Y;
 #endif
 
