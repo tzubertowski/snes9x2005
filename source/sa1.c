@@ -151,7 +151,7 @@ void S9xSA1SetByte(uint8_t byte, uint32_t address)
 
    if (SetAddress >= (uint8_t*) MAP_LAST)
    {
-      *(SetAddress + (address & 0xffff)) = byte;
+      SetAddress[address & 0xffff] = byte;
       return;
    }
 
@@ -162,10 +162,10 @@ void S9xSA1SetByte(uint8_t byte, uint32_t address)
       return;
    case MAP_SA1RAM:
    case MAP_LOROM_SRAM:
-      *(Memory.SRAM + (address & 0xffff)) = byte;
+      Memory.SRAM[address & 0xffff] = byte;
       return;
    case MAP_BWRAM:
-      *(SA1.BWRAM + ((address & 0x7fff) - 0x6000)) = byte;
+      SA1.BWRAM[(address & 0x7fff) - 0x6000] = byte;
       return;
    case MAP_BWRAM_BITMAP:
       address -= 0x600000;
@@ -186,7 +186,7 @@ void S9xSA1SetByte(uint8_t byte, uint32_t address)
       address = (address & 0xffff) - 0x6000;
       if (SA1.VirtualBitmapFormat == 2)
       {
-         uint8_t* ptr = &SA1.BWRAM [(address >> 2) & 0xffff];
+         uint8_t* ptr = &SA1.BWRAM[(address >> 2) & 0xffff];
          *ptr &= ~(3 << ((address & 3) << 1));
          *ptr |= (byte & 3) << ((address & 3) << 1);
       }
@@ -264,8 +264,8 @@ void S9xSetSA1MemMap(uint32_t which1, uint8_t map)
 
    for (c = 0; c < 0x200; c += 16)
    {
-      /*Code from Snes9x 1.54.1 - This allows Super Mario World VLDC 9 hack to load.
-        Conversion to int is needed here - map is promoted but which1 is not */
+      /* Code from Snes9x 1.54.1 - This allows Super Mario World VLDC 9 hack to load.
+         Conversion to int is needed here - map is promoted but which1 is not */
       int32_t offset = (((map & 0x80) ? map : which1) & 7) * 0x100000 + (c << 11) - 0x8000;
       block = &Memory.ROM [offset];
       for (i = c + 8; i < c + 16; i++)
@@ -532,35 +532,60 @@ void S9xSetSA1(uint8_t byte, uint32_t address)
    Memory.FillRAM[address] = byte;
 }
 
-static void S9xSA1CharConv2()
+static void S9xSA1CharConv2(void)
 {
-   uint32_t dest = Memory.FillRAM [0x2235] | (Memory.FillRAM [0x2236] << 8);
+   uint32_t dest = Memory.FillRAM[0x2235] | (Memory.FillRAM[0x2236] << 8);
    uint32_t offset = (SA1.in_char_dma & 7) ? 0 : 1;
-   int32_t depth = (Memory.FillRAM [0x2231] & 3) == 0 ? 8 : (Memory.FillRAM [0x2231] & 3) == 1 ? 4 : 2;
-   int32_t bytes_per_char = 8 * depth;
-   uint8_t* p = &Memory.FillRAM [0x3000] + dest + offset * bytes_per_char;
-   uint8_t* q = &Memory.ROM [MAX_ROM_SIZE - 0x10000] + offset * 64;
+   int32_t depthX8 = (Memory.FillRAM[0x2231] & 3) == 0 ? 64 : (Memory.FillRAM[0x2231] & 3) == 1 ? 32 : 16;
+   uint8_t* p = &Memory.FillRAM[0x3000] + (dest & 0x7ff) + offset * depthX8;
+   uint8_t* q = &Memory.ROM[MAX_ROM_SIZE - 0x10000] + offset * 64;
 
-   if (depth == 8)
+   switch(depthX8)
    {
-      int32_t l;
-      for (l = 0; l < 8; l++, q += 8)
-      {
-         int32_t b;
-         for (b = 0; b < 8; b++)
+      case 16:
+         for (int l = 0; l < 8; l++, q += 8)
          {
-            uint8_t r = *(q + b);
-            *(p +  0) = (*(p +  0) << 1) | ((r >> 0) & 1);
-            *(p +  1) = (*(p +  1) << 1) | ((r >> 1) & 1);
-            *(p + 16) = (*(p + 16) << 1) | ((r >> 2) & 1);
-            *(p + 17) = (*(p + 17) << 1) | ((r >> 3) & 1);
-            *(p + 32) = (*(p + 32) << 1) | ((r >> 4) & 1);
-            *(p + 33) = (*(p + 33) << 1) | ((r >> 5) & 1);
-            *(p + 48) = (*(p + 48) << 1) | ((r >> 6) & 1);
-            *(p + 49) = (*(p + 49) << 1) | ((r >> 7) & 1);
+            for (int b = 0; b < 8; b++)
+            {
+               uint8_t r = q[b];
+               p[0] = (p[0] << 1) | ((r >> 0) & 1);
+               p[1] = (p[1] << 1) | ((r >> 1) & 1);
+            }
+            p += 2;
          }
-         p += 2;
-      }
+         break;
+      case 32:
+         for (int l = 0; l < 8; l++, q += 8)
+         {
+            for (int b = 0; b < 8; b++)
+            {
+               uint8_t r = q[b];
+               p[0]  = (p[0]  << 1) | ((r >> 0) & 1);
+               p[1]  = (p[1]  << 1) | ((r >> 1) & 1);
+               p[16] = (p[16] << 1) | ((r >> 2) & 1);
+               p[17] = (p[17] << 1) | ((r >> 3) & 1);
+            }
+            p += 2;
+         }
+         break;
+      case 64:
+         for (int l = 0; l < 8; l++, q += 8)
+         {
+            for (int b = 0; b < 8; b++)
+            {
+               uint8_t r = q[b];
+               p[0]  = (p[0]  << 1) | ((r >> 0) & 1);
+               p[1]  = (p[1]  << 1) | ((r >> 1) & 1);
+               p[16] = (p[16] << 1) | ((r >> 2) & 1);
+               p[17] = (p[17] << 1) | ((r >> 3) & 1);
+               p[32] = (p[32] << 1) | ((r >> 4) & 1);
+               p[33] = (p[33] << 1) | ((r >> 5) & 1);
+               p[48] = (p[48] << 1) | ((r >> 6) & 1);
+               p[49] = (p[49] << 1) | ((r >> 7) & 1);
+            }
+            p += 2;
+         }
+         break;
    }
 }
 
