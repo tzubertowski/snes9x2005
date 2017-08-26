@@ -391,8 +391,8 @@ void DecodeBlock(Channel* ch)
          *raw++ = ((int32_t) sample1 << shift);
          *raw++ = ((int32_t) sample2 << shift);
       }
-      prev1 = *(raw - 2);
-      prev0 = *(raw - 1);
+      prev1 = raw[-2];
+      prev0 = raw[-1];
       break;
    case 1:
       for (i = 8; i != 0; i--)
