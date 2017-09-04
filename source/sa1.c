@@ -539,13 +539,14 @@ static void S9xSA1CharConv2(void)
    int32_t depthX8 = (Memory.FillRAM[0x2231] & 3) == 0 ? 64 : (Memory.FillRAM[0x2231] & 3) == 1 ? 32 : 16;
    uint8_t* p = &Memory.FillRAM[0x3000] + (dest & 0x7ff) + offset * depthX8;
    uint8_t* q = &Memory.ROM[MAX_ROM_SIZE - 0x10000] + offset * 64;
+   int l, b;
 
    switch(depthX8)
    {
       case 16:
-         for (int l = 0; l < 8; l++, q += 8)
+         for (l = 0; l < 8; l++, q += 8)
          {
-            for (int b = 0; b < 8; b++)
+            for (b = 0; b < 8; b++)
             {
                uint8_t r = q[b];
                p[0] = (p[0] << 1) | ((r >> 0) & 1);
@@ -555,9 +556,9 @@ static void S9xSA1CharConv2(void)
          }
          break;
       case 32:
-         for (int l = 0; l < 8; l++, q += 8)
+         for (l = 0; l < 8; l++, q += 8)
          {
-            for (int b = 0; b < 8; b++)
+            for (b = 0; b < 8; b++)
             {
                uint8_t r = q[b];
                p[0]  = (p[0]  << 1) | ((r >> 0) & 1);
@@ -569,9 +570,9 @@ static void S9xSA1CharConv2(void)
          }
          break;
       case 64:
-         for (int l = 0; l < 8; l++, q += 8)
+         for (l = 0; l < 8; l++, q += 8)
          {
-            for (int b = 0; b < 8; b++)
+            for (b = 0; b < 8; b++)
             {
                uint8_t r = q[b];
                p[0]  = (p[0]  << 1) | ((r >> 0) & 1);
