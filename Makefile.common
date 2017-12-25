@@ -17,6 +17,7 @@ SOURCES_C := \
 	$(CORE_DIR)/fxemu.c \
 	$(CORE_DIR)/fxinst.c \
 	$(CORE_DIR)/gfx.c \
+	$(CORE_DIR)/getset.c \
 	$(CORE_DIR)/globals.c \
 	$(CORE_DIR)/memmap.c \
 	$(CORE_DIR)/obc1.c \

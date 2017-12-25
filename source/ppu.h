@@ -2,6 +2,8 @@
 #define _PPU_H_
 
 #include "../copyright"
+#include <stdint.h>
+#include <boolean.h>
 #include <retro_inline.h>
 
 #define FIRST_VISIBLE_LINE 1

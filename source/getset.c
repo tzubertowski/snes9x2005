@@ -1,8 +1,5 @@
 #include "../copyright"
 
-#ifndef _GETSET_H_
-#define _GETSET_H_
-
 #include "ppu.h"
 #include "dsp1.h"
 #include "cpuexec.h"
@@ -11,11 +8,9 @@
 #include "obc1.h"
 #include "seta.h"
 
-#include <retro_inline.h>
-
 extern uint8_t OpenBus;
 
-static INLINE uint8_t S9xGetByte(uint32_t Address)
+uint8_t S9xGetByte(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
@@ -67,7 +62,7 @@ static INLINE uint8_t S9xGetByte(uint32_t Address)
    }
 }
 
-static INLINE uint16_t S9xGetWord(uint32_t Address)
+uint16_t S9xGetWord(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress;
@@ -138,7 +133,7 @@ static INLINE uint16_t S9xGetWord(uint32_t Address)
    }
 }
 
-static INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
+void S9xSetByte(uint8_t Byte, uint32_t Address)
 {
    int32_t block;
    uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
@@ -209,7 +204,7 @@ static INLINE void S9xSetByte(uint8_t Byte, uint32_t Address)
    }
 }
 
-static INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
+void S9xSetWord(uint16_t Word, uint32_t Address)
 {
    int32_t block;
    uint8_t* SetAddress;
@@ -313,7 +308,7 @@ static INLINE void S9xSetWord(uint16_t Word, uint32_t Address)
    }
 }
 
-static INLINE uint8_t* GetBasePointer(uint32_t Address)
+uint8_t* GetBasePointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -347,7 +342,7 @@ static INLINE uint8_t* GetBasePointer(uint32_t Address)
    }
 }
 
-static INLINE uint8_t* S9xGetMemPointer(uint32_t Address)
+uint8_t* S9xGetMemPointer(uint32_t Address)
 {
    uint8_t* GetAddress = Memory.Map [(Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -384,7 +379,7 @@ static INLINE uint8_t* S9xGetMemPointer(uint32_t Address)
    }
 }
 
-static INLINE void S9xSetPCBase(uint32_t Address)
+void S9xSetPCBase(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
@@ -421,4 +416,3 @@ static INLINE void S9xSetPCBase(uint32_t Address)
 
    CPU.PC = CPU.PCBase + (Address & 0xffff);
 }
-#endif

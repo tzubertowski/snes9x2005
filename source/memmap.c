@@ -3044,5 +3044,3 @@ void ParseSNESHeader(uint8_t* RomHeader)
    else
       sprintf(Memory.CompanyId, "%02X", RomHeader[0x2A]);
 }
-
-#include "getset.h"
