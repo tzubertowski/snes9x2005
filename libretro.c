@@ -245,17 +245,6 @@ const char* S9xGetFilename(const char* in)
    return filename;
 }
 
-void GetBaseName(const char* ex)
-{
-   char drive [_MAX_DRIVE + 1];
-   char dir [_MAX_DIR + 1];
-   char fname [_MAX_FNAME + 1];
-   char ext [_MAX_EXT + 1];
-   (void) ex;
-   _splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-   snprintf(retro_base_name,sizeof(retro_base_name),"%s",fname);
-}
-
 void init_sfc_setting(void)
 {
    memset(&Settings, 0, sizeof(Settings));
