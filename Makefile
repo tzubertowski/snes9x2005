@@ -16,6 +16,8 @@ ifeq ($(shell uname -p),powerpc)
 endif
 else ifneq ($(findstring MINGW,$(shell uname -a)),)
 	platform = win
+else ifneq ($(findstring SunOS,$(shell uname -a)),)
+	platform = sun
 endif
 endif
 
@@ -58,6 +60,12 @@ else ifeq ($(platform), linux-portable)
 	SHARED := -shared -Wl,--version-script=link.T
 	CFLAGS += -fno-builtin -fno-exceptions -ffunction-sections
 	LIBM :=
+else ifeq ($(platform),sun)
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -z defs
+	CFLAGS += -fno-builtin -fno-exceptions -ffunction-sections
+	CC = gcc
 else ifeq ($(platform), osx)
 	TARGET := $(TARGET_NAME)_libretro.dylib
 	fpic := -fPIC
@@ -330,7 +338,6 @@ endif
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $(OBJOUT)$@ $<
-
 
 ifeq ($(platform), theos_ios)
 	COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
