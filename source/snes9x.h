@@ -46,9 +46,9 @@
 
 #define SNES_CYCLES_PER_SCANLINE ((uint32_t) ((SNES_SCANLINE_TIME / SNES_CLOCK_LEN) * 6 + 0.5))
 
-#define ONE_CYCLE      6u
-#define SLOW_ONE_CYCLE 8u
-#define TWO_CYCLES     12u
+#define ONE_CYCLE      (overclock_cycles ? 4u : 6u)
+#define SLOW_ONE_CYCLE (overclock_cycles ? 4u : 8u)
+#define TWO_CYCLES     (overclock_cycles ? 6u : 12u)
 
 #define SNES_TR_MASK     (1u << 4)
 #define SNES_TL_MASK     (1u << 5)
@@ -62,6 +62,8 @@
 #define SNES_SELECT_MASK (1u << 13)
 #define SNES_Y_MASK      (1u << 14)
 #define SNES_B_MASK      (1u << 15)
+
+extern bool overclock_cycles;
 
 enum
 {

@@ -36,6 +36,7 @@ struct retro_perf_callback perf_cb;
 
 char retro_save_directory[PATH_MAX];
 char retro_base_name[PATH_MAX];
+bool overclock_cycles = false;
 
 #ifdef _WIN32
    char slash = '\\';
@@ -294,6 +295,7 @@ void retro_init(void)
    static const struct retro_variable vars[] =
    {
       { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
+      { "catsfc_overclock_cycles", "CPU Overclock (Hack, Unsafe, Restart); disabled|enabled" },
       { NULL, NULL },
    };
 
@@ -378,6 +380,17 @@ static void check_variables(void)
       Settings.ForceNTSC = !strcmp(var.value, "NTSC");
       Settings.ForcePAL  = !strcmp(var.value, "PAL");
    }
+
+   var.key = "catsfc_overclock_cycles";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+        if (strcmp(var.value, "enabled") == 0)
+          overclock_cycles = true;
+        else
+          overclock_cycles = false;
+      }
 }
 
 #ifdef PSP
