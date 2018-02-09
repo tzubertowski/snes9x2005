@@ -296,7 +296,7 @@ void retro_init(void)
    static const struct retro_variable vars[] =
    {
       { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
-      { "catsfc_overclock_cycles", "CPU Overclock (Hack, Unsafe, Restart); disabled|enabled" },
+      { "catsfc_overclock_cycles", "Reduce Slowdown (Hack, Unsafe, Restart); disabled|enabled" },
       { "catsfc_reduce_sprite_flicker", "Reduce Flickering (Hack, Unsafe); disabled|enabled" },
       { NULL, NULL },
    };
