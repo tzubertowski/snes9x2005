@@ -37,6 +37,7 @@ struct retro_perf_callback perf_cb;
 char retro_save_directory[PATH_MAX];
 char retro_base_name[PATH_MAX];
 bool overclock_cycles = false;
+bool reduce_sprite_flicker = false;
 
 #ifdef _WIN32
    char slash = '\\';
@@ -296,6 +297,7 @@ void retro_init(void)
    {
       { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
       { "catsfc_overclock_cycles", "CPU Overclock (Hack, Unsafe, Restart); disabled|enabled" },
+      { "catsfc_reduce_sprite_flicker", "Reduce Flickering (Hack, Unsafe); disabled|enabled" },
       { NULL, NULL },
    };
 
@@ -390,6 +392,17 @@ static void check_variables(void)
           overclock_cycles = true;
         else
           overclock_cycles = false;
+      }
+
+   var.key = "catsfc_reduce_sprite_flicker";
+   var.value = NULL;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+        if (strcmp(var.value, "enabled") == 0)
+          reduce_sprite_flicker = true;
+        else
+          reduce_sprite_flicker = false;
       }
 }
 
