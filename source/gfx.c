@@ -36,6 +36,8 @@ extern SLineMatrixData LineMatrixData [240];
 
 extern uint8_t  Mode7Depths [2];
 
+extern bool reduce_sprite_flicker;
+
 #define CLIP_10_BIT_SIGNED(a) \
    ((a) & ((1 << 10) - 1)) + (((((a) & (1 << 13)) ^ (1 << 13)) - (1 << 13)) >> 3)
 
@@ -611,7 +613,7 @@ void S9xSetupOBJ(void)
       for (i = 0; i < SNES_HEIGHT_EXTENDED; i++)
       {
          GFX.OBJLines[i].RTOFlags = 0;
-         GFX.OBJLines[i].Tiles = 34;
+         GFX.OBJLines[i].Tiles = (reduce_sprite_flicker ? 60 : 34);
       }
       FirstSprite = PPU.FirstSprite;
       S = FirstSprite;
@@ -733,7 +735,7 @@ void S9xSetupOBJ(void)
       for (Y = 0; Y < SNES_HEIGHT_EXTENDED; Y++)
       {
          GFX.OBJLines[Y].RTOFlags = Y ? GFX.OBJLines[Y - 1].RTOFlags : 0;
-         GFX.OBJLines[Y].Tiles = 34;
+         GFX.OBJLines[Y].Tiles = (reduce_sprite_flicker ? 60 : 34);
          j = 0;
          if (AnyOBJOnLine[Y])
          {
