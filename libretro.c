@@ -38,6 +38,7 @@ char retro_save_directory[PATH_MAX];
 char retro_base_name[PATH_MAX];
 bool overclock_cycles = false;
 bool reduce_sprite_flicker = false;
+int one_c, slow_one_c, two_c;
 
 #ifdef _WIN32
    char slash = '\\';
@@ -296,7 +297,7 @@ void retro_init(void)
    static const struct retro_variable vars[] =
    {
       { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
-      { "catsfc_overclock_cycles", "Reduce Slowdown (Hack, Unsafe, Restart); disabled|enabled" },
+      { "catsfc_overclock_cycles", "Reduce Slowdown (Hack, Unsafe, Restart); disabled|compatible|max" },
       { "catsfc_reduce_sprite_flicker", "Reduce Flickering (Hack, Unsafe); disabled|enabled" },
       { NULL, NULL },
    };
@@ -388,8 +389,20 @@ static void check_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       {
-        if (strcmp(var.value, "enabled") == 0)
-          overclock_cycles = true;
+        if (strcmp(var.value, "compatible") == 0)
+        {
+           overclock_cycles = true;
+           one_c = 4;
+           slow_one_c = 5;
+           two_c = 6;
+        }
+        else if (strcmp(var.value, "max") == 0)
+        {
+           overclock_cycles = true;
+           one_c = 3;
+           slow_one_c = 3;
+           two_c = 3;
+        }
         else
           overclock_cycles = false;
       }
