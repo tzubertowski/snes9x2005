@@ -18,7 +18,7 @@
 
 #include "pixform.h"
 
-#ifndef __WIN32__
+#ifndef _WIN32
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
@@ -46,7 +46,7 @@
 
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext);
 void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
-#else /* __WIN32__ */
+#else /* _WIN32 */
 #define strcasecmp  stricmp
 #define strncasecmp strnicmp
 #endif
@@ -54,7 +54,7 @@ void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext
 #define SLASH_STR "/"
 #define SLASH_CHAR '/'
 
-#if defined(__i386__)  || defined(__i486__) || defined(__i586__) || defined(__WIN32__) || defined(__alpha__)
+#if defined(__i386__)  || defined(__i486__) || defined(__i586__) || defined(_XBOX1) || defined(__alpha__)
 #define FAST_LSB_WORD_ACCESS
 #elif defined(__MIPSEL__)
 /* On little-endian MIPS, a 16-bit word can be read directly from an address

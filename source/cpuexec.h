@@ -5,11 +5,7 @@
 
 typedef struct
 {
-#ifdef __WIN32__
-   void (__cdecl* S9xOpcode)(void);
-#else
    void (*S9xOpcode)(void);
-#endif
 } SOpcodes;
 
 #include "ppu.h"

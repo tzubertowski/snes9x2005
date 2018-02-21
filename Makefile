@@ -47,7 +47,13 @@ ifneq ($(GIT_VERSION)," unknown")
 endif
 
 DEFS :=
+ifneq (,$(findstring msvc,$(platform)))
+LIBM :=
+else
 LIBM := -lm
+endif
+LDFLAGS :=
+LIBS :=
 
 ifeq ($(platform), unix)
 	TARGET := $(TARGET_NAME)_libretro.so
@@ -350,7 +356,7 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(CC) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS)
+	$(CC) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS) $(LIBS)
 endif
 
 clean:

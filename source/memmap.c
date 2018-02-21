@@ -471,7 +471,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
    _splitpath(filename, drive, dir, name, ext);
    _makepath(fname, drive, dir, name, ext);
 
-#ifdef __WIN32__
+#ifdef _WIN32
    /* memmove required: Overlapping addresses [Neb] */
    memmove(&ext [0], &ext[1], 4);
 #endif
@@ -524,7 +524,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
       {
          more = true;
          ext [0]++;
-#ifdef __WIN32__
+#ifdef _WIN32
          /* memmove required: Overlapping addresses [Neb] */
          memmove(&ext [1], &ext [0], 4);
          ext [0] = '.';
@@ -535,7 +535,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
       {
          more = true;
          name [len - 1]++;
-#ifdef __WIN32__
+#ifdef _WIN32
          /* memmove required: Overlapping addresses [Neb] */
          memmove(&ext [1], &ext [0], 4);
          ext [0] = '.';

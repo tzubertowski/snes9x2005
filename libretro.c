@@ -20,6 +20,7 @@
 #endif
 
 #include <libretro.h>
+#include <retro_miscellaneous.h>
 
 #ifdef _3DS
 void* linearMemAlign(size_t size, size_t alignment);
@@ -34,8 +35,8 @@ static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 struct retro_perf_callback perf_cb;
 
-char retro_save_directory[PATH_MAX];
-char retro_base_name[PATH_MAX];
+char retro_save_directory[PATH_MAX_LENGTH];
+char retro_base_name[PATH_MAX_LENGTH];
 bool overclock_cycles = false;
 bool reduce_sprite_flicker = false;
 int one_c, slow_one_c, two_c;
@@ -173,7 +174,7 @@ void S9xInitDisplay(void)
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
 }
 
-#ifndef __WIN32__
+#ifndef _WIN32
 void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext)
 {
    (void) drive;
