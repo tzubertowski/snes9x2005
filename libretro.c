@@ -456,6 +456,8 @@ void retro_run(void)
       audio_batch_cb(audio_buf, samples_to_play);
       samples_to_play = 0;
    }
+#else
+   S9xAudioCallback();
 #endif
 
 #ifdef NO_VIDEO_OUTPUT

@@ -2891,7 +2891,6 @@ static int32_t  r_left[4], r_right[4];
 #define SPACE_EMPTY() (rb_buffer_size - rb_size)
 #define SPACE_FILLED() (rb_size)
 #define MAX_WRITE() (SPACE_EMPTY() >> 1)
-#define AVAIL() (((((uint32_t) rb_size) << 14) - r_frac) / r_step * 2)
 
 #define RESAMPLER_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define CLAMP(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
@@ -2934,6 +2933,34 @@ static void resampler_time_ratio(double ratio)
 
 static void resampler_read(int16_t *data, int32_t num_samples)
 {
+	if (r_step == 65536)
+	{
+		//direct copy if we are not resampling
+		int bytesUntilBufferEnd = rb_buffer_size - rb_start;
+		while (num_samples > 0)
+		{
+			int bytesToConsume = num_samples * sizeof(int16_t);
+			if (bytesToConsume >= bytesUntilBufferEnd)
+			{
+				bytesToConsume = bytesUntilBufferEnd;
+			}
+			if (rb_start >= rb_buffer_size)
+			{
+				rb_start = 0;
+			}
+			memcpy(data, &rb_buffer[rb_start], bytesToConsume);
+			data += bytesToConsume / sizeof(int16_t);
+			rb_start += bytesToConsume;
+			rb_size -= bytesToConsume;
+			num_samples -= bytesToConsume / sizeof(int16_t);
+			if (rb_start >= rb_buffer_size)
+			{
+				rb_start = 0;
+			}
+		}
+		return;
+	}
+
    int32_t i_position, o_position, consumed;
    int16_t *internal_buffer;
 
@@ -3045,7 +3072,7 @@ static INLINE void resampler_resize (int32_t num_samples)
 
 bool S9xMixSamples (int16_t *buffer, uint32_t sample_count)
 {
-   if (AVAIL() >= (sample_count + lag))
+   if (S9xGetSampleCount() >= (sample_count + lag))
    {
       resampler_read(buffer, sample_count);
       if (lag == lag_master)
@@ -3065,7 +3092,11 @@ bool S9xMixSamples (int16_t *buffer, uint32_t sample_count)
 
 int32_t S9xGetSampleCount()
 {
-   return AVAIL();
+	if (r_step == 65536)
+	{
+		return rb_size / sizeof(int16_t);
+	}
+	return (((((uint32_t)rb_size) << 14) - r_frac) / r_step * 2);
 }
 
 /* Sets destination for output samples */
