@@ -2971,16 +2971,13 @@ static void resampler_read(int16_t *data, int32_t num_samples)
 
    while (o_position < num_samples && consumed < rb_buffer_size)
    {
-      int32_t s_left, s_right, max_samples;
-      int32_t hermite_val;
-
-      s_left = internal_buffer[i_position];
-      s_right = internal_buffer[i_position + 1];
-      max_samples = rb_buffer_size >> 1;
+      int32_t s_left  = internal_buffer[i_position];
+      int32_t s_right = internal_buffer[i_position + 1];
+      int32_t max_samples = rb_buffer_size >> 1;
 
       while (r_frac <= 65536 && o_position < num_samples)
       {
-         hermite_val	= hermite(r_frac >> 1, r_left [0], r_left [1], r_left [2], r_left [3]);
+         int32_t hermite_val	= hermite(r_frac >> 1, r_left [0], r_left [1], r_left [2], r_left [3]);
          data[o_position]     = SHORT_CLAMP (hermite_val);
          hermite_val = hermite(r_frac >> 1, r_right[0], r_right[1], r_right[2], r_right[3]);
          data[o_position + 1] = SHORT_CLAMP (hermite_val);
@@ -3032,10 +3029,9 @@ static void resampler_new(int32_t num_samples)
 
 static INLINE bool resampler_push(int16_t *src, int32_t num_samples)
 {
-   int32_t bytes, end, first_write_size;
-   uint8_t  *src_ring;
-
-   bytes = num_samples << 1;
+   int32_t end, first_write_size;
+   uint8_t *src_ring;
+   int32_t bytes = num_samples << 1;
    if (MAX_WRITE() < num_samples || SPACE_EMPTY() < bytes)
       return false;
 
@@ -3093,9 +3089,7 @@ bool S9xMixSamples (int16_t *buffer, uint32_t sample_count)
 int32_t S9xGetSampleCount()
 {
 	if (r_step == 65536)
-	{
-		return rb_size / sizeof(int16_t);
-	}
+      return rb_size / sizeof(int16_t);
 	return (((((uint32_t)rb_size) << 14) - r_frac) / r_step * 2);
 }
 
@@ -3103,9 +3097,9 @@ int32_t S9xGetSampleCount()
 
 static void spc_set_output( int16_t* out, int32_t size )
 {
-   int16_t *out_end, *in;
+   int16_t *in;
+   int16_t *out_end = out + size;
 
-   out_end = out + size;
    m.buf_begin = out;
    m.buf_end   = out_end;
 
@@ -3129,11 +3123,9 @@ static void spc_set_output( int16_t* out, int32_t size )
    dsp_set_output( out, out_end - out );
 }
 
-void S9xFinalizeSamples()
+void S9xFinalizeSamples(void)
 {
-   bool ret;
-
-   ret = resampler_push(landing_buffer, SPC_SAMPLE_COUNT());
+   bool ret = resampler_push(landing_buffer, SPC_SAMPLE_COUNT());
    sound_in_sync = false;
 
    /* We weren't able to process the entire buffer. Potential overrun. */
@@ -3147,7 +3139,7 @@ void S9xFinalizeSamples()
    spc_set_output(landing_buffer, buffer_size);
 }
 
-void S9xClearSamples()
+void S9xClearSamples(void)
 {
    resampler_clear();
    lag = lag_master;
