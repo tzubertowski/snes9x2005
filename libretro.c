@@ -450,13 +450,17 @@ void retro_run(void)
       bool videoEnabled = 0 != (result & 1);
       bool hardDisableAudio = 0 != (result & 8);
       IPPU.RenderThisFrame = videoEnabled;
+#ifdef USE_BLARGG_APU
       S9xSetSoundMute(!audioEnabled || hardDisableAudio);
+#endif
       Settings.HardDisableAudio = hardDisableAudio;
    }
    else
    {
       IPPU.RenderThisFrame = true;
+#ifdef USE_BLARGG_APU
       S9xSetSoundMute(false);
+#endif
       Settings.HardDisableAudio = false;
    }
 
