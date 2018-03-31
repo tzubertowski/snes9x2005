@@ -455,7 +455,7 @@ void retro_run(void)
    }
    else
    {
-      IPPU.RenderThisFrame = true;;
+      IPPU.RenderThisFrame = true;
       S9xSetSoundMute(false);
       Settings.HardDisableAudio = false;
    }
