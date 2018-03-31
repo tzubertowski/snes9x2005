@@ -761,7 +761,8 @@ V(V9_V6_V3,2) -> V(V9,2) V(V6,3) V(V3,4) */
 static void dsp_run( int32_t clocks_remain )
 {
    int32_t phase;
-
+   if (Settings.HardDisableAudio)
+	   return;
    phase = dsp_m.phase;
    dsp_m.phase = (phase + clocks_remain) & 31;
 
@@ -3258,6 +3259,11 @@ static int8_t const reg_times_ [256] =
    29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
    29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
 };
+
+void S9xSetSoundMute(bool mute)
+{
+	Settings.Mute = mute;
+}
 
 bool S9xInitAPU()
 {
