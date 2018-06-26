@@ -223,6 +223,12 @@ else ifeq ($(platform), gcw0)
 	LIBM :=
 	LOAD_FROM_MEMORY_TEST = 0
 	CFLAGS += -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
+#Nintendo Classics (Hakchi)
+else ifeq ($(platform), nintendoc)
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=libretro/link.T -Wl,--no-undefined
+   CFLAGS += -DARM -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 
 # Windows MSVC 2010 x86
 else ifeq ($(platform), windows_msvc2010_x86)
@@ -339,6 +345,15 @@ else
 	LD = $(CC)
 endif
 
+ifeq ($(platform),nintendoc)
+	@echo "** BUILDING HAKCHI HMOD PACKAGE **"
+	mkdir -p hakchi/etc/libretro/core/ hakchi/etc/libretro/info/ hakchi/etc/preinit.d/
+	rm -f hakchi/etc/libretro/info/*
+	cp $(TARGET_NAME)_libretro.so hakchi/etc/libretro/core/
+	cd hakchi/etc/libretro/info/; wget https://buildbot.libretro.com/assets/frontend/info/$(TARGET_NAME)_libretro.info
+	cd hakchi/; tar -czvf "CORE_$(TARGET_NAME).hmod" *
+endif
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $(OBJOUT)$@ $<
 
@@ -360,7 +375,7 @@ else
 endif
 
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	rm -f $(TARGET) $(OBJECTS) hakchi/CORE_$(TARGET_NAME).hmod
 
 .PHONY: clean
 endif
