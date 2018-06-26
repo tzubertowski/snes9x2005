@@ -227,8 +227,8 @@ else ifeq ($(platform), gcw0)
 else ifeq ($(platform), nintendoc)
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=libretro/link.T -Wl,--no-undefined
-   CFLAGS += -DARM -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+   SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+   CFLAGS += -fno-builtin -fno-exceptions -ffunction-sections  -DARM -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
 
 # Windows MSVC 2010 x86
 else ifeq ($(platform), windows_msvc2010_x86)
