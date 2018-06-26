@@ -345,15 +345,6 @@ else
 	LD = $(CC)
 endif
 
-ifeq ($(platform),nintendoc)
-	@echo "** BUILDING HAKCHI HMOD PACKAGE **"
-	mkdir -p hakchi/etc/libretro/core/ hakchi/etc/libretro/info/ hakchi/etc/preinit.d/
-	rm -f hakchi/etc/libretro/info/*
-	cp $(TARGET_NAME)_libretro.so hakchi/etc/libretro/core/
-	cd hakchi/etc/libretro/info/; wget https://buildbot.libretro.com/assets/frontend/info/$(TARGET_NAME)_libretro.info
-	cd hakchi/; tar -czvf "CORE_$(TARGET_NAME).hmod" *
-endif
-
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $(OBJOUT)$@ $<
 
@@ -373,6 +364,16 @@ ifeq ($(STATIC_LINKING), 1)
 else
 	$(CC) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS) $(LIBS)
 endif
+
+ifeq ($(platform),nintendoc)
+	@echo "** BUILDING HAKCHI HMOD PACKAGE **"
+	mkdir -p hakchi/etc/libretro/core/ hakchi/etc/libretro/info/ hakchi/etc/preinit.d/
+	rm -f hakchi/etc/libretro/info/*
+	cp $(TARGET_NAME)_libretro.so hakchi/etc/libretro/core/
+	cd hakchi/etc/libretro/info/; wget https://buildbot.libretro.com/assets/frontend/info/$(TARGET_NAME)_libretro.info
+	cd hakchi/; tar -czvf "CORE_$(TARGET_NAME).hmod" *
+endif
+
 
 clean:
 	rm -f $(TARGET) $(OBJECTS) hakchi/CORE_$(TARGET_NAME).hmod
