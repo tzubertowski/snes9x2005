@@ -2726,7 +2726,7 @@ void S9xUpdateScreen(void)
    GFX.r212c = Memory.FillRAM [0x212c];
    GFX.r212d = Memory.FillRAM [0x212d];
    GFX.r2130 = Memory.FillRAM [0x2130];
-   GFX.Pseudo = (Memory.FillRAM [0x2133] & 8) != 0 && (GFX.r212c & 15) != (GFX.r212d & 15) && (GFX.r2131 & 0x3f) == 0;
+   GFX.Pseudo = Memory.FillRAM [0x2133] & 8;
 
    if (IPPU.OBJChanged)
       S9xSetupOBJ();
