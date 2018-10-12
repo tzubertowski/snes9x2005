@@ -81,9 +81,12 @@ ifeq ($(arch),ppc)
 	FLAGS += -DMSB_FIRST
 	OLD_GCC = 1
 endif
-	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
-	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
+	OSXVER = $(shell sw_vers -productVersion | cut -d. -f 2)
+	OSX_GT_MOJAVE = $(shell (( $(OSXVER) >= 14)) && echo "YES")
+ifneq ($(OSX_GT_MOJAVE),YES)
+	#this breaks compiling on Mac OS Mojave
 	fpic += -mmacosx-version-min=10.1
+endif
 ifndef ($(NOUNIVERSAL))
 	FLAGS += $(ARCHFLAGS)
 	LDFLAGS += $(ARCHFLAGS)
