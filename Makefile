@@ -231,7 +231,7 @@ else ifeq ($(platform), gcw0)
 else ifeq ($(platform), classic_armv7_a7)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC
-	SHARED := -shared -Wl,--version-script=libretro/link.T -Wl,--no-undefined
+	SHARED := -shared -Wl,--version-script=link.T -Wl,--no-undefined
 	CFLAGS += -Ofast \
 	-flto=4 -fwhole-program -fuse-linker-plugin \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections \
