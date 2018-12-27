@@ -54,7 +54,6 @@ LIBM :=
 else
 LIBM := -lm
 endif
-LDFLAGS :=
 LIBS :=
 
 ifeq ($(platform), unix)
@@ -275,12 +274,37 @@ BIN := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/bin")
 WindowsSdkDir := $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')lib
 WindowsSdkDir ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')lib
 
+WindowsSdkDirInc := $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')Include
+WindowsSdkDirInc ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')Include
+
+INCFLAGS_PLATFORM = -I"$(WindowsSdkDirInc)"
 export INCLUDE := $(INCLUDE)
 export LIB := $(LIB);$(WindowsSdkDir)
 TARGET := $(TARGET_NAME)_libretro.dll
 PSS_STYLE :=2
 LDFLAGS += -DLL
 OLD_GCC = 1
+
+# Windows MSVC 2005 x86
+else ifeq ($(platform), windows_msvc2005_x86)
+	CC  = cl.exe
+	CXX = cl.exe
+
+PATH := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/bin"):$(PATH)
+PATH := $(PATH):$(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../IDE")
+INCLUDE := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/include")
+LIB := $(shell IFS=$$'\n'; cygpath -w "$(VS80COMNTOOLS)../../VC/lib")
+BIN := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/bin")
+
+WindowsSdkDir := $(INETSDK)
+
+export INCLUDE := $(INCLUDE);$(INETSDK)/Include;libretro-common/include/compat/msvc
+export LIB := $(LIB);$(WindowsSdkDir);$(INETSDK)/Lib
+TARGET := $(TARGET_NAME)_libretro.dll
+PSS_STYLE :=2
+LDFLAGS += -DLL
+CFLAGS += -D_CRT_SECURE_NO_DEPRECATE
+NO_GCC = 1
 
 # Windows MSVC 2003 x86
 else ifeq ($(platform), windows_msvc2003_x86)
@@ -352,13 +376,15 @@ ifeq ($(LAGFIX),1)
 	FLAGS += -DLAGFIX
 endif
 
+FLAGS += $(INCFLAGS_PLATFORM)
+
 ifeq ($(platform), psp1)
 	INCFLAGS += -I$(shell psp-config --pspsdk-path)/include
 endif
 
 OBJECTS := $(SOURCES_C:.c=.o)
 
-LDFLAGS += $(fpic) $(SHARED)
+LDFLAGS += $(fpic)
 
 FLAGS += $(fpic)
 
@@ -394,9 +420,8 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(CC) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS) $(LIBS)
+	$(LD) $(LINKOUT)$@ $(SHARED) $(OBJECTS) $(LDFLAGS) $(LIBS)
 endif
-	@echo "** BUILD SUCCESSFUL! GG NO RE **"
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
