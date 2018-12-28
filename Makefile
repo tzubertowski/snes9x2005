@@ -283,7 +283,8 @@ export LIB := $(LIB);$(WindowsSdkDir)
 TARGET := $(TARGET_NAME)_libretro.dll
 PSS_STYLE :=2
 LDFLAGS += -DLL
-OLD_GCC = 1
+CFLAGS += -D_CRT_SECURE_NO_DEPRECATE
+NO_GCC = 1
 
 # Windows MSVC 2008 x86
 else ifeq ($(platform), windows_msvc2008_x86)
