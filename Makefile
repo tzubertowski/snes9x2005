@@ -4,6 +4,15 @@ LOAD_FROM_MEMORY_TEST = 1
 USE_BLARGG_APU        = 0
 LAGFIX                = 1
 
+SPACE :=
+SPACE := $(SPACE) $(SPACE)
+BACKSLASH :=
+BACKSLASH := \$(BACKSLASH)
+filter_out1 = $(filter-out $(firstword $1),$1)
+filter_out2 = $(call filter_out1,$(call filter_out1,$1))
+unixpath = $(subst \,/,$1)
+unixcygpath = /$(subst :,,$(call unixpath,$1))
+
 ifeq ($(platform),)
 	ifeq (,$(findstring classic_,$(platform)))
 		platform = unix
@@ -435,7 +444,7 @@ else ifneq (,$(findstring windows_msvc2017,$(platform)))
 	INCLUDE := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/include")
 	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VcCompilerToolsDir)/lib/$(TargetArchMoniker)")
 	ifneq (,$(findstring uwp,$(PlatformSuffix)))
-		LIB := $(shell IFS=$$'\n'; cygpath -w "$(LIB)/store")
+		LIB := $(LIB);$(shell IFS=$$'\n'; cygpath -w "$(LIB)/store")
 	endif
     
 	export INCLUDE := $(INCLUDE);$(WindowsSDKSharedIncludeDir);$(WindowsSDKUCRTIncludeDir);$(WindowsSDKUMIncludeDir)
