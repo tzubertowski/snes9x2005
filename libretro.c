@@ -22,6 +22,8 @@
 #include <libretro.h>
 #include <retro_miscellaneous.h>
 
+#include "libretro_core_options.h"
+
 #ifdef _3DS
 void* linearMemAlign(size_t size, size_t alignment);
 void linearFree(void* mem);
@@ -80,6 +82,7 @@ void retro_set_environment(retro_environment_t cb)
    else
       log_cb = NULL;
 
+   libretro_set_core_options(environ_cb);
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
 }
 
@@ -295,14 +298,6 @@ void retro_init(void)
    enum retro_pixel_format rgb565;
    bool achievements = true;
 
-   static const struct retro_variable vars[] =
-   {
-      { "catsfc_VideoMode", "Video Mode; auto|NTSC|PAL" },
-      { "catsfc_overclock_cycles", "Reduce Slowdown (Hack, Unsafe, Restart); disabled|compatible|max" },
-      { "catsfc_reduce_sprite_flicker", "Reduce Flickering (Hack, Unsafe); disabled|enabled" },
-      { NULL, NULL },
-   };
-
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
       log_cb = log.log;
    else
@@ -326,7 +321,6 @@ void retro_init(void)
 #else
    S9xInitSound();
 #endif
-   environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
    CPU.SaveStateVersion = 0;
 }
 
