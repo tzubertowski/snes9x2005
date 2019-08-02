@@ -70,6 +70,25 @@ ifeq ($(platform), unix)
 	fpic := -fPIC
 	SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 	CFLAGS += -fno-builtin -fno-exceptions -ffunction-sections
+# ARM
+else ifneq (,$(findstring armv,$(platform)))
+       TARGET := $(TARGET_NAME)_libretro.so
+       fpic := -fPIC
+       SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
+       CC = gcc
+       CXX = g++
+       PLATFORM_DEFINES += -marm
+       ifneq (,$(findstring softfloat,$(platform)))
+               PLATFORM_DEFINES += -mfloat-abi=softfp
+       else ifneq (,$(findstring hardfloat,$(platform)))
+               PLATFORM_DEFINES += -mfloat-abi=hard
+       endif
+       ifneq (,$(findstring neon,$(platform)))
+               FLAGS += -mfpu=neon
+               ASFLAGS += -mfpu=neon
+               HAVE_NEON = 1
+       endif
+       PLATFORM_DEFINES += -DARM
 else ifeq ($(platform), linux-portable)
 	TARGET := $(TARGET_NAME)_libretro.so
 	fpic := -fPIC -nostdlib
