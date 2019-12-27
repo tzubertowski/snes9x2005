@@ -120,6 +120,7 @@ ifndef ($(NOUNIVERSAL))
 	FLAGS += $(ARCHFLAGS)
 	LDFLAGS += $(ARCHFLAGS)
 endif
+
 # iOS
 else ifneq (,$(findstring ios,$(platform)))
 	TARGET := $(TARGET_NAME)_libretro_ios.dylib
@@ -539,21 +540,22 @@ endif
 
 OBJECTS := $(SOURCES_C:.c=.o)
 
-LDFLAGS += $(fpic)
-
-FLAGS += $(fpic)
-
 CXXFLAGS += $(FLAGS)
 CFLAGS += $(FLAGS)
 
+OBJOUT   = -o
+LINKOUT  = -o
+
 ifneq (,$(findstring msvc,$(platform)))
-	LIBM =
 	OBJOUT = -Fo
 	LINKOUT = -out:
-	LD = link.exe
+ifeq ($(STATIC_LINKING),1)
+	LD ?= lib.exe
+	STATIC_LINKING=0
 else
-	OBJOUT   = -o
-	LINKOUT  = -o
+	LD = link.exe
+endif
+else ifneq ($(platform),genode)
 	LD = $(CC)
 endif
 
