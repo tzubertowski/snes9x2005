@@ -14,22 +14,22 @@ unixpath = $(subst \,/,$1)
 unixcygpath = /$(subst :,,$(call unixpath,$1))
 
 ifeq ($(platform),)
-	ifeq (,$(findstring classic_,$(platform)))
-		platform = unix
+	platform = unix
+	ifeq ($(shell uname -s),)
+		platform = win
+	else ifneq ($(findstring MINGW,$(shell uname -s)),)
+		platform = win
+	else ifneq ($(findstring Darwin,$(shell uname -s)),)
+		platform = osx
+		arch = intel
+		ifeq ($(shell uname -p),powerpc)
+			arch = ppc
+		endif
+	else ifneq ($(findstring win,$(shell uname -s)),)
+		platform = win
+	else ifneq ($(findstring SunOS,$(shell uname -s)),)
+		platform = sun
 	endif
-ifeq ($(shell uname -a),)
-	platform = win
-else ifneq ($(findstring Darwin,$(shell uname -a)),)
-	platform = osx
-	arch = intel
-ifeq ($(shell uname -p),powerpc)
-	arch = ppc
-endif
-else ifneq ($(findstring MINGW,$(shell uname -a)),)
-	platform = win
-else ifneq ($(findstring SunOS,$(shell uname -a)),)
-	platform = sun
-endif
 endif
 
 # system platform
