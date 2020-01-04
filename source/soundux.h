@@ -48,7 +48,7 @@ typedef struct
    bool     mute_sound;
 } SoundStatus;
 
-SoundStatus so;
+extern SoundStatus so;
 
 typedef struct
 {
@@ -105,7 +105,7 @@ typedef struct
    int32_t  noise_hertz;
 } SSoundData;
 
-SSoundData SoundData;
+extern SSoundData SoundData;
 
 void S9xSetSoundVolume(int32_t channel, int16_t volume_left, int16_t volume_right);
 void S9xSetSoundFrequency(int32_t channel, int32_t hertz);
