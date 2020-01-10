@@ -560,10 +560,10 @@ else ifneq ($(platform),genode)
 endif
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $(OBJOUT)$@ $<
+	$(CXX) $(fpic) $(CXXFLAGS) -c $(OBJOUT)$@ $<
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $(OBJOUT)$@ $<
+	$(CC) $(fpic) $(CFLAGS) -c $(OBJOUT)$@ $<
 
 ifeq ($(platform), theos_ios)
 	COMMON_FLAGS := -DIOS $(COMMON_DEFINES) $(INCFLAGS) -I$(THEOS_INCLUDE_PATH) -Wno-error
