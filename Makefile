@@ -544,7 +544,7 @@ CXXFLAGS += $(FLAGS)
 CFLAGS += $(FLAGS)
 
 OBJOUT   = -o
-LINKOUT  = -o
+LINKOUT  = -o 
 
 ifneq (,$(findstring msvc,$(platform)))
 	OBJOUT = -Fo
@@ -559,7 +559,7 @@ else ifneq ($(platform),genode)
 	LD = $(CC)
 else
 	OBJOUT   = -o
-	LINKOUT  = -o
+	LINKOUT  = -o 
 	LD = $(CC)
 endif
 
@@ -580,7 +580,7 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(LD) $(fpic) $(SHARED) $(INCFLAGS) $(LDFLAGS) $(OBJOUT) $@ $(OBJECTS) $(LIBS)
+	$(LD) $(fpic) $(SHARED) $(INCFLAGS) $(LDFLAGS) $(LINKOUT)$@ $(OBJECTS) $(LIBS)
 endif
 
 clean:
