@@ -557,6 +557,10 @@ else
 endif
 else ifneq ($(platform),genode)
 	LD = $(CC)
+else
+	OBJOUT   = -o
+	LINKOUT  = -o
+	LD = $(CC)
 endif
 
 %.o: %.cpp
@@ -576,7 +580,7 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(LD) $(fpic) $(SHARED) $(LINKOUT)$@ $(OBJECTS) $(LDFLAGS) $(LIBS)
+	$(LD) $(fpic) $(SHARED) $(INCFLAGS) $(LDFLAGS) $(OBJOUT) $@ $(OBJECTS) $(LIBS)
 endif
 
 clean:
