@@ -37,6 +37,8 @@ static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 struct retro_perf_callback perf_cb;
 
+static bool libretro_supports_bitmasks = false;
+
 char retro_save_directory[PATH_MAX_LENGTH];
 char retro_base_name[PATH_MAX_LENGTH];
 bool overclock_cycles = false;
@@ -322,6 +324,9 @@ void retro_init(void)
    S9xInitSound();
 #endif
    CPU.SaveStateVersion = 0;
+
+   if (environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
+      libretro_supports_bitmasks = true;
 }
 
 void retro_deinit(void)
@@ -337,6 +342,8 @@ void retro_deinit(void)
 #ifdef PERF_TEST
    perf_cb.perf_log();
 #endif
+
+   libretro_supports_bitmasks = false;
 }
 
 uint32_t S9xReadJoypad(int32_t port)
@@ -359,9 +366,18 @@ uint32_t S9xReadJoypad(int32_t port)
 
    int32_t i;
    uint32_t joypad = 0;
+   uint32_t joy_bits = 0;
+
+   if (libretro_supports_bitmasks)
+      joy_bits = input_cb(port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+   else
+   {
+      for (i = 0; i < (RETRO_DEVICE_ID_JOYPAD_R3+1); i++)
+         joy_bits |= input_cb(port, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
+   }
 
    for (i = RETRO_DEVICE_ID_JOYPAD_B; i <= RETRO_DEVICE_ID_JOYPAD_R; i++)
-      if (input_cb(port, RETRO_DEVICE_JOYPAD, 0, i))
+      if (joy_bits & (1 << i))
          joypad |= snes_lut[i];
 
    return joypad;
