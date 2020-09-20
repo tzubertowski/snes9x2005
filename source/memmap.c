@@ -1770,7 +1770,7 @@ void TalesROMMap(bool Interleaved)
 
       /* makes more sense to map the range here. */
       /* ToP seems to use sram to skip intro??? */
-      if (c >= 0x300)
+      if (c >= 0x200)
       {
          Memory.Map [c + 6] = Memory.Map [c + 0x806] = MAP_HIROM_SRAM_OR_NONE;
          Memory.Map [c + 7] = Memory.Map [c + 0x807] = MAP_HIROM_SRAM_OR_NONE;
