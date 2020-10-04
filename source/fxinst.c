@@ -3,7 +3,6 @@
 #include "fxemu.h"
 #include "fxinst.h"
 #include <string.h>
-#include <stdio.h>
 
 #include <retro_inline.h>
 

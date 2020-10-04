@@ -4,7 +4,6 @@
 #include "fxinst.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <retro_inline.h>
 

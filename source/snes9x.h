@@ -3,7 +3,6 @@
 #ifndef _SNES9X_H_
 #define _SNES9X_H_
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 
