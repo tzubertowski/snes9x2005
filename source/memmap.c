@@ -1345,13 +1345,6 @@ void InitROM(bool Interleaved)
    sprintf(Memory.ROMName, "%s", Safe(Memory.ROMName));
    sprintf(Memory.ROMId, "%s", Safe(Memory.ROMId));
    sprintf(Memory.CompanyId, "%s", Safe(Memory.CompanyId));
-
-#if 0
-   fprintf(stderr,
-           "\"%s\" [%s] %s, %s, Type: %s, Mode: %s, TV: %s, S-RAM: %s, ROMId: %s Company: %2.2s\n",
-           Memory.ROMName, (Memory.ROMChecksum + Memory.ROMComplementChecksum != 0xffff || Memory.ROMChecksum != Memory.CalculatedChecksum) ? "bad checksum" : "checksum ok", MapType(), Size(), KartContents(), MapMode(), TVStandard(), StaticRAMSize(), Memory.ROMId, Memory.CompanyId);
-#endif
-
    Settings.ForceHeader = Settings.ForceHiROM = Settings.ForceLoROM = Settings.ForceInterleaved = Settings.ForceNoHeader = Settings.ForceNotInterleaved = Settings.ForceInterleaved2 = false;
 }
 
