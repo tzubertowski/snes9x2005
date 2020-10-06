@@ -1,7 +1,7 @@
 .core-defs:
   variables:
     JNI_PATH: .
-    CORENAME: snes9x2002
+    CORENAME: snes9x2005
 
 include:
   - template: Jobs/Code-Quality.gitlab-ci.yml
