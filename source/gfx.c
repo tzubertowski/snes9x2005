@@ -226,6 +226,8 @@ bool S9xInitGFX(void)
    GFX.PPLx2 = GFX.Pitch;
    S9xFixColourBrightness();
 
+#if defined(PSP)
+   /* PSP uses pre-1.60 colour operations */
    if (!(GFX.X2 = (uint16_t*) malloc(sizeof(uint16_t) * 0x10000)))
       return false;
 
@@ -300,6 +302,10 @@ bool S9xInitGFX(void)
          }
       }
    }
+#else
+   if (!(GFX.ZERO = (uint16_t*) malloc(sizeof(uint16_t) * 0x10000)))
+      return false;
+#endif
 
    /* Build a lookup table that if the top bit of the color value is zero
     * then the value is zero, otherwise its just the value. */
@@ -337,6 +343,8 @@ bool S9xInitGFX(void)
 void S9xDeinitGFX(void)
 {
    /* Free any memory allocated in S9xInitGFX */
+#if defined(PSP)
+   /* PSP uses pre-1.60 colour operations */
    if (GFX.X2)
    {
       free(GFX.X2);
@@ -347,6 +355,7 @@ void S9xDeinitGFX(void)
       free(GFX.ZERO_OR_X2);
       GFX.ZERO_OR_X2 = NULL;
    }
+#endif
    if (GFX.ZERO)
    {
       free(GFX.ZERO);
