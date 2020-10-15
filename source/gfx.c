@@ -226,8 +226,8 @@ bool S9xInitGFX(void)
    GFX.PPLx2 = GFX.Pitch;
    S9xFixColourBrightness();
 
-#if defined(PSP)
-   /* PSP uses pre-1.60 colour operations */
+#if defined(USE_OLD_COLOUR_OPS)
+   /* Pre-1.60 colour operations */
    if (!(GFX.X2 = (uint16_t*) malloc(sizeof(uint16_t) * 0x10000)))
       return false;
 
@@ -343,8 +343,8 @@ bool S9xInitGFX(void)
 void S9xDeinitGFX(void)
 {
    /* Free any memory allocated in S9xInitGFX */
-#if defined(PSP)
-   /* PSP uses pre-1.60 colour operations */
+#if defined(USE_OLD_COLOUR_OPS)
+   /* Pre-1.60 colour operations */
    if (GFX.X2)
    {
       free(GFX.X2);

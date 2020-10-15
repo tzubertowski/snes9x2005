@@ -3,6 +3,7 @@ PERF_TEST             = 0
 LOAD_FROM_MEMORY_TEST = 1
 USE_BLARGG_APU        = 0
 LAGFIX                = 1
+USE_OLD_COLOUR_OPS    = 0
 
 SPACE :=
 SPACE := $(SPACE) $(SPACE)
@@ -205,6 +206,7 @@ else ifeq ($(platform), psp1)
 		-fno-builtin -fno-exceptions -ffunction-sections
 	DEFS +=  -DPSP -D_PSP_FW_VERSION=371
 	STATIC_LINKING := 1
+	USE_OLD_COLOUR_OPS = 1
 # Vita
 else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a

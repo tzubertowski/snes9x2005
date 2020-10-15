@@ -33,8 +33,8 @@ typedef struct
    uint32_t    Pitch;
 
    int32_t     Delta;
-#if defined(PSP)
-   /* PSP uses pre-1.60 colour operations */
+#if defined(USE_OLD_COLOUR_OPS)
+   /* Pre-1.60 colour operations */
    uint16_t*   X2;
    uint16_t*   ZERO_OR_X2;
 #endif
@@ -151,8 +151,8 @@ extern uint8_t mul_brightness [16][32];
 
 static INLINE uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
 {
-#if defined(PSP)
-   /* PSP uses pre-1.60 colour operations */
+#if defined(USE_OLD_COLOUR_OPS)
+   /* Pre-1.60 colour operations */
    if (C1 == 0)
       return C2;
    else if (C2 == 0)
@@ -183,8 +183,8 @@ static INLINE uint16_t COLOR_ADD(uint16_t C1, uint16_t C2)
           ((C2) & RGB_REMOVE_LOW_BITS_MASK)) >> 1) + \
          (((C1) & (C2) & RGB_LOW_BITS_MASK) | ALPHA_BITS_MASK))
 
-#if defined(PSP)
-/* PSP uses pre-1.60 colour operations */
+#if defined(USE_OLD_COLOUR_OPS)
+/* Pre-1.60 colour operations */
 #define COLOR_SUB(C1, C2) \
 (GFX.ZERO_OR_X2 [(((C1) | RGB_HI_BITS_MASKx2) - \
                   ((C2) & RGB_REMOVE_LOW_BITS_MASK)) >> 1] + \
