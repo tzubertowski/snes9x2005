@@ -3,6 +3,7 @@ PERF_TEST             = 0
 LOAD_FROM_MEMORY_TEST = 1
 USE_BLARGG_APU        = 0
 LAGFIX                = 1
+USE_OLD_COLOUR_OPS    = 0
 
 SPACE :=
 SPACE := $(SPACE) $(SPACE)
@@ -205,6 +206,7 @@ else ifeq ($(platform), psp1)
 		-fno-builtin -fno-exceptions -ffunction-sections
 	DEFS +=  -DPSP -D_PSP_FW_VERSION=371
 	STATIC_LINKING := 1
+	USE_OLD_COLOUR_OPS = 1
 # Vita
 else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
@@ -255,6 +257,7 @@ else ifeq ($(platform), wiiu)
 else ifeq ($(platform), emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING = 1
+
 # GCW0
 else ifeq ($(platform), gcw0)
 	TARGET := $(TARGET_NAME)_libretro.so
@@ -264,9 +267,9 @@ else ifeq ($(platform), gcw0)
 	fpic := -fPIC -nostdlib
 	SHARED := -shared -Wl,--version-script=link.T
 	LIBM :=
-	LOAD_FROM_MEMORY_TEST = 0
-	CFLAGS += -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
-		
+	FLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
+	FLAGS += -DFAST_LSB_WORD_ACCESS
+
 # (armv7 a7, hard point, neon based) ### 
 # NESC, SNESC, C64 mini 
 else ifeq ($(platform), classic_armv7_a7)

@@ -36,40 +36,32 @@
        bp = pCache + StartLine; \
        for (l = LineCount; l != 0; l--, bp += 8, Offset += GFX.PPL) \
        { \
-          if (*(uint32_t *) bp) \
-             NORMAL (Offset, bp, ScreenColors); \
-          if (*(uint32_t *) (bp + 4)) \
-             NORMAL (Offset + N, bp + 4, ScreenColors); \
+          NORMAL (Offset, bp, ScreenColors); \
+          NORMAL (Offset + N, bp + 4, ScreenColors); \
        } \
        break; \
     case H_FLIP: \
        bp = pCache + StartLine; \
        for (l = LineCount; l != 0; l--, bp += 8, Offset += GFX.PPL) \
        { \
-          if (*(uint32_t *) (bp + 4)) \
-             FLIPPED (Offset, bp + 4, ScreenColors); \
-          if (*(uint32_t *) bp) \
-             FLIPPED (Offset + N, bp, ScreenColors); \
+          FLIPPED (Offset, bp + 4, ScreenColors); \
+          FLIPPED (Offset + N, bp, ScreenColors); \
        } \
        break; \
     case H_FLIP | V_FLIP: \
        bp = pCache + 56 - StartLine; \
        for (l = LineCount; l != 0; l--, bp -= 8, Offset += GFX.PPL) \
        { \
-          if (*(uint32_t *) (bp + 4)) \
-             FLIPPED (Offset, bp + 4, ScreenColors); \
-          if (*(uint32_t *) bp) \
-             FLIPPED (Offset + N, bp, ScreenColors); \
+          FLIPPED (Offset, bp + 4, ScreenColors); \
+          FLIPPED (Offset + N, bp, ScreenColors); \
        } \
        break; \
     case V_FLIP: \
        bp = pCache + 56 - StartLine; \
        for (l = LineCount; l != 0; l--, bp -= 8, Offset += GFX.PPL) \
        { \
-          if (*(uint32_t *) bp) \
-             NORMAL (Offset, bp, ScreenColors); \
-          if (*(uint32_t *) (bp + 4)) \
-             NORMAL (Offset + N, bp + 4, ScreenColors); \
+          NORMAL (Offset, bp, ScreenColors); \
+          NORMAL (Offset + N, bp + 4, ScreenColors); \
        } \
        break; \
     default: \
