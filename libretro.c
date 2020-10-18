@@ -693,7 +693,7 @@ size_t retro_serialize_size(void)
    return sizeof(CPU) + sizeof(ICPU) + sizeof(PPU) + sizeof(DMA) +
           0x10000 + 0x20000 + 0x20000 + 0x8000 +
 #ifndef USE_BLARGG_APU
-          sizeof(APU) + sizeof(IAPU) + 0x10000 +
+          sizeof(APU) + sizeof(IAPU) + 0x10000 + sizeof(SoundData) +
 #else
           SPC_SAVE_STATE_BLOCK_SIZE +
 #endif
@@ -736,6 +736,8 @@ bool retro_serialize(void* data, size_t size)
    buffer += sizeof(IAPU);
    memcpy(buffer, IAPU.RAM, 0x10000);
    buffer += 0x10000;
+   memcpy(buffer, &SoundData, sizeof(SoundData));
+   buffer += sizeof(SoundData);
 #else
    S9xAPUSaveState(buffer);
    buffer += SPC_SAVE_STATE_BLOCK_SIZE;
@@ -794,6 +796,8 @@ bool retro_unserialize(const void* data, size_t size)
    IAPU.RAM = IAPU_RAM_current;
    memcpy(IAPU.RAM, buffer, 0x10000);
    buffer += 0x10000;
+   memcpy(&SoundData, buffer, sizeof(SoundData));
+   buffer += sizeof(SoundData);
 #else
    S9xAPULoadState(buffer);
    buffer += SPC_SAVE_STATE_BLOCK_SIZE;
@@ -811,7 +815,6 @@ bool retro_unserialize(const void* data, size_t size)
    IPPU.OBJChanged = true;
    CPU.InDMA = false;
    S9xFixColourBrightness();
-   S9xSA1UnpackStatus();
 #ifndef USE_BLARGG_APU
    S9xAPUUnpackStatus();
    S9xFixSoundAfterSnapshotLoad();
