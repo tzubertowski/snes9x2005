@@ -762,6 +762,8 @@ bool retro_unserialize(const void* data, size_t size)
    uint8_t* IAPU_RAM_current = IAPU.RAM;
    uintptr_t IAPU_RAM_offset;
 #endif
+   uint32_t sa1_old_flags = SA1.Flags;
+   SSA1 sa1_state;
 
    if (size != retro_serialize_size())
       return false;
@@ -803,13 +805,28 @@ bool retro_unserialize(const void* data, size_t size)
    buffer += SPC_SAVE_STATE_BLOCK_SIZE;
 #endif
 
-   memcpy(&SA1, buffer, sizeof(SA1));
-   buffer += sizeof(SA1);
+   memcpy(&sa1_state, buffer, sizeof(sa1_state));
+   buffer += sizeof(sa1_state);
+
+   /* SA1 state must be restored 'by hand' */
+   SA1.Flags               = sa1_state.Flags;
+   SA1.NMIActive           = sa1_state.NMIActive;
+   SA1.IRQActive           = sa1_state.IRQActive;
+   SA1.WaitingForInterrupt = sa1_state.WaitingForInterrupt;
+   SA1.op1                 = sa1_state.op1;
+   SA1.op2                 = sa1_state.op2;
+   SA1.arithmetic_op       = sa1_state.arithmetic_op;
+   SA1.sum                 = sa1_state.sum;
+   SA1.overflow            = sa1_state.overflow;
+   memcpy(&SA1.Registers, &sa1_state.Registers, sizeof(SA1.Registers));
+
    memcpy(&s7r, buffer, sizeof(s7r));
    buffer += sizeof(s7r);
    memcpy(&rtc_f9, buffer, sizeof(rtc_f9));
 
    S9xFixSA1AfterSnapshotLoad();
+   SA1.Flags |= sa1_old_flags & (TRACE_FLAG);
+
    FixROMSpeed();
    IPPU.ColorsChanged = true;
    IPPU.OBJChanged = true;
