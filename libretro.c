@@ -614,6 +614,8 @@ void retro_run(void)
          else
             frameskip_counter = 0;
       }
+      else
+         frameskip_counter = 0;
    }
 
    /* If frameskip/timing settings have changed,
