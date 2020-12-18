@@ -1,7 +1,7 @@
 DEBUG                 = 0
 PERF_TEST             = 0
 LOAD_FROM_MEMORY_TEST = 1
-USE_BLARGG_APU        = 0
+USE_BLARGG_APU       ?= 0
 LAGFIX                = 1
 USE_OLD_COLOUR_OPS    = 0
 
