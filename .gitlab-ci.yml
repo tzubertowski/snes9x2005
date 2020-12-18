@@ -10,17 +10,28 @@
     JNI_PATH: .
     CORENAME: snes9x2005
 
+.core-defs-plus:
+  extends: .core-defs
+  variables:
+    CORENAME: snes9x2005_plus
+    USE_BLARGG_APU: 1
+
+.core-defs-plus-android:
+  extends: .core-defs-plus
+  variables:
+    PLATFORM_ARGS: APP_ABI=$ANDROID_ABI USE_BLARGG_APU=1
+
 # Inclusion templates, required for the build to work
 include:
   ################################## DESKTOPS ################################
   # Windows 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
-    
+
   # Linux 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
-    
+
   # MacOS 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/osx-x64.yml'
@@ -29,16 +40,16 @@ include:
   # Android
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-jni.yml'
-    
+
   ################################## CONSOLES ################################
   # PlayStation Portable
   - project: 'libretro-infrastructure/ci-templates'
     file: '/psp-static.yml'
-    
+
   # PlayStation Vita
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
-    
+
   # Nintendo 3DS
   - project: 'libretro-infrastructure/ci-templates'
     file: '/ctr-static.yml'
@@ -64,19 +75,22 @@ stages:
 ##############################################################################
 #################################### STAGES ##################################
 ##############################################################################
-#
+
+################################## snes9x2005 ################################
+##############################################################################
+
 ################################### DESKTOPS #################################
 # Windows 64-bit
 libretro-build-windows-x64:
   extends:
-    - .core-defs
     - .libretro-windows-x64-mingw-make-default
-    
+    - .core-defs
+
 # Linux 64-bit
 libretro-build-linux-x64:
   extends:
-    - .core-defs
     - .libretro-linux-x64-make-default
+    - .core-defs
 
 # MacOS 64-bit
 libretro-build-osx-x64:
@@ -88,40 +102,40 @@ libretro-build-osx-x64:
 # Android ARMv7a
 android-armeabi-v7a:
   extends:
-    - .core-defs
     - .libretro-android-jni-armeabi-v7a
+    - .core-defs
 
 # Android ARMv8a
 android-arm64-v8a:
   extends:
-    - .core-defs
     - .libretro-android-jni-arm64-v8a
+    - .core-defs
 
 # Android 64-bit x86
 android-x86_64:
   extends:
-    - .core-defs
     - .libretro-android-jni-x86_64
-    
+    - .core-defs
+
 # Android 32-bit x86
 android-x86:
   extends:
-    - .core-defs
     - .libretro-android-jni-x86
+    - .core-defs
 
 ################################### CONSOLES #################################
 # PlayStation Portable
 libretro-build-psp:
   extends:
-    - .core-defs
     - .libretro-psp-static-retroarch-master
+    - .core-defs
 
 # PlayStation Vita
 libretro-build-vita:
   extends:
-    - .core-defs
     - .libretro-vita-static-retroarch-master
-    
+    - .core-defs
+
 # Nintendo 3DS
 libretro-build-ctr:
   extends:
@@ -139,9 +153,93 @@ libretro-build-wii:
   extends:
     - .libretro-wii-static-retroarch-master
     - .core-defs
-    
+
 # OpenDingux
 libretro-build-dingux-mips32:
   extends:
-    - .core-defs
     - .libretro-dingux-mips32-make-default
+    - .core-defs
+
+############################### snes9x2005_plus ##############################
+##############################################################################
+
+################################### DESKTOPS #################################
+# Windows 64-bit
+libretro-build-windows-x64-plus:
+  extends:
+    - .libretro-windows-x64-mingw-make-default
+    - .core-defs-plus
+
+# Linux 64-bit
+libretro-build-linux-x64-plus:
+  extends:
+    - .libretro-linux-x64-make-default
+    - .core-defs-plus
+
+# MacOS 64-bit
+libretro-build-osx-x64-plus:
+  extends:
+    - .libretro-osx-x64-make-default
+    - .core-defs-plus
+
+################################### CELLULAR #################################
+# Android ARMv7a
+android-armeabi-v7a-plus:
+  extends:
+    - .libretro-android-jni-armeabi-v7a
+    - .core-defs-plus-android
+
+# Android ARMv8a
+android-arm64-v8a-plus:
+  extends:
+    - .libretro-android-jni-arm64-v8a
+    - .core-defs-plus-android
+
+# Android 64-bit x86
+android-x86_64-plus:
+  extends:
+    - .libretro-android-jni-x86_64
+    - .core-defs-plus-android
+
+# Android 32-bit x86
+android-x86-plus:
+  extends:
+    - .libretro-android-jni-x86
+    - .core-defs-plus-android
+
+################################### CONSOLES #################################
+# PlayStation Portable
+libretro-build-psp-plus:
+  extends:
+    - .libretro-psp-static-retroarch-master
+    - .core-defs-plus
+
+# PlayStation Vita
+libretro-build-vita-plus:
+  extends:
+    - .libretro-vita-static-retroarch-master
+    - .core-defs-plus
+
+# Nintendo 3DS
+libretro-build-ctr-plus:
+  extends:
+    - .libretro-ctr-static-retroarch-master
+    - .core-defs-plus
+
+# Nintendo GameCube
+libretro-build-ngc-plus:
+  extends:
+    - .libretro-ngc-static-retroarch-master
+    - .core-defs-plus
+
+# Nintendo Wii
+libretro-build-wii-plus:
+  extends:
+    - .libretro-wii-static-retroarch-master
+    - .core-defs-plus
+
+# OpenDingux
+libretro-build-dingux-mips32-plus:
+  extends:
+    - .libretro-dingux-mips32-make-default
+    - .core-defs-plus
