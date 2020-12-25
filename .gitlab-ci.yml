@@ -16,11 +16,6 @@
     CORENAME: snes9x2005_plus
     USE_BLARGG_APU: 1
 
-.core-defs-plus-android:
-  extends: .core-defs-plus
-  variables:
-    PLATFORM_ARGS: APP_ABI=$ANDROID_ABI USE_BLARGG_APU=1
-
 # Inclusion templates, required for the build to work
 include:
   ################################## DESKTOPS ################################
@@ -187,25 +182,25 @@ libretro-build-osx-x64-plus:
 android-armeabi-v7a-plus:
   extends:
     - .libretro-android-jni-armeabi-v7a
-    - .core-defs-plus-android
+    - .core-defs-plus
 
 # Android ARMv8a
 android-arm64-v8a-plus:
   extends:
     - .libretro-android-jni-arm64-v8a
-    - .core-defs-plus-android
+    - .core-defs-plus
 
 # Android 64-bit x86
 android-x86_64-plus:
   extends:
     - .libretro-android-jni-x86_64
-    - .core-defs-plus-android
+    - .core-defs-plus
 
 # Android 32-bit x86
 android-x86-plus:
   extends:
     - .libretro-android-jni-x86
-    - .core-defs-plus-android
+    - .core-defs-plus
 
 ################################### CONSOLES #################################
 # PlayStation Portable
