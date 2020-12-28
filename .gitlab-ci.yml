@@ -57,6 +57,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/wii-static.yml'
 
+  # Nintendo WiiU
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/wiiu-static.yml'
+
   # OpenDingux
   - project: 'libretro-infrastructure/ci-templates'
     file: '/dingux-mips32.yml'
@@ -149,6 +153,12 @@ libretro-build-wii:
     - .libretro-wii-static-retroarch-master
     - .core-defs
 
+# Nintendo WiiU
+libretro-build-wiiu:
+  extends:
+    - .libretro-wiiu-static-retroarch-master
+    - .core-defs
+
 # OpenDingux
 libretro-build-dingux-mips32:
   extends:
@@ -231,6 +241,12 @@ libretro-build-ngc-plus:
 libretro-build-wii-plus:
   extends:
     - .libretro-wii-static-retroarch-master
+    - .core-defs-plus
+
+# Nintendo WiiU
+libretro-build-wiiu-plus:
+  extends:
+    - .libretro-wiiu-static-retroarch-master
     - .core-defs-plus
 
 # OpenDingux
