@@ -256,6 +256,24 @@ libretro-build-windows-i686-plus:
     - .libretro-windows-i686-mingw-make-default
     - .core-defs-plus
 
+# Windows msvc10 64-bit
+libretro-build-windows-msvc10-x64-plus:
+  extends:
+    - .libretro-windows-x64-msvc10-msys2-make-default
+    - .core-defs-plus
+
+# Windows msvc10 32-bit
+libretro-build-windows-msvc10-i686-plus:
+  extends:
+    - .libretro-windows-i686-msvc10-msys2-make-default
+    - .core-defs-plus
+
+# Windows msvc05 32-bit
+libretro-build-windows-msvc05-i686-plus:
+  extends:
+    - .libretro-windows-i686-msvc05-msys2-make-default
+    - .core-defs-plus
+
 # Linux 64-bit
 libretro-build-linux-x64-plus:
   extends:
