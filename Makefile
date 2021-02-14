@@ -572,6 +572,14 @@ else
 	FLAGS += -O2 -DNDEBUG
 endif
 
+ifneq (,$(findstring msvc,$(platform)))
+ifeq ($(DEBUG),1)
+   FLAGS += -MTd
+else
+   FLAGS += -MT
+endif
+endif
+
 ifeq ($(PERF_TEST),1)
 	FLAGS += -DPERF_TEST
 endif
@@ -628,7 +636,7 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	$(LD) $(fpic) $(SHARED) $(INCFLAGS) $(LDFLAGS) $(LINKOUT)$@ $(OBJECTS) $(LIBS)
+	$(LD) $(fpic) $(SHARED) $(LDFLAGS) $(LINKOUT)$@ $(OBJECTS) $(LIBS)
 endif
 
 clean:
