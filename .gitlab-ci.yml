@@ -260,6 +260,12 @@ libretro-build-dingux-mips32:
     - .libretro-dingux-mips32-make-default
     - .core-defs
 
+# OpenDingux Beta
+libretro-build-dingux-odbeta-mips32:
+  extends:
+    - .libretro-dingux-odbeta-mips32-make-default
+    - .core-defs
+
 ############################### snes9x2005_plus ##############################
 ##############################################################################
 
@@ -378,6 +384,12 @@ libretro-build-wiiu-plus:
 libretro-build-dingux-mips32-plus:
   extends:
     - .libretro-dingux-mips32-make-default
+    - .core-defs-plus
+
+# OpenDingux Beta
+libretro-build-dingux-odbeta-mips32-plus:
+  extends:
+    - .libretro-dingux-odbeta-mips32-make-default
     - .core-defs-plus
 
 #################################### MISC ##################################
