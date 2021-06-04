@@ -349,8 +349,7 @@ void S9xDeinitMemory(void)
    }
 }
 
-#ifndef LOAD_FROM_MEMORY_TEST
-
+#ifndef LOAD_FROM_MEMORY
 /* Read variable size MSB int from a file */
 static int32_t ReadInt(FILE* f, uint32_t nbytes)
 {
@@ -564,7 +563,7 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 /**********************************************************************************************/
 
 bool LoadROM(
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifdef LOAD_FROM_MEMORY
       const struct retro_game_info* game
 #else
       const char* filename
@@ -589,7 +588,7 @@ bool LoadROM(
    retry_count = 0;
 
 again:
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifdef LOAD_FROM_MEMORY
    strncpy(Memory.ROMFilename, game->path, sizeof(Memory.ROMFilename));
 
    Memory.HeaderCount = 0;

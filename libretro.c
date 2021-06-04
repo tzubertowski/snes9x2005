@@ -711,7 +711,7 @@ unsigned retro_get_region(void)
 
 void retro_get_system_info(struct retro_system_info* info)
 {
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifdef LOAD_FROM_MEMORY
    info->need_fullpath    = false;
 #else
    info->need_fullpath    = true;
@@ -1025,7 +1025,7 @@ bool retro_load_game(const struct retro_game_info* game)
    init_descriptors();
    check_variables(true);
 
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifdef LOAD_FROM_MEMORY
    if (!LoadROM(game))
 #else
    if (!LoadROM(game->path))

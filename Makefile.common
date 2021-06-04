@@ -48,8 +48,8 @@ else
 		$(CORE_DIR)/spc700.c
 endif
 
-ifeq ($(LOAD_FROM_MEMORY_TEST),1)
-	FLAGS += -DLOAD_FROM_MEMORY_TEST
+ifeq ($(LOAD_FROM_MEMORY),1)
+	FLAGS += -DLOAD_FROM_MEMORY
 endif
 
 ifeq ($(USE_OLD_COLOUR_OPS),1)

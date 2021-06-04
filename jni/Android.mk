@@ -4,7 +4,7 @@ ROOT_DIR     := $(LOCAL_PATH)/..
 CORE_DIR     := $(ROOT_DIR)/source
 LIBRETRO_DIR := $(ROOT_DIR)
 
-LOAD_FROM_MEMORY_TEST := 1
+LOAD_FROM_MEMORY := 1
 FLAGS :=
 
 include $(ROOT_DIR)/Makefile.common

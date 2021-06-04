@@ -1,6 +1,6 @@
 DEBUG                 = 0
 PERF_TEST             = 0
-LOAD_FROM_MEMORY_TEST = 1
+LOAD_FROM_MEMORY      = 1
 USE_BLARGG_APU       ?= 0
 LAGFIX                = 1
 USE_OLD_COLOUR_OPS    = 0
@@ -211,7 +211,7 @@ else ifeq ($(platform), psp1)
 	CXX = psp-g++$(EXE_EXT)
 	AR = psp-ar$(EXE_EXT)
 	STATIC_LINKING = 1
-	LOAD_FROM_MEMORY_TEST = 0
+	LOAD_FROM_MEMORY = 0
 	FLAGS += -G0
 	CFLAGS += \
 		-march=allegrex -mno-abicalls -fno-pic \
@@ -226,7 +226,7 @@ else ifeq ($(platform), vita)
 	CXX = arm-vita-eabi-g++$(EXE_EXT)
 	AR = arm-vita-eabi-ar$(EXE_EXT)
 	STATIC_LINKING = 1
-	LOAD_FROM_MEMORY_TEST = 0
+	LOAD_FROM_MEMORY = 0
 	DEFS +=  -DVITA
 	STATIC_LINKING := 1
 # CTR (3DS)

@@ -33,7 +33,7 @@
 #define BIGFIRST 2
 #define SMALLFIRST 3
 
-#ifdef LOAD_FROM_MEMORY_TEST
+#ifdef LOAD_FROM_MEMORY
 bool LoadROM(const struct retro_game_info* game);
 #else
 bool LoadROM(const char*);
