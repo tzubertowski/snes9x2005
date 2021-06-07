@@ -133,7 +133,7 @@ void retro_set_controller_port_device(unsigned in_port, unsigned device)
    (void) device;
 }
 
-unsigned retro_api_version()
+unsigned retro_api_version(void)
 {
    return RETRO_API_VERSION;
 }
