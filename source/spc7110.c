@@ -5,8 +5,6 @@
 #include "memmap.h"
 #include <time.h>
 
-const char* S9xGetFilename(const char*);
-
 SPC7110Regs s7r;         /* SPC7110 registers, about 33KB */
 S7RTC rtc_f9;            /* FEOEZ (and Shounen Jump no SHou) RTC */
 void S9xUpdateRTC(void); /* S-RTC function hacked to work with the RTC */

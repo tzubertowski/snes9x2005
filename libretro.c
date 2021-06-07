@@ -247,82 +247,7 @@ void S9xInitDisplay(void)
    GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
 }
 
-#ifndef _WIN32
-void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext)
-{
-   (void) drive;
-
-   if (dir && *dir)
-   {
-      strcpy(path, dir);
-      strcat(path, "/");
-   }
-   else
-      *path = 0;
-
-   if (fname)
-      strcat(path, fname);
-
-   if (ext && *ext)
-   {
-      strcat(path, ".");
-      strcat(path, ext);
-   }
-}
-
-void _splitpath (const char* path, char* drive, char* dir, char* fname, char* ext)
-{
-   const char* slash = strrchr(path, '/');
-   const char* dot   = strrchr(path, '.');
-   (void) drive;
-
-   if (!slash)
-      slash = strrchr((char*)path, '\\');
-
-   if (dot && slash && dot < slash)
-      dot = NULL;
-
-   if (!slash)
-   {
-      *dir = 0;
-      strcpy(fname, path);
-      if (dot)
-      {
-         fname[dot - path] = 0;
-         strcpy(ext, dot + 1);
-      }
-      else
-         *ext = 0;
-   }
-   else
-   {
-      strcpy(dir, path);
-      dir[slash - path] = 0;
-      strcpy(fname, slash + 1);
-      if (dot)
-      {
-         fname[dot - slash - 1] = 0;
-         strcpy(ext, dot + 1);
-      }
-      else
-         *ext = 0;
-   }
-}
-#endif
-
-const char* S9xGetFilename(const char* in)
-{
-   static char filename [PATH_MAX + 1];
-   char drive [_MAX_DRIVE + 1];
-   char dir [_MAX_DIR + 1];
-   char fname [_MAX_FNAME + 1];
-   char ext [_MAX_EXT + 1];
-   _splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-   _makepath(filename, drive, dir, fname, in);
-   return filename;
-}
-
-void init_sfc_setting(void)
+static void init_sfc_setting(void)
 {
    memset(&Settings, 0, sizeof(Settings));
    Settings.JoystickEnabled = false;
@@ -349,7 +274,7 @@ void init_sfc_setting(void)
 }
 
 #ifdef USE_BLARGG_APU
-static void S9xAudioCallback()
+static void S9xAudioCallback(void)
 {
    size_t avail;
    /* Just pick a big buffer. We won't use it all. */

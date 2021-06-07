@@ -350,6 +350,66 @@ void S9xDeinitMemory(void)
 }
 
 #ifndef LOAD_FROM_MEMORY
+static void _makepath(char* path, 
+      const char* dir, const char* fname, const char* ext)
+{
+   if (dir && *dir)
+   {
+      strcpy(path, dir);
+      strcat(path, "/");
+   }
+   else
+      *path = 0;
+
+   if (fname)
+      strcat(path, fname);
+
+   if (ext && *ext)
+   {
+      strcat(path, ".");
+      strcat(path, ext);
+   }
+}
+
+static void _splitpath (const char* path,
+      char* dir, char* fname, char* ext)
+{
+   const char* slash = strrchr(path, '/');
+   const char* dot   = strrchr(path, '.');
+
+   if (!slash)
+      slash = strrchr((char*)path, '\\');
+
+   if (dot && slash && dot < slash)
+      dot = NULL;
+
+   if (!slash)
+   {
+      *dir = 0;
+      strcpy(fname, path);
+      if (dot)
+      {
+         fname[dot - path] = 0;
+         strcpy(ext, dot + 1);
+      }
+      else
+         *ext = 0;
+   }
+   else
+   {
+      strcpy(dir, path);
+      dir[slash - path] = 0;
+      strcpy(fname, slash + 1);
+      if (dot)
+      {
+         fname[dot - slash - 1] = 0;
+         strcpy(ext, dot + 1);
+      }
+      else
+         *ext = 0;
+   }
+}
+
 /* Read variable size MSB int from a file */
 static int32_t ReadInt(FILE* f, uint32_t nbytes)
 {
@@ -364,20 +424,30 @@ static int32_t ReadInt(FILE* f, uint32_t nbytes)
    return v;
 }
 
+static const char* S9xGetFilename(const char* in)
+{
+   static char filename [PATH_MAX + 1];
+   char dir [_MAX_DIR + 1];
+   char fname [_MAX_FNAME + 1];
+   char ext [_MAX_EXT + 1];
+   _splitpath(Memory.ROMFilename, dir, fname, ext);
+   _makepath(filename, dir, fname, in);
+   return filename;
+}
+
 #define IPS_EOF 0x00454F46l
 
 static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom_size)
 {
    char  dir [_MAX_DIR + 1];
-   char  drive [_MAX_DRIVE + 1];
    char  name [_MAX_FNAME + 1];
    char  ext [_MAX_EXT + 1];
    char  fname [_MAX_PATH + 1];
    FILE*  patch_file  = NULL;
    int32_t offset = header ? 512 : 0;
 
-   _splitpath(rom_filename, drive, dir, name, ext);
-   _makepath(fname, drive, dir, name, "ips");
+   _splitpath(rom_filename, dir, name, ext);
+   _makepath(fname, dir, name, "ips");
 
    if (!(patch_file = fopen(fname, "rb")))
       if (!(patch_file = fopen(S9xGetFilename("ips"), "rb")))
@@ -462,19 +532,17 @@ err_eof:
 static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize)
 {
    FILE* ROMFile;
-   int32_t TotalFileSize = 0;
    int32_t len = 0;
 
    char dir [_MAX_DIR + 1];
-   char drive [_MAX_DRIVE + 1];
    char name [_MAX_FNAME + 1];
    char ext [_MAX_EXT + 1];
    char fname [_MAX_PATH + 1];
 
    uint32_t FileSize = 0;
 
-   _splitpath(filename, drive, dir, name, ext);
-   _makepath(fname, drive, dir, name, ext);
+   _splitpath(filename, dir, name, ext);
+   _makepath(fname, dir, name, ext);
 
 #ifdef _WIN32
    /* memmove required: Overlapping addresses [Neb] */
@@ -484,20 +552,17 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
    if ((ROMFile = fopen(fname, "rb")) == NULL)
       return 0;
 
-   strcpy(Memory.ROMFilename, fname);
-
    Memory.HeaderCount = 0;
    uint8_t* ptr = buffer;
-   bool more = false;
 
-   do
    {
       int32_t calc_size;
       FileSize = fread(ptr, 1, maxsize + 0x200 - (ptr - Memory.ROM), ROMFile);
       fclose(ROMFile);
       calc_size = FileSize & ~0x1FFF; /* round to the lower 0x2000 */
 
-      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) || Settings.ForceHeader)
+      if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) 
+            || Settings.ForceHeader)
       {
          /* memmove required: Overlapping addresses [Neb] */
          /* DS2 DMA notes: Can be split into 512-byte DMA blocks [Neb] */
@@ -519,41 +584,10 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
          FileSize -= 512;
       }
 
-      ptr += FileSize;
-      TotalFileSize += FileSize;
-
-
-      /* check for multi file roms */
-
-      if ((ptr - Memory.ROM) < (maxsize + 0x200) && (isdigit(ext [0]) && ext [1] == 0 && ext [0] < '9'))
-      {
-         more = true;
-         ext [0]++;
-#ifdef _WIN32
-         /* memmove required: Overlapping addresses [Neb] */
-         memmove(&ext [1], &ext [0], 4);
-         ext [0] = '.';
-#endif
-         _makepath(fname, drive, dir, name, ext);
-      }
-      else if (ptr - Memory.ROM < maxsize + 0x200 && (((len = strlen(name)) == 7 || len == 8) && strncasecmp(name, "sf", 2) == 0 && isdigit(name [2]) && isdigit(name [3]) && isdigit(name [4]) && isdigit(name [5]) && isalpha(name [len - 1])))
-      {
-         more = true;
-         name [len - 1]++;
-#ifdef _WIN32
-         /* memmove required: Overlapping addresses [Neb] */
-         memmove(&ext [1], &ext [0], 4);
-         ext [0] = '.';
-#endif
-         _makepath(fname, drive, dir, name, ext);
-      }
-      else
-         more = false;
-
+      ptr           += FileSize;
    }
-   while (more && (ROMFile = fopen(fname, "rb")) != NULL);
 
-   return TotalFileSize;
+   return FileSize;
 }
 #endif
 
@@ -589,8 +623,6 @@ bool LoadROM(
 
 again:
 #ifdef LOAD_FROM_MEMORY
-   strncpy(Memory.ROMFilename, game->path, sizeof(Memory.ROMFilename));
-
    Memory.HeaderCount = 0;
    TotalFileSize = game->size;
    src = game->data;
@@ -927,7 +959,6 @@ again:
       Tales = true;
 
    InitROM(Tales);
-   S9xLoadCheatFile(S9xGetFilename("cht"));
    S9xInitCheatData();
    S9xApplyCheats();
    S9xReset();

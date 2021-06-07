@@ -43,9 +43,6 @@
 #ifndef _MAX_PATH
 #define _MAX_PATH  PATH_MAX
 #endif
-
-void _makepath(char* path, const char* drive, const char* dir, const char* fname, const char* ext);
-void _splitpath(const char* path, char* drive, char* dir, char* fname, char* ext);
 #else /* _WIN32 */
 #define strcasecmp  stricmp
 #define strncasecmp strnicmp
