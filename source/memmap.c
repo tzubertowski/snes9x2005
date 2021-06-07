@@ -1044,6 +1044,42 @@ void S9xDeinterleaveType2(bool reset)
    }
 }
 
+void ParseSNESHeader(uint8_t* RomHeader)
+{
+   if(Settings.BS)
+   {
+      uint32_t size_count;
+
+      Memory.SRAMSize = 0x05;
+      strncpy(Memory.ROMName, (char *) &RomHeader[0x10], 17);
+      memset(&Memory.ROMName[0x11], 0, ROM_NAME_LEN - 1 - 17);
+      Memory.ROMSpeed = RomHeader [0x28];
+      Memory.ROMType = 0xe5;
+      Memory.ROMSize = 1;
+
+      for(size_count = 0x800; size_count < Memory.CalculatedSize; size_count <<= 1, ++Memory.ROMSize);
+   }
+   else
+   {
+      Memory.SRAMSize = RomHeader [0x28];
+      strncpy(Memory.ROMName, (char*) &RomHeader[0x10], ROM_NAME_LEN - 1);
+      Memory.ROMSpeed = RomHeader [0x25];
+      Memory.ROMType = RomHeader [0x26];
+      Memory.ROMSize = RomHeader [0x27];
+   }
+
+   Memory.ROMChecksum = RomHeader [0x2e] + (RomHeader [0x2f] << 8);
+   Memory.ROMComplementChecksum = RomHeader [0x2c] + (RomHeader [0x2d] << 8);
+   Memory.ROMRegion = RomHeader[0x29];
+   /* memmove converted: Different mallocs [Neb] */
+   memcpy(Memory.ROMId, &RomHeader [0x2], 4);
+   if (RomHeader[0x2A] == 0x33)
+      /* memmove converted: Different mallocs [Neb] */
+      memcpy(Memory.CompanyId, &RomHeader [0], 2);
+   else
+      sprintf(Memory.CompanyId, "%02X", RomHeader[0x2A]);
+}
+
 void InitROM(bool Interleaved)
 {
    uint8_t* RomHeader;
@@ -2990,8 +3026,7 @@ static bool is_bsx(uint8_t *p) /* p == "0xFFC0" or "0x7FC0" ROM offset pointer *
       {
          if(bb)
             return false;
-         else
-            b = true;
+         b = true;
       }
       else if(b)
          bb = true;
@@ -3015,10 +3050,9 @@ static bool bs_name(uint8_t* p)
       /* null strings */
       if(*p == 0)
       {
-         if(lcount != 16)
-            p++;
-         else
+         if(lcount == 16)
             return false;
+         p++;
       }
       /* SJIS single byte char */
       else if((*p >= 0x20 && *p <= 0x7f) || (*p >= 0xa0 && *p <= 0xdf))
@@ -3038,40 +3072,4 @@ static bool bs_name(uint8_t* p)
          return false;
    }
    return true;
-}
-
-void ParseSNESHeader(uint8_t* RomHeader)
-{
-   if(Settings.BS)
-   {
-      uint32_t size_count;
-
-      Memory.SRAMSize = 0x05;
-      strncpy(Memory.ROMName, (char *) &RomHeader[0x10], 17);
-      memset(&Memory.ROMName[0x11], 0, ROM_NAME_LEN - 1 - 17);
-      Memory.ROMSpeed = RomHeader [0x28];
-      Memory.ROMType = 0xe5;
-      Memory.ROMSize = 1;
-
-      for(size_count = 0x800; size_count < Memory.CalculatedSize; size_count <<= 1, ++Memory.ROMSize);
-   }
-   else
-   {
-      Memory.SRAMSize = RomHeader [0x28];
-      strncpy(Memory.ROMName, (char*) &RomHeader[0x10], ROM_NAME_LEN - 1);
-      Memory.ROMSpeed = RomHeader [0x25];
-      Memory.ROMType = RomHeader [0x26];
-      Memory.ROMSize = RomHeader [0x27];
-   }
-
-   Memory.ROMChecksum = RomHeader [0x2e] + (RomHeader [0x2f] << 8);
-   Memory.ROMComplementChecksum = RomHeader [0x2c] + (RomHeader [0x2d] << 8);
-   Memory.ROMRegion = RomHeader[0x29];
-   /* memmove converted: Different mallocs [Neb] */
-   memcpy(Memory.ROMId, &RomHeader [0x2], 4);
-   if (RomHeader[0x2A] == 0x33)
-      /* memmove converted: Different mallocs [Neb] */
-      memcpy(Memory.CompanyId, &RomHeader [0], 2);
-   else
-      sprintf(Memory.CompanyId, "%02X", RomHeader[0x2A]);
 }

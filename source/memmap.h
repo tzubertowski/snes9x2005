@@ -78,7 +78,6 @@ const char* Size(void);
 const char* Headers(void);
 const char* ROMID(void);
 const char* CompanyID(void);
-void ParseSNESHeader(uint8_t*);
 
 enum
 {
