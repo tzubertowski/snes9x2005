@@ -70,11 +70,7 @@ void CapcomProtectLoROMMap(void);
 
 const char* TVStandard(void);
 const char* Speed(void);
-const char* StaticRAMSize(void);
 const char* MapType(void);
-const char* MapMode(void);
-const char* KartContents(void);
-const char* Size(void);
 const char* Headers(void);
 const char* ROMID(void);
 const char* CompanyID(void);
