@@ -37,6 +37,7 @@ static retro_audio_sample_batch_t audio_batch_cb = NULL;
 static retro_environment_t environ_cb = NULL;
 struct retro_perf_callback perf_cb;
 
+static bool libretro_supports_option_categories = false;
 static bool libretro_supports_bitmasks = false;
 
 char retro_save_directory[PATH_MAX_LENGTH];
@@ -98,7 +99,9 @@ void retro_set_environment(retro_environment_t cb)
    else
       log_cb = NULL;
 
-   libretro_set_core_options(environ_cb);
+   libretro_supports_option_categories = false;
+   libretro_set_core_options(environ_cb,
+		   &libretro_supports_option_categories);
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
 }
 
@@ -337,6 +340,7 @@ void retro_deinit(void)
 #endif
 
    /* Reset globals (required for static builds) */
+   libretro_supports_option_categories = false;
    libretro_supports_bitmasks = false;
    frameskip_type             = 0;
    frameskip_threshold        = 0;
@@ -392,7 +396,7 @@ static void check_variables(bool first_run)
    bool prev_force_pal;
    bool prev_frameskip_type;
 
-   var.key = "catsfc_VideoMode";
+   var.key = "snes9x_2005_region";
    var.value = NULL;
 
    prev_force_ntsc = Settings.ForceNTSC;
@@ -404,7 +408,7 @@ static void check_variables(bool first_run)
       Settings.ForcePAL  = !strcmp(var.value, "PAL");
    }
 
-   var.key = "catsfc_frameskip";
+   var.key = "snes9x_2005_frameskip";
    var.value = NULL;
 
    prev_frameskip_type = frameskip_type;
@@ -418,7 +422,7 @@ static void check_variables(bool first_run)
          frameskip_type = 2;
    }
 
-   var.key = "catsfc_frameskip_threshold";
+   var.key = "snes9x_2005_frameskip_threshold";
    var.value = NULL;
 
    frameskip_threshold = 33;
@@ -426,7 +430,7 @@ static void check_variables(bool first_run)
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
       frameskip_threshold = strtol(var.value, NULL, 10);
 
-   var.key = "catsfc_overclock_cycles";
+   var.key = "snes9x_2005_overclock_cycles";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -449,7 +453,7 @@ static void check_variables(bool first_run)
          overclock_cycles = false;
    }
 
-   var.key = "catsfc_reduce_sprite_flicker";
+   var.key = "snes9x_2005_reduce_sprite_flicker";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
