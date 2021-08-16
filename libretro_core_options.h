@@ -77,7 +77,8 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "PAL",  NULL },
          { NULL, NULL },
       },
-      "auto"
+      "auto",
+      NULL
    },
    {
       "snes9x_2005_frameskip",
@@ -92,7 +93,8 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "manual",   "Manual" },
          { NULL, NULL },
       },
-      "disabled"
+      "disabled",
+      NULL
    },
    {
       "snes9x_2005_frameskip_threshold",
@@ -120,7 +122,8 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "60", NULL },
          { NULL, NULL },
       },
-      "33"
+      "33",
+      "int"
    },
    {
       "snes9x_2005_overclock_cycles",
@@ -135,7 +138,8 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "max",        "Max" },
          { NULL, NULL },
       },
-      "disabled"
+      "disabled",
+      NULL
    },
    {
       "snes9x_2005_reduce_sprite_flicker",
@@ -149,9 +153,10 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { "enabled",  NULL },
          { NULL, NULL },
       },
-      "disabled"
+      "disabled",
+      "bool"
    },
-   { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
+   { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL, NULL },
 };
 
 struct retro_core_options_v2 options_us = {
