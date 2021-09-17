@@ -22,6 +22,10 @@
 #include <libretro.h>
 #include <retro_miscellaneous.h>
 
+#ifndef LOAD_FROM_MEMORY
+#include <streams/file_stream.h>
+#endif
+
 #include "libretro_core_options.h"
 
 #ifdef _3DS
@@ -92,6 +96,9 @@ static bool update_audio_latency           = false;
 void retro_set_environment(retro_environment_t cb)
 {
    struct retro_log_callback log;
+#ifndef LOAD_FROM_MEMORY
+   struct retro_vfs_interface_info vfs_iface_info;
+#endif
    environ_cb = cb;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
@@ -103,6 +110,13 @@ void retro_set_environment(retro_environment_t cb)
    libretro_set_core_options(environ_cb,
 		   &libretro_supports_option_categories);
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
+
+#ifndef LOAD_FROM_MEMORY
+   vfs_iface_info.required_interface_version = 1;
+   vfs_iface_info.iface                      = NULL;
+   if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info))
+      filestream_vfs_init(&vfs_iface_info);
+#endif
 }
 
 void retro_set_video_refresh(retro_video_refresh_t cb)

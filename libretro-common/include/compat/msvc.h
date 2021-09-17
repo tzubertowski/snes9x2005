@@ -1,4 +1,4 @@
-/* Copyright  (C) 2010-2017 The RetroArch team
+/* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
  * The following license statement only applies to this file (msvc.h).
@@ -29,20 +29,17 @@
 extern "C"  {
 #endif
 
-/* Pre-MSVC 2015 compilers don't implement snprintf in a cross-platform manner. */
+/* Pre-MSVC 2015 compilers don't implement snprintf, vsnprintf in a cross-platform manner. */
 #if _MSC_VER < 1900
+   #include <stdio.h>
+   #include <stdarg.h>
    #include <stdlib.h>
+
    #ifndef snprintf
       #define snprintf c99_snprintf_retro__
    #endif
-
    int c99_snprintf_retro__(char *outBuf, size_t size, const char *format, ...);
-#endif
 
-/* Pre-MSVC 2010 compilers don't implement vsnprintf in a cross-platform manner? Not sure about this one. */
-#if _MSC_VER < 1600
-   #include <stdarg.h>
-   #include <stdlib.h>
    #ifndef vsnprintf
       #define vsnprintf c99_vsnprintf_retro__
    #endif
@@ -56,6 +53,8 @@ extern "C"  {
 #undef UNICODE /* Do not bother with UNICODE at this time. */
 #include <direct.h>
 #include <stddef.h>
+
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 /* Python headers defines ssize_t and sets HAVE_SSIZE_T.
@@ -92,7 +91,7 @@ typedef int ssize_t;
 #define va_copy(x, y) ((x) = (y))
 #endif
 
-#if _MSC_VER <= 1200
+#if _MSC_VER <= 1310
    #ifndef __cplusplus
       /* VC6 math.h doesn't define some functions when in C mode.
        * Trying to define a prototype gives "undefined reference".
@@ -106,11 +105,7 @@ typedef int ssize_t;
       #define ceilf(x) ((float)ceil((double)x))
       #define floorf(x) ((float)floor((double)x))
       #define sqrtf(x) ((float)sqrt((double)x))
-   #endif
-
-   #ifndef _vscprintf
-      #define _vscprintf c89_vscprintf_retro__
-      int c89_vscprintf_retro__(const char *format, va_list pargs);
+      #define fabsf(x)    ((float)fabs((double)(x)))
    #endif
 
    #ifndef _strtoui64
@@ -129,4 +124,3 @@ typedef int ssize_t;
 
 #endif
 #endif
-

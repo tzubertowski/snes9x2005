@@ -7,6 +7,10 @@
 #endif
 #include <ctype.h>
 
+#ifndef LOAD_FROM_MEMORY
+#include <streams/file_stream.h>
+#endif
+
 #include "snes9x.h"
 #include "memmap.h"
 #include "cpuexec.h"
@@ -411,12 +415,12 @@ static void _splitpath (const char* path,
 }
 
 /* Read variable size MSB int from a file */
-static int32_t ReadInt(FILE* f, uint32_t nbytes)
+static int32_t ReadInt(RFILE* f, uint32_t nbytes)
 {
    int32_t v = 0;
    while (nbytes--)
    {
-      int32_t c = fgetc(f);
+      int32_t c = filestream_getc(f);
       if (c == EOF)
          return -1;
       v = (v << 8) | (c & 0xFF);
@@ -443,19 +447,28 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
    char  name [_MAX_FNAME + 1];
    char  ext [_MAX_EXT + 1];
    char  fname [_MAX_PATH + 1];
-   FILE*  patch_file  = NULL;
+   RFILE *patch_file = NULL;
    int32_t offset = header ? 512 : 0;
 
    _splitpath(rom_filename, dir, name, ext);
    _makepath(fname, dir, name, "ips");
 
-   if (!(patch_file = fopen(fname, "rb")))
-      if (!(patch_file = fopen(S9xGetFilename("ips"), "rb")))
-         return;
+   patch_file = filestream_open(fname, RETRO_VFS_FILE_ACCESS_READ,
+         RETRO_VFS_FILE_ACCESS_HINT_NONE);
 
-   if (fread(fname, 1, 5, patch_file) != 5 || strncmp(fname, "PATCH", 5) != 0)
+   if (!patch_file)
    {
-      fclose(patch_file);
+      patch_file = filestream_open(S9xGetFilename("ips"),
+            RETRO_VFS_FILE_ACCESS_READ, RETRO_VFS_FILE_ACCESS_HINT_NONE);
+
+      if (!patch_file)
+         return;
+   }
+
+   if (filestream_read(patch_file, fname, 5) != 5 ||
+       strncmp(fname, "PATCH", 5) != 0)
+   {
+      filestream_close(patch_file);
       return;
    }
 
@@ -488,7 +501,7 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
 
          while (len--)
          {
-            rchar = fgetc(patch_file);
+            rchar = filestream_getc(patch_file);
             if (rchar == EOF)
                goto err_eof;
             Memory.ROM [ofs++] = (uint8_t) rchar;
@@ -502,7 +515,7 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
          if (rlen == -1)
             goto err_eof;
 
-         rchar = fgetc(patch_file);
+         rchar = filestream_getc(patch_file);
          if (rchar == EOF)
             goto err_eof;
 
@@ -521,17 +534,17 @@ static void CheckForIPSPatch(const char* rom_filename, bool header, int32_t* rom
    ofs = ReadInt(patch_file, 3);
    if (ofs != -1 && ofs - offset < *rom_size)
       *rom_size = ofs - offset; /* Need to truncate ROM image */
-   fclose(patch_file);
+   filestream_close(patch_file);
    return;
 
 err_eof:
    if (patch_file)
-      fclose(patch_file);
+      filestream_close(patch_file);
 }
 
 static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsize)
 {
-   FILE* ROMFile;
+   RFILE* ROMFile = NULL;
    int32_t len = 0;
 
    char dir [_MAX_DIR + 1];
@@ -549,7 +562,10 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
    memmove(&ext [0], &ext[1], 4);
 #endif
 
-   if ((ROMFile = fopen(fname, "rb")) == NULL)
+   ROMFile = filestream_open(fname, RETRO_VFS_FILE_ACCESS_READ,
+         RETRO_VFS_FILE_ACCESS_HINT_NONE);
+
+   if (!ROMFile)
       return 0;
 
    Memory.HeaderCount = 0;
@@ -557,8 +573,8 @@ static uint32_t FileLoader(uint8_t* buffer, const char* filename, int32_t maxsiz
 
    {
       int32_t calc_size;
-      FileSize = fread(ptr, 1, maxsize + 0x200 - (ptr - Memory.ROM), ROMFile);
-      fclose(ROMFile);
+      FileSize = filestream_read(ROMFile, ptr, maxsize + 0x200 - (ptr - Memory.ROM));
+      filestream_close(ROMFile);
       calc_size = FileSize & ~0x1FFF; /* round to the lower 0x2000 */
 
       if ((FileSize - calc_size == 512 && !Settings.ForceNoHeader) 
