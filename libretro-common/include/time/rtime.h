@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (boolean.h).
+ * The following license statement only applies to this file (rtime.h).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,20 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __LIBRETRO_SDK_BOOLEAN_H
-#define __LIBRETRO_SDK_BOOLEAN_H
+#ifndef __LIBRETRO_SDK_RTIME_H__
+#define __LIBRETRO_SDK_RTIME_H__
 
-#ifndef __cplusplus
+#include <retro_common_api.h>
 
-#if defined(_MSC_VER) && _MSC_VER < 1800 && !defined(SN_TARGET_PS3)
-/* Hack applied for MSVC when compiling in C89 mode as it isn't C99 compliant. */
-#define bool unsigned char
-#define true 1
-#define false 0
-#else
-#include <stdbool.h>
-#endif
+#include <stdint.h>
+#include <stddef.h>
+#include <time.h>
 
-#endif
+RETRO_BEGIN_DECLS
+
+/* TODO/FIXME: Move all generic time handling functions
+ * to this file */
+
+/* Must be called before using rtime_localtime() */
+void rtime_init(void);
+
+/* Must be called upon program termination */
+void rtime_deinit(void);
+
+/* Thread-safe wrapper for localtime() */
+struct tm *rtime_localtime(const time_t *timep, struct tm *result);
+
+RETRO_END_DECLS
 
 #endif

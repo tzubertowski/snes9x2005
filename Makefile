@@ -562,6 +562,7 @@ else
 		-Wno-sign-compare \
 		-Wno-unused-variable \
 		-Wno-unused-function \
+		-Wno-unused-parameter \
 		-Wno-uninitialized \
 		-Wno-strict-aliasing \
 		-Wno-overflow \

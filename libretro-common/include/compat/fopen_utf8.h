@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (boolean.h).
+ * The following license statement only applies to this file (fopen_utf8.h).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,20 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __LIBRETRO_SDK_BOOLEAN_H
-#define __LIBRETRO_SDK_BOOLEAN_H
+#ifndef __LIBRETRO_SDK_COMPAT_FOPEN_UTF8_H
+#define __LIBRETRO_SDK_COMPAT_FOPEN_UTF8_H
 
-#ifndef __cplusplus
-
-#if defined(_MSC_VER) && _MSC_VER < 1800 && !defined(SN_TARGET_PS3)
-/* Hack applied for MSVC when compiling in C89 mode as it isn't C99 compliant. */
-#define bool unsigned char
-#define true 1
-#define false 0
+#ifdef _WIN32
+/* Defined to error rather than fopen_utf8, to make it clear to everyone reading the code that not worrying about utf16 is fine */
+/* TODO: enable */
+/* #define fopen (use fopen_utf8 instead) */
+void *fopen_utf8(const char * filename, const char * mode);
 #else
-#include <stdbool.h>
+#define fopen_utf8 fopen
 #endif
-
-#endif
-
 #endif

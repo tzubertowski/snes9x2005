@@ -1,7 +1,7 @@
 /* Copyright  (C) 2010-2020 The RetroArch team
  *
  * ---------------------------------------------------------------------------------------
- * The following license statement only applies to this file (boolean.h).
+ * The following license statement only applies to this file (fopen_utf8.c).
  * ---------------------------------------------------------------------------------------
  *
  * Permission is hereby granted, free of charge,
@@ -20,20 +20,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __LIBRETRO_SDK_BOOLEAN_H
-#define __LIBRETRO_SDK_BOOLEAN_H
+#include <compat/fopen_utf8.h>
+#include <encodings/utf.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#ifndef __cplusplus
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0500 || defined(_XBOX)
+#ifndef LEGACY_WIN32
+#define LEGACY_WIN32
+#endif
+#endif
 
-#if defined(_MSC_VER) && _MSC_VER < 1800 && !defined(SN_TARGET_PS3)
-/* Hack applied for MSVC when compiling in C89 mode as it isn't C99 compliant. */
-#define bool unsigned char
-#define true 1
-#define false 0
+#ifdef _WIN32
+#undef fopen
+
+void *fopen_utf8(const char * filename, const char * mode)
+{
+#if defined(LEGACY_WIN32)
+   FILE             *ret = NULL;
+   char * filename_local = utf8_to_local_string_alloc(filename);
+
+   if (!filename_local)
+      return NULL;
+   ret = fopen(filename_local, mode);
+   if (filename_local)
+      free(filename_local);
+   return ret;
 #else
-#include <stdbool.h>
-#endif
+   wchar_t * filename_w = utf8_to_utf16_string_alloc(filename);
+   wchar_t * mode_w = utf8_to_utf16_string_alloc(mode);
+   FILE* ret = NULL;
 
+   if (filename_w && mode_w)
+      ret = _wfopen(filename_w, mode_w);
+   if (filename_w)
+      free(filename_w);
+   if (mode_w)
+      free(mode_w);
+   return ret;
 #endif
-
+}
 #endif
