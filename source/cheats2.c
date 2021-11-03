@@ -1,6 +1,5 @@
 #include "../copyright"
 
-#include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include "snes9x.h"

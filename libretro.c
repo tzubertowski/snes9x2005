@@ -1,7 +1,5 @@
 #include "copyright"
 
-#include <stdio.h>
-
 #include "snes9x.h"
 #include "soundux.h"
 #include "memmap.h"
