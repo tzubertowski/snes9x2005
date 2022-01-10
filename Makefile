@@ -282,6 +282,17 @@ else ifeq ($(platform), gcw0)
 	FLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32r2 -mhard-float
 	FLAGS += -DFAST_LSB_WORD_ACCESS
 
+# MIYOO
+else ifeq ($(platform), miyoo)
+	TARGET := $(TARGET_NAME)_libretro.so
+	CC = /opt/miyoo/usr/bin/arm-linux-gcc
+   	CXX = /opt/miyoo/usr/bin/arm-linux-g++
+   	AR = /opt/miyoo/usr/bin/arm-linux-ar
+	fpic := -fPIC -nostdlib
+	SHARED := -shared -Wl,--version-script=link.T
+	LIBM :=
+	FLAGS += -fomit-frame-pointer -ffast-math -march=armv5te -mtune=arm926ej-s
+
 # (armv7 a7, hard point, neon based) ### 
 # NESC, SNESC, C64 mini 
 else ifeq ($(platform), classic_armv7_a7)
