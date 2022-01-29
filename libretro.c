@@ -689,7 +689,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info)
 void retro_reset(void)
 {
    CPU.Flags = 0;
-   S9xReset();
+   S9xSoftReset();
 }
 
 size_t retro_serialize_size(void)
