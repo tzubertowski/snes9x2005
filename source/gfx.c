@@ -423,7 +423,7 @@ void S9xStartScreenRefresh(void)
       GFX.Delta = (GFX.SubScreen - GFX.Screen) >> 1;
    }
 
-   if (++IPPU.FrameCount % Memory.ROMFramesPerSecond == 0)
+   if (++IPPU.FrameCount == (uint32_t)Memory.ROMFramesPerSecond)
       IPPU.FrameCount = 0;
 }
 
