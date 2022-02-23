@@ -352,7 +352,7 @@ void DSP1SetByte(uint8_t byte, uint16_t address)
                   Op11m = (int16_t)(DSP1.parameters [0] | (DSP1.parameters[1] << 8));
                   Op11Zr = (int16_t)(DSP1.parameters [2] | (DSP1.parameters[3] << 8));
                   Op11Yr = (int16_t)(DSP1.parameters [4] | (DSP1.parameters[5] << 8));
-                  Op11Xr = (int16_t)(DSP1.parameters [7] | (DSP1.parameters[7] << 8));
+                  Op11Xr = (int16_t)(DSP1.parameters [6] | (DSP1.parameters[7] << 8));
                   DSPOp11();
                   break;
                case 0x25:

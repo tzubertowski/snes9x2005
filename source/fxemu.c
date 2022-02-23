@@ -2,6 +2,7 @@
 
 #include "fxemu.h"
 #include "fxinst.h"
+#include "memmap.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,33 +31,27 @@ void fx_updateRamBank(uint8_t Byte)
 
 static INLINE void fx_readRegisterSpaceForCheck(void)
 {
-   R15 = GSU.pvRegisters[30];
-   R15 |= ((uint32_t) GSU.pvRegisters[31]) << 8;
+   R15 = (uint32_t) READ_WORD(&GSU.pvRegisters[30]);
 }
 
 static void fx_readRegisterSpaceForUse(void)
 {
-   static uint32_t avHeight[] = { 128, 160, 192, 256 };
-   static uint32_t avMult[] = { 16, 32, 32, 64 };
+   static const uint32_t avHeight[] = { 128, 160, 192, 256 };
+   static const uint32_t avMult[] = { 16, 32, 32, 64 };
    int32_t i;
    uint8_t* p = GSU.pvRegisters;
 
    /* Update R0 - R14 */
-   for (i = 0; i < 15; i++)
-   {
-      GSU.avReg[i] = *p++;
-      GSU.avReg[i] += ((uint32_t)(*p++)) << 8;
-   }
+   for (i = 0; i < 15; i++, p += 2)
+      GSU.avReg[i] = (uint32_t) READ_WORD(p);
 
    /* Update other registers */
    p = GSU.pvRegisters;
-   GSU.vStatusReg = (uint32_t) GSU.pvRegisters[GSU_SFR];
-   GSU.vStatusReg |= ((uint32_t) GSU.pvRegisters[GSU_SFR + 1]) << 8;
+   GSU.vStatusReg = (uint32_t) READ_WORD(&GSU.pvRegisters[GSU_SFR]);
    GSU.vPrgBankReg = (uint32_t) GSU.pvRegisters[GSU_PBR];
    GSU.vRomBankReg = (uint32_t)p[GSU_ROMBR];
    GSU.vRamBankReg = ((uint32_t)p[GSU_RAMBR]) & (FX_RAM_BANKS - 1);
-   GSU.vCacheBaseReg = (uint32_t)p[GSU_CBR];
-   GSU.vCacheBaseReg |= ((uint32_t)p[GSU_CBR + 1]) << 8;
+   GSU.vCacheBaseReg = (uint32_t) READ_WORD(&p[GSU_CBR]);
 
    /* Update status register variables */
    GSU.vZero = !(GSU.vStatusReg & FLG_Z);
@@ -146,19 +141,15 @@ void fx_computeScreenPointers(void)
 
 static INLINE void fx_writeRegisterSpaceAfterCheck(void)
 {
-   GSU.pvRegisters[30] = (uint8_t) R15;
-   GSU.pvRegisters[31] = (uint8_t) (R15 >> 8);
+   WRITE_WORD(&GSU.pvRegisters[30], R15);
 }
 
 static void fx_writeRegisterSpaceAfterUse(void)
 {
    int32_t i;
    uint8_t* p = GSU.pvRegisters;
-   for (i = 0; i < 15; i++)
-   {
-      *p++ = (uint8_t)GSU.avReg[i];
-      *p++ = (uint8_t)(GSU.avReg[i] >> 8);
-   }
+   for (i = 0; i < 15; i++, p += 2)
+      WRITE_WORD(p, GSU.avReg[i]);
 
    /* Update status register */
    if (USEX16(GSU.vZero) == 0)
@@ -179,13 +170,11 @@ static void fx_writeRegisterSpaceAfterUse(void)
       CF(CY);
 
    p = GSU.pvRegisters;
-   p[GSU_SFR] = (uint8_t) GSU.vStatusReg;
-   p[GSU_SFR + 1] = (uint8_t) (GSU.vStatusReg >> 8);
+   WRITE_WORD(&p[GSU_SFR], GSU.vStatusReg);
    p[GSU_PBR] = (uint8_t) GSU.vPrgBankReg;
    p[GSU_ROMBR] = (uint8_t)GSU.vRomBankReg;
    p[GSU_RAMBR] = (uint8_t)GSU.vRamBankReg;
-   p[GSU_CBR] = (uint8_t)GSU.vCacheBaseReg;
-   p[GSU_CBR + 1] = (uint8_t)(GSU.vCacheBaseReg >> 8);
+   WRITE_WORD(&p[GSU_CBR], GSU.vCacheBaseReg);
 }
 
 /* Reset the FxChip */
