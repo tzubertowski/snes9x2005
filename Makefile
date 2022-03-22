@@ -286,6 +286,7 @@ else ifeq ($(platform), miyoo)
 	SHARED := -shared -Wl,--version-script=link.T
 	LIBM :=
 	FLAGS += -fomit-frame-pointer -ffast-math -march=armv5te -mtune=arm926ej-s
+	FLAGS += -DFAST_ALIGNED_LSB_WORD_ACCESS -fno-unroll-loops
 
 # (armv7 a7, hard point, neon based) ### 
 # NESC, SNESC, C64 mini 
