@@ -48,14 +48,19 @@ bool overclock_cycles = false;
 bool reduce_sprite_flicker = false;
 int one_c, slow_one_c, two_c;
 
-#ifdef _WIN32
-   char slash = '\\';
-#else
-   char slash = '/';
-#endif
+#define VIDEO_REFRESH_RATE_PAL  (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_PAL_VCOUNTER))
+#define VIDEO_REFRESH_RATE_NTSC (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_NTSC_VCOUNTER))
+#define AUDIO_SAMPLE_RATE       32040
 
-static int32_t samples_per_frame = 0;
-static int32_t samplerate = (((SNES_CLOCK_SPEED * 6) / (32 * ONE_APU_CYCLE)));
+static int16_t *audio_out_buffer       = NULL;
+#ifdef USE_BLARGG_APU
+static size_t audio_out_buffer_size    = 0;
+static size_t audio_out_buffer_pos     = 0;
+static size_t audio_batch_frames_max   = (1 << 16);
+#else
+static float audio_samples_per_frame   = 0.0f;
+static float audio_samples_accumulator = 0.0f;
+#endif
 
 static unsigned frameskip_type             = 0;
 static unsigned frameskip_threshold        = 0;
@@ -266,7 +271,10 @@ static void init_sfc_setting(void)
 {
    memset(&Settings, 0, sizeof(Settings));
    Settings.JoystickEnabled = false;
-   Settings.SoundPlaybackRate = samplerate;
+   Settings.SoundPlaybackRate = AUDIO_SAMPLE_RATE;
+#ifdef USE_BLARGG_APU
+   Settings.SoundInputRate = AUDIO_SAMPLE_RATE;
+#endif
    Settings.CyclesPercentage = 100;
 
    Settings.DisableSoundEcho = false;
@@ -288,19 +296,126 @@ static void init_sfc_setting(void)
    Settings.HBlankStart = (256 * Settings.H_Max) / SNES_HCOUNTER_MAX;
 }
 
+static void audio_out_buffer_init(void)
+{
+   float refresh_rate        = (float)((Settings.PAL) ?
+         VIDEO_REFRESH_RATE_PAL : VIDEO_REFRESH_RATE_NTSC);
+   float samples_per_frame   = (float)AUDIO_SAMPLE_RATE / refresh_rate;
+   size_t buffer_size        = ((size_t)samples_per_frame + 1) << 1;
+
+   audio_out_buffer          = (int16_t *)malloc(buffer_size * sizeof(int16_t));
+#ifdef USE_BLARGG_APU
+   audio_out_buffer_size     = buffer_size;
+   audio_out_buffer_pos      = 0;
+   audio_batch_frames_max    = (1 << 16);
+#else
+   audio_samples_per_frame   = samples_per_frame;
+   audio_samples_accumulator = 0.0f;
+#endif
+}
+
+static void audio_out_buffer_deinit(void)
+{
+   if (audio_out_buffer)
+      free(audio_out_buffer);
+   audio_out_buffer = NULL;
+
+#ifdef USE_BLARGG_APU
+   audio_out_buffer_size     = 0;
+   audio_out_buffer_pos      = 0;
+   audio_batch_frames_max    = (1 << 16);
+#else
+   audio_samples_per_frame   = 0.0f;
+   audio_samples_accumulator = 0.0f;
+#endif
+}
+
 #ifdef USE_BLARGG_APU
 static void S9xAudioCallback(void)
 {
-   size_t avail;
-   /* Just pick a big buffer. We won't use it all. */
-   static int16_t audio_buf[0x20000];
+   size_t available_samples;
+   size_t buffer_capacity = audio_out_buffer_size -
+         audio_out_buffer_pos;
 
    S9xFinalizeSamples();
-   avail = S9xGetSampleCount();
-   S9xMixSamples(audio_buf, avail);
-   audio_batch_cb(audio_buf, avail >> 1);
+   available_samples = S9xGetSampleCount();
+
+   if (buffer_capacity < available_samples)
+   {
+      int16_t *tmp_buffer = NULL;
+      size_t tmp_buffer_size;
+      size_t i;
+
+      tmp_buffer_size = audio_out_buffer_size + (available_samples - buffer_capacity);
+      tmp_buffer_size = (tmp_buffer_size << 1) - (tmp_buffer_size >> 1);
+      tmp_buffer      = (int16_t *)malloc(tmp_buffer_size * sizeof(int16_t));
+
+      for (i = 0; i < audio_out_buffer_pos; i++)
+         tmp_buffer[i] = audio_out_buffer[i];
+
+      free(audio_out_buffer);
+
+      audio_out_buffer      = tmp_buffer;
+      audio_out_buffer_size = tmp_buffer_size;
+   }
+
+   S9xMixSamples(audio_out_buffer + audio_out_buffer_pos,
+         available_samples);
+   audio_out_buffer_pos += available_samples;
 }
 #endif
+
+static void audio_upload_samples(void)
+{
+   size_t available_frames;
+#ifdef USE_BLARGG_APU
+   int16_t *audio_out_buffer_ptr;
+
+   S9xAudioCallback();
+
+   audio_out_buffer_ptr = audio_out_buffer;
+   available_frames     = audio_out_buffer_pos >> 1;
+
+   /* Since the audio output buffer can
+    * (theoretically) have an arbitrarily size,
+    * we must write it in chunks of the largest
+    * size supported by the frontend
+    * (this is not required for the non-blargg
+    * code path, since the buffer size has well
+    * defined limits in that case) */
+   while (available_frames > 0)
+   {
+      size_t frames_to_write = (available_frames >
+            audio_batch_frames_max) ?
+                  audio_batch_frames_max :
+                  available_frames;
+      size_t frames_written = audio_batch_cb(
+            audio_out_buffer_ptr, frames_to_write);
+
+      if ((frames_written < frames_to_write) &&
+          (frames_written > 0))
+         audio_batch_frames_max = frames_written;
+
+      available_frames     -= frames_to_write;
+      audio_out_buffer_ptr += frames_to_write << 1;
+   }
+
+   audio_out_buffer_pos = 0;
+#else
+   available_frames           = (size_t)audio_samples_per_frame;
+   audio_samples_accumulator += audio_samples_per_frame -
+         (float)available_frames;
+
+   if (audio_samples_accumulator > 1.0f)
+   {
+      available_frames          += 1;
+      audio_samples_accumulator -= 1.0f;
+   }
+
+   S9xMixSamples(audio_out_buffer, available_frames << 1);
+   audio_batch_cb(audio_out_buffer, available_frames);
+#endif
+}
 
 void retro_init(void)
 {
@@ -326,7 +441,7 @@ void retro_init(void)
    S9xInitDisplay();
    S9xInitGFX();
 #ifdef USE_BLARGG_APU
-   S9xInitSound(1000, 0); /* just give it a 1 second buffer */
+   S9xInitSound(0, 0); /* Use default values */
    S9xSetSamplesAvailableCallback(S9xAudioCallback);
 #else
    S9xInitSound();
@@ -350,6 +465,8 @@ void retro_deinit(void)
 #ifdef PERF_TEST
    perf_cb.perf_log();
 #endif
+
+   audio_out_buffer_deinit();
 
    /* Reset globals (required for static builds) */
    libretro_supports_option_categories = false;
@@ -404,20 +521,18 @@ uint32_t S9xReadJoypad(int32_t port)
 static void check_variables(bool first_run)
 {
    struct retro_variable var;
-   bool prev_force_ntsc;
-   bool prev_force_pal;
    bool prev_frameskip_type;
 
-   var.key = "snes9x_2005_region";
-   var.value = NULL;
-
-   prev_force_ntsc = Settings.ForceNTSC;
-   prev_force_pal  = Settings.ForcePAL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+   if (first_run)
    {
-      Settings.ForceNTSC = !strcmp(var.value, "NTSC");
-      Settings.ForcePAL  = !strcmp(var.value, "PAL");
+      var.key = "snes9x_2005_region";
+      var.value = NULL;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+         Settings.ForceNTSC = !strcmp(var.value, "NTSC");
+         Settings.ForcePAL  = !strcmp(var.value, "PAL");
+      }
    }
 
    var.key = "snes9x_2005_frameskip";
@@ -478,21 +593,15 @@ static void check_variables(bool first_run)
 
    /* Reinitialise frameskipping, if required */
    if (!first_run &&
-       ((frameskip_type     != prev_frameskip_type) ||
-        (Settings.ForceNTSC != prev_force_ntsc)     ||
-        (Settings.ForcePAL  != prev_force_pal)))
+       (frameskip_type != prev_frameskip_type))
       retro_set_audio_buff_status_cb();
 }
 
-static int32_t samples_to_play = 0;
 void retro_run(void)
 {
    bool updated = false;
    int result;
    bool okay;
-#ifndef USE_BLARGG_APU
-   static int16_t audio_buf[2048];
-#endif
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
       check_variables(false);
@@ -578,20 +687,8 @@ void retro_run(void)
    S9xMainLoop();
    RETRO_PERFORMANCE_STOP(S9xMainLoop_func);
 
-#ifndef USE_BLARGG_APU
-   samples_to_play += samples_per_frame;
-
-   if (samples_to_play > 512)
-   {
-      S9xMixSamples(audio_buf, samples_to_play * 2);
-      audio_batch_cb(audio_buf, samples_to_play);
-      samples_to_play = 0;
-   }
-#else
-   S9xAudioCallback();
-#endif
-
 #ifdef NO_VIDEO_OUTPUT
+   audio_upload_samples();
    return;
 #endif
 
@@ -616,6 +713,8 @@ void retro_run(void)
    }
    else
       video_cb(NULL, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch);
+
+   audio_upload_samples();
 }
 
 bool S9xReadMousePosition(int32_t which1, int32_t* x, int32_t* y, uint32_t* buttons)
@@ -672,18 +771,15 @@ void retro_get_system_info(struct retro_system_info* info)
 
 void retro_get_system_av_info(struct retro_system_av_info* info)
 {
-   info->geometry.base_width = 256;
-   info->geometry.base_height = 224;
-   info->geometry.max_width = 512;
-   info->geometry.max_height = 512;
+   info->geometry.base_width   = 256;
+   info->geometry.base_height  = 224;
+   info->geometry.max_width    = 512;
+   info->geometry.max_height   = 512;
    info->geometry.aspect_ratio = 4.0 / 3.0;
 
-   if (!Settings.PAL)
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_NTSC_VCOUNTER));
-   else
-      info->timing.fps = (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_PAL_VCOUNTER));
-
-   info->timing.sample_rate = samplerate;
+   info->timing.sample_rate    = AUDIO_SAMPLE_RATE;
+   info->timing.fps            = (Settings.PAL) ?
+         VIDEO_REFRESH_RATE_PAL : VIDEO_REFRESH_RATE_NTSC;
 }
 
 void retro_reset(void)
@@ -958,7 +1054,6 @@ static void init_descriptors(void)
 
 bool retro_load_game(const struct retro_game_info* game)
 {
-   struct retro_system_av_info av_info;
    if (!game)
       return false;
 
@@ -976,14 +1071,11 @@ bool retro_load_game(const struct retro_game_info* game)
    Settings.FrameTime = (Settings.PAL ? Settings.FrameTimePAL : Settings.FrameTimeNTSC);
 
    retro_set_audio_buff_status_cb();
-   retro_get_system_av_info(&av_info);
-
-#ifdef USE_BLARGG_APU
-   Settings.SoundPlaybackRate = av_info.timing.sample_rate;
-#else
-   samples_per_frame = av_info.timing.sample_rate / av_info.timing.fps;
+   audio_out_buffer_init();
+#ifndef USE_BLARGG_APU
    S9xSetPlaybackRate(Settings.SoundPlaybackRate);
 #endif
+
    return true;
 }
 
