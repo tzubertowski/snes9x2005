@@ -66,7 +66,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
 
    {
       "snes9x_2005_region",
-      "Console Region",
+      "Console Region (Restart)",
       NULL,
       "Specify which region the system is from. 'PAL' is 50hz, 'NTSC' is 60hz. Games will run faster or slower than normal if the incorrect region is selected.",
       NULL,
