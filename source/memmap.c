@@ -217,7 +217,7 @@ static int32_t ScoreLoROM(bool skip_header, int32_t romoff)
 
 static char* Safe(const char* s)
 {
-   static char* safe;
+   static char* safe = NULL;
    static int32_t safe_len = 0;
    int32_t i;
    int32_t len;
@@ -338,7 +338,7 @@ void S9xDeinitMemory(void)
       Memory.BSRAM = NULL;
    }
 
-   for (t = 0; t < 2; t++)
+   for (t = 0; t <= TILE_8BIT; t++)
    {
       if (IPPU.TileCache[t])
       {
@@ -351,6 +351,10 @@ void S9xDeinitMemory(void)
          IPPU.TileCached[t] = NULL;
       }
    }
+
+   /* Ensure that we free the static char
+    * array allocated by Safe() */
+   Safe(NULL);
 }
 
 #ifndef LOAD_FROM_MEMORY
