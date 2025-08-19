@@ -24,7 +24,11 @@ extern uint8_t* HDMAMemPointers [8];
 
 void S9xLatchCounters(bool force)
 {
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect(!force && !(Memory.FillRAM[0x4213] & 0x80), 0))
+#else
    if (!force && !(Memory.FillRAM[0x4213] & 0x80))
+#endif
       return;
 
    PPU.VBeamPosLatched = (uint16_t) CPU.V_Counter;
@@ -37,13 +41,21 @@ void S9xUpdateJustifiers();
 
 void S9xUpdateHTimer()
 {
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect(PPU.HTimerEnabled, 0))
+#else
    if (PPU.HTimerEnabled)
+#endif
    {
       PPU.HTimerPosition = PPU.IRQHBeamPos * Settings.H_Max / SNES_HCOUNTER_MAX;
       if (PPU.HTimerPosition == Settings.H_Max || PPU.HTimerPosition == Settings.HBlankStart)
          PPU.HTimerPosition--;
 
+#ifdef SF2000_ARITHMETIC_OPTS
+      if (__builtin_expect(!PPU.VTimerEnabled || CPU.V_Counter == PPU.IRQVBeamPos, 1))
+#else
       if (!PPU.VTimerEnabled || CPU.V_Counter == PPU.IRQVBeamPos)
+#endif
       {
          if (PPU.HTimerPosition < CPU.Cycles)
          {
@@ -171,8 +183,15 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
          if (Byte != Memory.FillRAM [0x2101])
          {
             FLUSH_REDRAW();
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(Byte != Memory.FillRAM [0x2101], 1))
+            {
+#endif
             PPU.OBJNameBase   = (Byte & 3) << 14;
             PPU.OBJNameSelect = ((Byte >> 3) & 3) << 13;
+#ifdef SF2000_ARITHMETIC_OPTS
+            }
+#endif
             PPU.OBJSizeSelect = (Byte >> 5) & 7;
             IPPU.OBJChanged = true;
          }
@@ -319,7 +338,11 @@ void S9xSetPPU(uint8_t Byte, uint16_t Address)
             static uint16_t Shift [4] = { 0, 5, 6, 7 };
             uint8_t i = (Byte & 0x0c) >> 2;
             PPU.VMA.FullGraphicCount = IncCount [i];
+#ifdef SF2000_ARITHMETIC_OPTS
+            PPU.VMA.Mask1 = (IncCount [i] << 3) - 1;
+#else
             PPU.VMA.Mask1 = IncCount [i] * 8 - 1;
+#endif
             PPU.VMA.Shift = Shift [i];
          }
          else
@@ -1803,8 +1826,13 @@ void S9xResetPPU()
    IPPU.Joypads[3] = IPPU.Joypads[4] = 0;
    IPPU.SuperScope = 0;
    IPPU.Mouse[0] = IPPU.Mouse[1] = 0;
+#ifdef SF2000_ARITHMETIC_OPTS
+   IPPU.PrevMouseX[0] = IPPU.PrevMouseX[1] = 256 >> 1;
+   IPPU.PrevMouseY[0] = IPPU.PrevMouseY[1] = 224 >> 1;
+#else
    IPPU.PrevMouseX[0] = IPPU.PrevMouseX[1] = 256 / 2;
    IPPU.PrevMouseY[0] = IPPU.PrevMouseY[1] = 224 / 2;
+#endif
 
    for (c = 0; c < 0x8000; c += 0x100)
    {

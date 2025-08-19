@@ -147,7 +147,11 @@ void S9xSetByte(uint8_t Byte, uint32_t Address)
    uint8_t* SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
    CPU.WaitAddress = NULL;
 
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA, 1))
+#else
    if ((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA)
+#endif
       CPU.Cycles += Memory.MemorySpeed [block];
 
    if (SetAddress >= (uint8_t*) MAP_LAST)
@@ -227,7 +231,11 @@ void S9xSetWord(uint16_t Word, uint32_t Address)
    CPU.WaitAddress = NULL;
    SetAddress = Memory.WriteMap [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
 
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA, 1))
+#else
    if ((intptr_t) SetAddress != MAP_CPU || !CPU.InDMA)
+#endif
       CPU.Cycles += Memory.MemorySpeed [block] << 1;
 
    if (SetAddress >= (uint8_t*) MAP_LAST)

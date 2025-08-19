@@ -396,7 +396,11 @@ void S9xStartScreenRefresh(void)
             IPPU.RenderedScreenHeight = PPU.ScreenHeight << 1;
             IPPU.DoubleHeightPixels = true;
             GFX.Pitch2 = GFX.RealPitch;
+#ifdef SF2000_ARITHMETIC_OPTS
+            GFX.Pitch = GFX.RealPitch << 1;
+#else
             GFX.Pitch = GFX.RealPitch * 2;
+#endif
             GFX.PPL = GFX.PPLx2 = GFX.RealPitch;
          }
          else
@@ -909,7 +913,11 @@ static void DrawOBJS(bool OnMain, uint8_t D)
             TileInc = -1;
          }
 
+#ifdef SF2000_ARITHMETIC_OPTS
+         GFX.Z2 = ((PPU.OBJ[S].Priority + 1) << 2) + D;
+#else
          GFX.Z2 = (PPU.OBJ[S].Priority + 1) * 4 + D;
+#endif
 
          X = PPU.OBJ[S].HPos;
          if (X == -256)
@@ -1574,8 +1582,13 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
          }
          else
          {
+#ifdef SF2000_ARITHMETIC_OPTS
+            Left = GFX.pCurrentClip->Left [clip][bg] << 1;
+            Right = GFX.pCurrentClip->Right [clip][bg] << 1;
+#else
             Left = GFX.pCurrentClip->Left [clip][bg] * 2;
             Right = GFX.pCurrentClip->Right [clip][bg] * 2;
+#endif
 
             if (Right <= Left)
                continue;
@@ -1700,7 +1713,11 @@ static void DrawBackgroundMode5(uint32_t bg, uint8_t Z1, uint8_t Z2)
          }
       }
    }
+#ifdef SF2000_ARITHMETIC_OPTS
+   GFX.Pitch = IPPU.DoubleHeightPixels ? (GFX.RealPitch << 1) : GFX.RealPitch;
+#else
    GFX.Pitch = IPPU.DoubleHeightPixels ? GFX.RealPitch * 2 : GFX.RealPitch;
+#endif
    GFX.PPL = IPPU.DoubleHeightPixels ? GFX.PPLx2 : (GFX.PPLx2 >> 1);
 }
 
@@ -2771,8 +2788,13 @@ void S9xUpdateScreen(void)
 
       if (IPPU.DoubleHeightPixels)
       {
+#ifdef SF2000_ARITHMETIC_OPTS
+         starty = GFX.StartY << 1;
+         endy = (GFX.EndY << 1) + 1;
+#else
          starty = GFX.StartY * 2;
          endy = GFX.EndY * 2 + 1;
+#endif
       }
 
       if ((PPU.BGMode == 5 || PPU.BGMode == 6) && !IPPU.DoubleWidthPixels)
