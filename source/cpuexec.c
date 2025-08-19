@@ -109,7 +109,11 @@ void S9xMainLoop_SA1_SFX()
          CPU.Cycles += CPU.MemSpeed;
          (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
 
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(SA1.Executing, 0))
+#else
          if (SA1.Executing)
+#endif
             S9xSA1MainLoop();
          DO_HBLANK_CHECK_SFX();
 
@@ -209,7 +213,11 @@ void S9xMainLoop_SA1_NoSFX()
          CPU.Cycles += CPU.MemSpeed;
          (*ICPU.S9xOpcodes [*CPU.PC++].S9xOpcode)();
 
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(SA1.Executing, 0))
+#else
          if (SA1.Executing)
+#endif
             S9xSA1MainLoop();
          DO_HBLANK_CHECK_NoSFX();
 

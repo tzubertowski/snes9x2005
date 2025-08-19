@@ -15,7 +15,11 @@ uint8_t S9xGetByte(uint32_t Address)
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
 
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect((intptr_t) GetAddress != MAP_CPU || !CPU.InDMA, 1))
+#else
    if ((intptr_t) GetAddress != MAP_CPU || !CPU.InDMA)
+#endif
       CPU.Cycles += Memory.MemorySpeed [block];
 
    if (GetAddress >= (uint8_t*) MAP_LAST)
@@ -74,7 +78,11 @@ uint16_t S9xGetWord(uint32_t Address)
 
    GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
 
+#ifdef SF2000_ARITHMETIC_OPTS
+   if (__builtin_expect((intptr_t) GetAddress != MAP_CPU || !CPU.InDMA, 1))
+#else
    if ((intptr_t) GetAddress != MAP_CPU || !CPU.InDMA)
+#endif
       CPU.Cycles += (Memory.MemorySpeed [block] << 1);
 
    if (GetAddress >= (uint8_t*) MAP_LAST)
