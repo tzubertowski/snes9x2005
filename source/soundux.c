@@ -495,8 +495,16 @@ static INLINE void MixStereo(int32_t sample_count)
          ch->next_sample = ch->block[ch->sample_pointer];
          ch->interpolate = 0;
 
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(Settings.InterpolatedSound && freq0 < FIXED_POINT && !mod, 0))
+#else
          if (Settings.InterpolatedSound && freq0 < FIXED_POINT && !mod)
+#endif
+#ifdef SF2000_ARITHMETIC_OPTS
+            ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq0) >> 16;
+#else
             ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq0) / (int32_t) FIXED_POINT;
+#endif
       }
 #ifdef SF2000_ARITHMETIC_OPTS
       VL = (ch->sample * ch-> left_vol_level) >> 7;
@@ -731,10 +739,22 @@ static INLINE void MixStereo(int32_t sample_count)
 
             if (ch->type == SOUND_SAMPLE)
             {
+#ifdef SF2000_ARITHMETIC_OPTS
+               if (__builtin_expect(Settings.InterpolatedSound && freq < FIXED_POINT && !mod, 0))
+#else
                if (Settings.InterpolatedSound && freq < FIXED_POINT && !mod)
+#endif
                {
+#ifdef SF2000_ARITHMETIC_OPTS
+                  ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq) >> 16;
+#else
                   ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq) / (int32_t) FIXED_POINT;
+#endif
+#ifdef SF2000_ARITHMETIC_OPTS
+                  ch->sample = (int16_t)(ch->sample + (((ch->next_sample - ch->sample) * (int32_t)(ch->count)) >> 16));
+#else
                   ch->sample = (int16_t)(ch->sample + (((ch->next_sample - ch->sample) * (int32_t)(ch->count)) / (int32_t) FIXED_POINT));
+#endif
                }
                else
                   ch->interpolate = 0;
