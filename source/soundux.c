@@ -162,8 +162,13 @@ void S9xSetSoundVolume(int32_t channel, int16_t volume_left, int16_t volume_righ
    Channel* ch = &SoundData.channels[channel];
    ch->volume_left = volume_left;
    ch->volume_right = volume_right;
+#ifdef SF2000_ARITHMETIC_OPTS
+   ch-> left_vol_level = (ch->envx * volume_left) >> 7;
+   ch->right_vol_level = (ch->envx * volume_right) >> 7;
+#else
    ch-> left_vol_level = (ch->envx * volume_left) / 128;
    ch->right_vol_level = (ch->envx * volume_right) / 128;
+#endif
 }
 
 void S9xSetMasterVolume(int16_t volume_left, int16_t volume_right)
@@ -322,8 +327,13 @@ void S9xSetEnvelopeHeight(int32_t channel, int32_t level)
    ch->envx = level;
    ch->envxx = level << ENVX_SHIFT;
 
+#ifdef SF2000_ARITHMETIC_OPTS
+   ch->left_vol_level = (level * ch->volume_left) >> 7;
+   ch->right_vol_level = (level * ch->volume_right) >> 7;
+#else
    ch->left_vol_level = (level * ch->volume_left) / 128;
    ch->right_vol_level = (level * ch->volume_right) / 128;
+#endif
 
    if (ch->envx == 0 && ch->state != SOUND_SILENT && ch->state != SOUND_GAIN)
       S9xAPUSetEndOfSample(channel, ch);
@@ -488,8 +498,16 @@ static INLINE void MixStereo(int32_t sample_count)
          if (Settings.InterpolatedSound && freq0 < FIXED_POINT && !mod)
             ch->interpolate = ((ch->next_sample - ch->sample) * (int32_t) freq0) / (int32_t) FIXED_POINT;
       }
+#ifdef SF2000_ARITHMETIC_OPTS
+      VL = (ch->sample * ch-> left_vol_level) >> 7;
+#else
       VL = (ch->sample * ch-> left_vol_level) / 128;
+#endif
+#ifdef SF2000_ARITHMETIC_OPTS
+      VR = (ch->sample * ch->right_vol_level) >> 7;
+#else
       VR = (ch->sample * ch->right_vol_level) / 128;
+#endif
 
       for (I = 0; I < (uint32_t) sample_count; I += 2)
       {
@@ -559,7 +577,11 @@ static INLINE void MixStereo(int32_t sample_count)
             case SOUND_RELEASE:
                while (ch->env_error >= FIXED_POINT)
                {
+#ifdef SF2000_ARITHMETIC_OPTS
+                  ch->envxx -= (MAX_ENVELOPE_HEIGHT << ENVX_SHIFT) >> 8;
+#else
                   ch->envxx -= (MAX_ENVELOPE_HEIGHT << ENVX_SHIFT) / 256;
+#endif
                   ch->env_error -= FIXED_POINT;
                }
                ch->envx = ch->envxx >> ENVX_SHIFT;
@@ -588,7 +610,11 @@ static INLINE void MixStereo(int32_t sample_count)
                {
                   while (ch->env_error >= FIXED_POINT)
                   {
+#ifdef SF2000_ARITHMETIC_OPTS
+                     ch->envxx += (MAX_ENVELOPE_HEIGHT << ENVX_SHIFT) >> 8;
+#else
                      ch->envxx += (MAX_ENVELOPE_HEIGHT << ENVX_SHIFT) / 256;
+#endif
                      ch->env_error -= FIXED_POINT;
                   }
                   ch->envx = ch->envxx >> ENVX_SHIFT;
@@ -636,10 +662,26 @@ static INLINE void MixStereo(int32_t sample_count)
                S9xSetEnvRate(ch, 0, -1, 0, 0);
                break;
             }
-            ch-> left_vol_level = (ch->envx * ch->volume_left) / 128;
-            ch->right_vol_level = (ch->envx * ch->volume_right) / 128;
-            VL = (ch->sample * ch-> left_vol_level) / 128;
-            VR = (ch->sample * ch->right_vol_level) / 128;
+   #ifdef SF2000_ARITHMETIC_OPTS
+         ch-> left_vol_level = (ch->envx * ch->volume_left) >> 7;
+#else
+         ch-> left_vol_level = (ch->envx * ch->volume_left) / 128;
+#endif
+   #ifdef SF2000_ARITHMETIC_OPTS
+         ch->right_vol_level = (ch->envx * ch->volume_right) >> 7;
+#else
+         ch->right_vol_level = (ch->envx * ch->volume_right) / 128;
+#endif
+      #ifdef SF2000_ARITHMETIC_OPTS
+      VL = (ch->sample * ch-> left_vol_level) >> 7;
+#else
+      VL = (ch->sample * ch-> left_vol_level) / 128;
+#endif
+      #ifdef SF2000_ARITHMETIC_OPTS
+      VR = (ch->sample * ch->right_vol_level) >> 7;
+#else
+      VR = (ch->sample * ch->right_vol_level) / 128;
+#endif
          }
 
          ch->count += freq;
@@ -706,8 +748,16 @@ static INLINE void MixStereo(int32_t sample_count)
                ch->interpolate = 0;
             }
 
-            VL = (ch->sample * ch-> left_vol_level) / 128;
-            VR = (ch->sample * ch->right_vol_level) / 128;
+      #ifdef SF2000_ARITHMETIC_OPTS
+      VL = (ch->sample * ch-> left_vol_level) >> 7;
+#else
+      VL = (ch->sample * ch-> left_vol_level) / 128;
+#endif
+      #ifdef SF2000_ARITHMETIC_OPTS
+      VR = (ch->sample * ch->right_vol_level) >> 7;
+#else
+      VR = (ch->sample * ch->right_vol_level) / 128;
+#endif
          }
          else
          {
@@ -717,8 +767,16 @@ static INLINE void MixStereo(int32_t sample_count)
 
                CLIP16(s);
                ch->sample = (int16_t) s;
-               VL = (ch->sample * ch-> left_vol_level) / 128;
-               VR = (ch->sample * ch->right_vol_level) / 128;
+         #ifdef SF2000_ARITHMETIC_OPTS
+      VL = (ch->sample * ch-> left_vol_level) >> 7;
+#else
+      VL = (ch->sample * ch-> left_vol_level) / 128;
+#endif
+         #ifdef SF2000_ARITHMETIC_OPTS
+      VR = (ch->sample * ch->right_vol_level) >> 7;
+#else
+      VR = (ch->sample * ch->right_vol_level) / 128;
+#endif
             }
          }
 
@@ -758,7 +816,11 @@ void S9xMixSamples(int16_t* buffer, int32_t sample_count)
          for (J = 0; J < sample_count; J++)
          {
             int32_t E = Echo [SoundData.echo_ptr];
+#ifdef SF2000_ARITHMETIC_OPTS
+            Echo[SoundData.echo_ptr++] = ((E * SoundData.echo_feedback) >> 7) + EchoBuffer [J];
+#else
             Echo[SoundData.echo_ptr++] = (E * SoundData.echo_feedback) / 128 + EchoBuffer [J];
+#endif
 
             if (SoundData.echo_ptr >= SoundData.echo_buffer_size)
                SoundData.echo_ptr = 0;
@@ -834,7 +896,11 @@ void S9xMixSamplesLowPass(int16_t* buffer, int32_t sample_count, int32_t low_pas
          {
             int32_t *low_pass_sample = &MixOutputPrev[J & 0x1];
             int32_t E = Echo [SoundData.echo_ptr];
+#ifdef SF2000_ARITHMETIC_OPTS
+            Echo[SoundData.echo_ptr++] = ((E * SoundData.echo_feedback) >> 7) + EchoBuffer [J];
+#else
             Echo[SoundData.echo_ptr++] = (E * SoundData.echo_feedback) / 128 + EchoBuffer [J];
+#endif
 
             if (SoundData.echo_ptr >= SoundData.echo_buffer_size)
                SoundData.echo_ptr = 0;
@@ -1107,8 +1173,16 @@ void S9xPlaySample(int32_t channel)
             S9xSetEnvRate(ch, ch->decay_rate, -1,
                           (MAX_ENVELOPE_HEIGHT * ch->sustain_level) >> 3, 1 << 28);
          }
+#ifdef SF2000_ARITHMETIC_OPTS
+         ch-> left_vol_level = (ch->envx * ch->volume_left) >> 7;
+#else
          ch-> left_vol_level = (ch->envx * ch->volume_left) / 128;
+#endif
+#ifdef SF2000_ARITHMETIC_OPTS
+         ch->right_vol_level = (ch->envx * ch->volume_right) >> 7;
+#else
          ch->right_vol_level = (ch->envx * ch->volume_right) / 128;
+#endif
       }
       else
       {
