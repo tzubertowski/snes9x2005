@@ -67,7 +67,8 @@ int one_c, slow_one_c, two_c;
 #if !defined(SF2000)
 #define AUDIO_SAMPLE_RATE       32040
 #else
-#define AUDIO_SAMPLE_RATE       11025
+#define AUDIO_SAMPLE_RATE       22050
+#define SF2000_ARITHMETIC_OPTS  1
 #endif
 
 static int16_t *audio_out_buffer       = NULL;
