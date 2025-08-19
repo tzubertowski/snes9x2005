@@ -53,9 +53,17 @@ void S9xMainLoop_SA1_SFX()
       do
       {
          APU_EXECUTE();
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(CPU.Flags, 0))
+#else
          if (CPU.Flags)
+#endif
          {
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & NMI_FLAG, 0))
+#else
             if (CPU.Flags & NMI_FLAG)
+#endif
             {
                if (--CPU.NMICycleCount == 0)
                {
@@ -69,7 +77,11 @@ void S9xMainLoop_SA1_SFX()
                }
             }
 
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & IRQ_PENDING_FLAG, 0))
+#else
             if (CPU.Flags & IRQ_PENDING_FLAG)
+#endif
             {
                if (CPU.IRQCycleCount == 0)
                {
@@ -141,9 +153,17 @@ void S9xMainLoop_SA1_NoSFX()
       do
       {
          APU_EXECUTE();
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(CPU.Flags, 0))
+#else
          if (CPU.Flags)
+#endif
          {
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & NMI_FLAG, 0))
+#else
             if (CPU.Flags & NMI_FLAG)
+#endif
             {
                if (--CPU.NMICycleCount == 0)
                {
@@ -157,7 +177,11 @@ void S9xMainLoop_SA1_NoSFX()
                }
             }
 
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & IRQ_PENDING_FLAG, 0))
+#else
             if (CPU.Flags & IRQ_PENDING_FLAG)
+#endif
             {
                if (CPU.IRQCycleCount == 0)
                {
@@ -229,9 +253,17 @@ void S9xMainLoop_NoSA1_SFX()
       do
       {
          APU_EXECUTE();
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(CPU.Flags, 0))
+#else
          if (CPU.Flags)
+#endif
          {
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & NMI_FLAG, 0))
+#else
             if (CPU.Flags & NMI_FLAG)
+#endif
             {
                if (--CPU.NMICycleCount == 0)
                {
@@ -245,7 +277,11 @@ void S9xMainLoop_NoSA1_SFX()
                }
             }
 
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & IRQ_PENDING_FLAG, 0))
+#else
             if (CPU.Flags & IRQ_PENDING_FLAG)
+#endif
             {
                if (CPU.IRQCycleCount == 0)
                {
@@ -314,9 +350,17 @@ void S9xMainLoop_NoSA1_NoSFX()
       do
       {
          APU_EXECUTE();
+#ifdef SF2000_ARITHMETIC_OPTS
+         if (__builtin_expect(CPU.Flags, 0))
+#else
          if (CPU.Flags)
+#endif
          {
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & NMI_FLAG, 0))
+#else
             if (CPU.Flags & NMI_FLAG)
+#endif
             {
                if (--CPU.NMICycleCount == 0)
                {
@@ -330,7 +374,11 @@ void S9xMainLoop_NoSA1_NoSFX()
                }
             }
 
+#ifdef SF2000_ARITHMETIC_OPTS
+            if (__builtin_expect(CPU.Flags & IRQ_PENDING_FLAG, 0))
+#else
             if (CPU.Flags & IRQ_PENDING_FLAG)
+#endif
             {
                if (CPU.IRQCycleCount == 0)
                {
