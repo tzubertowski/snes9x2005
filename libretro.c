@@ -11,6 +11,9 @@
 #include "spc7110.h"
 #include "srtc.h"
 #include "sa1.h"
+#ifdef SF2000
+#include "splash.h"
+#endif
 
 #ifdef PSP
 #include <pspkernel.h>
@@ -469,6 +472,9 @@ void retro_init(void)
    S9xInitAPU();
    S9xInitDisplay();
    S9xInitGFX();
+#ifdef SF2000
+   splash_screen_init();
+#endif
 #ifdef USE_BLARGG_APU
    S9xInitSound(0, 0); /* Use default values */
    S9xSetSamplesAvailableCallback(S9xAudioCallback);
@@ -809,6 +815,11 @@ void retro_run(void)
    if (IPPU.RenderThisFrame)
    {
 #ifdef SF2000
+      /* SF2000 Splash Screen: Show for 3 seconds before game starts */
+      if (splash_screen_update()) {
+         splash_screen_render((uint16_t*)GFX.Screen, IPPU.RenderedScreenWidth, IPPU.RenderedScreenHeight, GFX.Pitch);
+      }
+      
       /* SF2000 Toggle Indicators: Show for 3 seconds after toggle */
       if (transparency_indicator_timer > 0 || audio_indicator_timer > 0 || frameskip_indicator_timer > 0) {
          uint16_t* screen = (uint16_t*)GFX.Screen;
