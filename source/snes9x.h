@@ -214,6 +214,7 @@ typedef struct
    bool     SecondJustifier;
    int8_t   SETA;
    bool     HardDisableAudio;
+   bool     DisableTransparency;
 } SSettings;
 
 extern SSettings Settings;

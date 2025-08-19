@@ -57,8 +57,13 @@ extern bool reduce_sprite_flicker;
  (GFX.r2130 & 2) && \
  (GFX.r212d & 0x1f))
 
+#ifdef SF2000
+#define ADD_OR_SUB_ON_ANYTHING \
+((GFX.r2131 & 0x3f) && !Settings.DisableTransparency)
+#else
 #define ADD_OR_SUB_ON_ANYTHING \
 (GFX.r2131 & 0x3f)
+#endif
 
 #define FIX_INTERLACE(SCREEN, DO_DEPTH, DEPTH) \
     { \

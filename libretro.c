@@ -46,6 +46,17 @@ char retro_save_directory[PATH_MAX_LENGTH];
 char retro_base_name[PATH_MAX_LENGTH];
 bool overclock_cycles = false;
 bool reduce_sprite_flicker = false;
+
+/* Hotkey state variables */
+static bool hotkey_audio_disabled = false;
+static unsigned hotkey_frameskip_level = 0;  /* 0-4: SEL + A hotkey frameskip */
+static bool sel_r_pressed = false;
+static bool sel_l_pressed = false;
+static bool sel_a_pressed = false;
+static int transparency_indicator_timer = 0;
+static int audio_indicator_timer = 0;
+static int frameskip_indicator_timer = 0;
+
 int one_c, slow_one_c, two_c;
 
 #define VIDEO_REFRESH_RATE_PAL  (SNES_CLOCK_SPEED * 6.0 / (SNES_CYCLES_PER_SCANLINE * SNES_MAX_PAL_VCOUNTER))
@@ -376,6 +387,10 @@ static void S9xAudioCallback(void)
 
 static void audio_upload_samples(void)
 {
+   /* If audio is muted via hotkey, don't upload samples */
+   if (hotkey_audio_disabled)
+      return;
+   
    size_t available_frames;
 #ifdef USE_BLARGG_APU
    int16_t *audio_out_buffer_ptr;
@@ -671,14 +686,29 @@ void retro_run(void)
       Settings.HardDisableAudio = false;
    }
 
-   /* Check whether current frame should
-    * be skipped */
-   if ((frameskip_type > 0) &&
-       retro_audio_buff_active &&
-       IPPU.RenderThisFrame)
+   /* Hotkey frameskip works independently of audio buffer status */
+   if (hotkey_frameskip_level > 0 && IPPU.RenderThisFrame)
    {
-      bool skip_frame;
-
+      /* Manual frameskip pattern: skip N frames out of N+1 */
+      bool should_skip = (frameskip_counter % (hotkey_frameskip_level + 1)) != 0;
+      
+      if (should_skip)
+      {
+         IPPU.RenderThisFrame = false;
+      }
+      
+      /* Always increment counter for hotkey frameskip */
+      frameskip_counter++;
+      
+      /* Reset counter to prevent overflow */
+      if (frameskip_counter >= (hotkey_frameskip_level + 1))
+         frameskip_counter = 0;
+   }
+   /* Original frameskip logic (only if hotkey frameskip is not active) */
+   else if (frameskip_type > 0 && retro_audio_buff_active && IPPU.RenderThisFrame)
+   {
+      bool skip_frame = false;
+      
       switch (frameskip_type)
       {
          case 1: /* auto */
@@ -705,6 +735,11 @@ void retro_run(void)
       else
          frameskip_counter = 0;
    }
+   else if (hotkey_frameskip_level == 0)
+   {
+      /* Reset counter when hotkey frameskip is disabled */
+      frameskip_counter = 0;
+   }
 
    /* If frameskip/timing settings have changed,
     * update frontend audio latency
@@ -720,6 +755,47 @@ void retro_run(void)
 
    poll_cb();
 
+   /* Universal Hotkeys */
+   bool sel_pressed = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT);
+   bool r_pressed = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R);
+   bool l_pressed = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L);
+   bool a_pressed = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
+   
+   /* SEL + R to toggle transparency effects */
+   if (sel_pressed && r_pressed && !sel_r_pressed) {
+      Settings.DisableTransparency = !Settings.DisableTransparency;
+      transparency_indicator_timer = 180; /* 3 seconds at 60fps */
+      sel_r_pressed = true;
+   } else if (!sel_pressed || !r_pressed) {
+      sel_r_pressed = false;
+   }
+   
+   /* SEL + L to toggle audio mute */
+   if (sel_pressed && l_pressed && !sel_l_pressed) {
+      hotkey_audio_disabled = !hotkey_audio_disabled;
+      audio_indicator_timer = 180; /* 3 seconds at 60fps */
+      sel_l_pressed = true;
+   } else if (!sel_pressed || !l_pressed) {
+      sel_l_pressed = false;
+   }
+   
+   /* SEL + A to cycle frameskip */
+   if (sel_pressed && a_pressed && !sel_a_pressed) {
+      hotkey_frameskip_level = (hotkey_frameskip_level + 1) % 5;  /* Cycle 0-4 */
+      frameskip_indicator_timer = 180; /* 3 seconds at 60fps */
+      sel_a_pressed = true;
+   } else if (!sel_pressed || !a_pressed) {
+      sel_a_pressed = false;
+   }
+   
+   /* Update indicator timers */
+   if (transparency_indicator_timer > 0)
+      transparency_indicator_timer--;
+   if (frameskip_indicator_timer > 0)
+      frameskip_indicator_timer--;
+   if (audio_indicator_timer > 0)
+      audio_indicator_timer--;
+
    RETRO_PERFORMANCE_INIT(S9xMainLoop_func);
    RETRO_PERFORMANCE_START(S9xMainLoop_func);
    S9xMainLoop();
@@ -732,6 +808,134 @@ void retro_run(void)
 
    if (IPPU.RenderThisFrame)
    {
+#ifdef SF2000
+      /* SF2000 Toggle Indicators: Show for 3 seconds after toggle */
+      if (transparency_indicator_timer > 0 || audio_indicator_timer > 0 || frameskip_indicator_timer > 0) {
+         uint16_t* screen = (uint16_t*)GFX.Screen;
+         int width = IPPU.RenderedScreenWidth;
+         int height = IPPU.RenderedScreenHeight;
+         int pitch = GFX.Pitch >> 1; /* Convert byte pitch to pixel pitch */
+         
+         /* Draw transparency indicator */
+         if (transparency_indicator_timer > 0) {
+            uint16_t bg_color = !Settings.DisableTransparency ? 0x03E0 : 0x0000; /* Green or black */
+            uint16_t text_color = 0xFFFF; /* White text */
+            
+            /* Draw 32x32 indicator box in top-left corner */
+            int start_x = 2;
+            int start_y = 2;
+            
+            /* Draw background */
+            for (int y = 0; y < 32 && start_y + y < height; y++) {
+               for (int x = 0; x < 32 && start_x + x < width; x++) {
+                  screen[(start_y + y) * pitch + (start_x + x)] = bg_color;
+               }
+            }
+            
+            /* Draw letter T bitmap (16x16) */
+            static uint16_t t_bitmap[16] = {
+               0x0000, 0x7FFE, 0x7FFE, 0x0180, 0x0180, 0x0180, 0x0180, 0x0180,
+               0x0180, 0x0180, 0x0180, 0x0180, 0x0180, 0x0180, 0x0180, 0x0000
+            };
+            
+            int char_x = start_x + 8;
+            int char_y = start_y + 8;
+            for (int y = 0; y < 16; y++) {
+               for (int x = 0; x < 16; x++) {
+                  if ((t_bitmap[y] & (0x8000 >> x)) && 
+                      char_x + x < width && char_y + y < height) {
+                     screen[(char_y + y) * pitch + (char_x + x)] = text_color;
+                  }
+               }
+            }
+         }
+         
+         /* Draw audio indicator */
+         if (audio_indicator_timer > 0) {
+            uint16_t bg_color = !hotkey_audio_disabled ? 0x03E0 : 0x0000; /* Green or black */
+            uint16_t text_color = 0xFFFF; /* White text */
+            
+            /* Draw 32x32 indicator box in top-left corner, offset if transparency is showing */
+            int start_x = transparency_indicator_timer > 0 ? 36 : 2;
+            int start_y = 2;
+            
+            /* Draw background */
+            for (int y = 0; y < 32 && start_y + y < height; y++) {
+               for (int x = 0; x < 32 && start_x + x < width; x++) {
+                  screen[(start_y + y) * pitch + (start_x + x)] = bg_color;
+               }
+            }
+            
+            /* Draw letter A bitmap (16x16) */
+            static uint16_t a_bitmap[16] = {
+               0x0000, 0x0180, 0x03C0, 0x07E0, 0x0FF0, 0x1E78, 0x3C3C, 0x781E,
+               0x781E, 0x7FFE, 0x7FFE, 0x781E, 0x781E, 0x781E, 0x781E, 0x0000
+            };
+            
+            int char_x = start_x + 8;
+            int char_y = start_y + 8;
+            for (int y = 0; y < 16; y++) {
+               for (int x = 0; x < 16; x++) {
+                  if ((a_bitmap[y] & (0x8000 >> x)) && 
+                      char_x + x < width && char_y + y < height) {
+                     screen[(char_y + y) * pitch + (char_x + x)] = text_color;
+                  }
+               }
+            }
+         }
+         
+         /* Draw frameskip indicator */
+         if (frameskip_indicator_timer > 0) {
+            uint16_t bg_color = hotkey_frameskip_level > 0 ? 0x03E0 : 0x7BEF; /* Green for active, grey for 0 */
+            uint16_t text_color = 0xFFFF; /* White text */
+            
+            /* Draw 32x32 indicator box in top-left corner, offset by other indicators */
+            int start_x = 2;
+            if (transparency_indicator_timer > 0) start_x += 36;
+            if (audio_indicator_timer > 0) start_x += 36;
+            int start_y = 2;
+            
+            /* Draw background */
+            for (int y = 0; y < 32 && start_y + y < height; y++) {
+               for (int x = 0; x < 32 && start_x + x < width; x++) {
+                  screen[(start_y + y) * pitch + (start_x + x)] = bg_color;
+               }
+            }
+            
+            /* Draw number bitmaps (16x16) */
+            static uint16_t number_bitmaps[5][16] = {
+               /* Number 0 */
+               { 0x0000, 0x0780, 0x0FC0, 0x1CE0, 0x3870, 0x3870, 0x7038, 0x7038,
+                 0x7038, 0x7038, 0x3870, 0x3870, 0x1CE0, 0x0FC0, 0x0780, 0x0000 },
+               /* Number 1 */
+               { 0x0000, 0x0180, 0x0380, 0x0780, 0x0180, 0x0180, 0x0180, 0x0180,
+                 0x0180, 0x0180, 0x0180, 0x0180, 0x0180, 0x0FF0, 0x0FF0, 0x0000 },
+               /* Number 2 */
+               { 0x0000, 0x0FC0, 0x1FE0, 0x3870, 0x3030, 0x0030, 0x0060, 0x00C0,
+                 0x0180, 0x0300, 0x0600, 0x0C00, 0x1800, 0x3FF0, 0x3FF0, 0x0000 },
+               /* Number 3 */
+               { 0x0000, 0x0FC0, 0x1FE0, 0x3870, 0x0030, 0x0030, 0x07C0, 0x07C0,
+                 0x0030, 0x0030, 0x0030, 0x3870, 0x1FE0, 0x0FC0, 0x0000, 0x0000 },
+               /* Number 4 */
+               { 0x0000, 0x0070, 0x00F0, 0x01F0, 0x0370, 0x0670, 0x0C70, 0x1870,
+                 0x3FF8, 0x3FF8, 0x0070, 0x0070, 0x0070, 0x0070, 0x0070, 0x0000 }
+            };
+            
+            int char_x = start_x + 8;
+            int char_y = start_y + 8;
+            uint16_t* bitmap = number_bitmaps[hotkey_frameskip_level];
+            for (int y = 0; y < 16; y++) {
+               for (int x = 0; x < 16; x++) {
+                  if ((bitmap[y] & (0x8000 >> x)) && 
+                      char_x + x < width && char_y + y < height) {
+                     screen[(char_y + y) * pitch + (char_x + x)] = text_color;
+                  }
+               }
+            }
+         }
+      }
+#endif
+
 #ifdef PSP
       static unsigned int __attribute__((aligned(16))) d_list[32];
       void* const texture_vram_p = (void*)(0x44200000 - (512 * 512)); /* max VRAM address - frame size */
